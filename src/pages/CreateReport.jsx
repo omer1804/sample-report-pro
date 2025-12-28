@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Loader2, FileDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { format } from 'date-fns';
@@ -193,6 +193,14 @@ export default function CreateReport() {
               )}
             </div>
             <div className="flex gap-3">
+              {reportId && (
+                <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}`} target="_blank">
+                  <Button variant="outline" className="gap-2">
+                    <FileDown className="w-4 h-4" />
+                    Export PDF
+                  </Button>
+                </Link>
+              )}
               <Button
                 onClick={() => handleSave('in_progress')}
                 variant="outline"
