@@ -1,28 +1,34 @@
 import React, { useState } from 'react';
-import { Upload, Plus, Check } from 'lucide-react';
+import { Upload, Plus, Check, Columns } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-export default function TestImageGrid({ testType, imagesGrid, onChange }) {
+export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange }) {
   const [uploading, setUploading] = useState('');
+  const [newColumnName, setNewColumnName] = useState('');
 
-  const getGridConfig = () => {
+  const getDefaultColumns = () => {
     switch (testType) {
       case 'sand_grinding':
-        return { columns: ['REF', '10', '20', '30', '40', '50'], rows: 3 };
+        return ['REF', '10', '20', '30', '40', '50'];
       case 'dry_grinding':
-        return { columns: ['REF', '5K', '10K', '15K', '20K', '25K', '30K'], rows: 3 };
+        return ['REF', '5K', '10K', '15K', '20K', '25K', '30K'];
       case 'wet_grinding':
-        return { columns: ['REF', '4K', '8K', '12K'], rows: 3 };
+        return ['REF', '4K', '8K', '12K'];
       case 'bally_flex_rt':
-        return { columns: ['REF', '50K', '100K', '150K'], rows: 3 };
+        return ['REF', '50K', '100K', '150K'];
       case 'bally_flex_minus20':
-        return { columns: ['REF', '40K'], rows: 3 };
+        return ['REF', '40K'];
       default:
-        return { columns: ['REF'], rows: 3 };
+        return ['REF'];
     }
   };
 
-  const config = getGridConfig();
+  const config = {
+    columns: columns && columns.length > 0 ? columns : getDefaultColumns(),
+    rows: 3
+  };
 
   // Initialize grid if empty
   const grid = imagesGrid && imagesGrid.length > 0 
@@ -58,14 +64,72 @@ export default function TestImageGrid({ testType, imagesGrid, onChange }) {
     onChange(newGrid);
   };
 
+  const addColumn = () => {
+    if (!newColumnName.trim()) return;
+    
+    const newColumns = [...config.columns, newColumnName.trim()];
+    onColumnsChange(newColumns);
+    
+    // Extend the grid
+    const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
+    onChange(newGrid);
+    
+    setNewColumnName('');
+  };
+
+  const removeColumn = (colIndex) => {
+    if (config.columns.length <= 1) return;
+    
+    const newColumns = config.columns.filter((_, i) => i !== colIndex);
+    onColumnsChange(newColumns);
+    
+    // Remove from grid
+    const newGrid = grid.map(row => row.filter((_, i) => i !== colIndex));
+    onChange(newGrid);
+  };
+
+  const hasAnyImages = grid.some(row => row.some(cell => cell.image_url));
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
+    <div className="space-y-3">
+      {/* Add Column Section */}
+      <div className="flex gap-2 items-end bg-blue-50 p-3 rounded-lg border border-blue-200">
+        <div className="flex-1">
+          <label className="text-xs font-medium text-slate-700 mb-1 block">
+            Add More Iterations (if test fails)
+          </label>
+          <Input
+            value={newColumnName}
+            onChange={(e) => setNewColumnName(e.target.value)}
+            placeholder="e.g., 60, 70, 80..."
+            className="bg-white"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') addColumn();
+            }}
+          />
+        </div>
+        <Button onClick={addColumn} size="sm" className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add Column
+        </Button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
         <thead>
           <tr className="bg-slate-100">
             {config.columns.map((col, idx) => (
-              <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700">
+              <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
                 {col}
+                {idx > 0 && (
+                  <button
+                    onClick={() => removeColumn(idx)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove column"
+                  >
+                    <Plus className="w-3 h-3 rotate-45" />
+                  </button>
+                )}
               </th>
             ))}
           </tr>
@@ -125,9 +189,13 @@ export default function TestImageGrid({ testType, imagesGrid, onChange }) {
           ))}
         </tbody>
       </table>
-      <p className="text-xs text-slate-500 mt-2">
-        Click on an image to highlight it with a red border (indicates critical point for pass/fail)
-      </p>
+      </div>
+      
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <p className="text-xs text-slate-700">
+          <strong>Tip:</strong> Click on an image to highlight it with a red border. This indicates the critical point where the test failed.
+        </p>
+      </div>
     </div>
   );
 }

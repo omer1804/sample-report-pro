@@ -87,6 +87,7 @@ export default function CreateReport() {
         test_parameters: test.test_parameters,
         result: test.result,
         images_grid: test.images_grid,
+        grid_columns: test.grid_columns || [],
         notes: test.notes
       }));
       setTests(testsData);
@@ -145,6 +146,7 @@ export default function CreateReport() {
             test_parameters: test.test_parameters,
             result: test.result,
             images_grid: test.images_grid,
+            grid_columns: test.grid_columns || [],
             notes: test.notes
           });
         }

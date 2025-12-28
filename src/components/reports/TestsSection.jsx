@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Trash2, FlaskConical } from 'lucide-react';
@@ -26,6 +27,7 @@ export default function TestsSection({ fabrics, tests, onChange }) {
       test_parameters: {},
       result: 'fail',
       images_grid: [],
+      grid_columns: [],
       notes: ''
     };
     onChange([...tests, newTest]);
@@ -44,9 +46,19 @@ export default function TestsSection({ fabrics, tests, onChange }) {
       const testConfig = TEST_TYPES.find(t => t.value === value);
       if (testConfig) {
         updated[testIndex].test_parameters = testConfig.params;
+        updated[testIndex].grid_columns = []; // Reset columns when changing test type
       }
     }
     
+    onChange(updated);
+  };
+
+  const updateTestParameter = (testIndex, paramKey, value) => {
+    const updated = [...tests];
+    updated[testIndex].test_parameters = {
+      ...updated[testIndex].test_parameters,
+      [paramKey]: value
+    };
     onChange(updated);
   };
 
@@ -175,20 +187,52 @@ export default function TestsSection({ fabrics, tests, onChange }) {
 
                         {test.test_type && (
                           <>
-                            <div className="bg-slate-50 rounded-lg p-4 space-y-2">
-                              <h5 className="font-semibold text-sm text-slate-700 mb-2">Test Parameters</h5>
-                              <div className="grid grid-cols-2 gap-2 text-sm text-slate-600">
-                                {test.test_parameters?.pressure && (
-                                  <div><span className="font-medium">Pressure:</span> {test.test_parameters.pressure}</div>
+                            <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                              <h5 className="font-semibold text-sm text-slate-700 mb-2">Test Parameters (Editable)</h5>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {test.test_parameters?.pressure !== undefined && (
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Pressure</Label>
+                                    <Input
+                                      value={test.test_parameters.pressure}
+                                      onChange={(e) => updateTestParameter(testIndex, 'pressure', e.target.value)}
+                                      className="h-8 text-sm"
+                                      placeholder="e.g., 9Kpa"
+                                    />
+                                  </div>
                                 )}
-                                {test.test_parameters?.sample_size && (
-                                  <div><span className="font-medium">Sample Size:</span> {test.test_parameters.sample_size}</div>
+                                {test.test_parameters?.sample_size !== undefined && (
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Sample Size</Label>
+                                    <Input
+                                      value={test.test_parameters.sample_size}
+                                      onChange={(e) => updateTestParameter(testIndex, 'sample_size', e.target.value)}
+                                      className="h-8 text-sm"
+                                      placeholder="e.g., 38 +- 2mm"
+                                    />
+                                  </div>
                                 )}
-                                {test.test_parameters?.revolutions && (
-                                  <div><span className="font-medium">Revolutions:</span> {test.test_parameters.revolutions}</div>
+                                {test.test_parameters?.revolutions !== undefined && (
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Revolutions</Label>
+                                    <Input
+                                      value={test.test_parameters.revolutions}
+                                      onChange={(e) => updateTestParameter(testIndex, 'revolutions', e.target.value)}
+                                      className="h-8 text-sm"
+                                      placeholder="e.g., 50 rub revolutions"
+                                    />
+                                  </div>
                                 )}
-                                {test.test_parameters?.checkpoint && (
-                                  <div><span className="font-medium">Checkpoint:</span> {test.test_parameters.checkpoint}</div>
+                                {test.test_parameters?.checkpoint !== undefined && (
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-slate-600">Checkpoint</Label>
+                                    <Input
+                                      value={test.test_parameters.checkpoint}
+                                      onChange={(e) => updateTestParameter(testIndex, 'checkpoint', e.target.value)}
+                                      className="h-8 text-sm"
+                                      placeholder="e.g., Checkpoint every 10"
+                                    />
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -199,6 +243,8 @@ export default function TestsSection({ fabrics, tests, onChange }) {
                                 testType={test.test_type}
                                 imagesGrid={test.images_grid}
                                 onChange={(grid) => updateTest(testIndex, 'images_grid', grid)}
+                                columns={test.grid_columns}
+                                onColumnsChange={(cols) => updateTest(testIndex, 'grid_columns', cols)}
                               />
                             </div>
 
