@@ -4,9 +4,10 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange }) {
+export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange }) {
   const [uploading, setUploading] = useState('');
   const [newColumnName, setNewColumnName] = useState('');
+  const [editingRow, setEditingRow] = useState(null);
 
   const getDefaultColumns = () => {
     switch (testType) {
@@ -36,6 +37,18 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     : Array(config.rows).fill(null).map(() => 
         Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
+
+  // Initialize row labels
+  const labels = rowLabels && rowLabels.length > 0 
+    ? rowLabels 
+    : ['Area A', 'Area B', 'Area C'];
+
+  const updateRowLabel = (rowIndex, newLabel) => {
+    const newLabels = [...labels];
+    newLabels[rowIndex] = newLabel;
+    onRowLabelsChange(newLabels);
+    setEditingRow(null);
+  };
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
@@ -118,6 +131,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
         <table className="w-full border-collapse">
         <thead>
           <tr className="bg-slate-100">
+            <th className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 bg-slate-200">
+              Sample Area
+            </th>
             {config.columns.map((col, idx) => (
               <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
                 {col}
@@ -137,6 +153,28 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
         <tbody>
           {grid.map((row, rowIndex) => (
             <tr key={rowIndex}>
+              <td className="border border-slate-300 p-2 bg-slate-50 font-medium text-slate-700 text-sm relative group">
+                {editingRow === rowIndex ? (
+                  <Input
+                    value={labels[rowIndex]}
+                    onChange={(e) => updateRowLabel(rowIndex, e.target.value)}
+                    onBlur={() => setEditingRow(null)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') setEditingRow(null);
+                    }}
+                    className="h-7 text-sm"
+                    autoFocus
+                  />
+                ) : (
+                  <div 
+                    onClick={() => setEditingRow(rowIndex)}
+                    className="cursor-pointer hover:bg-slate-100 px-2 py-1 rounded"
+                    title="Click to edit"
+                  >
+                    {labels[rowIndex]}
+                  </div>
+                )}
+              </td>
               {row.map((cell, colIndex) => (
                 <td 
                   key={colIndex} 

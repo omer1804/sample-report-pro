@@ -28,6 +28,7 @@ export default function TestsSection({ fabrics, tests, onChange }) {
       result: 'fail',
       images_grid: [],
       grid_columns: [],
+      row_labels: [],
       notes: ''
     };
     onChange([...tests, newTest]);
@@ -245,6 +246,8 @@ export default function TestsSection({ fabrics, tests, onChange }) {
                                 onChange={(grid) => updateTest(testIndex, 'images_grid', grid)}
                                 columns={test.grid_columns}
                                 onColumnsChange={(cols) => updateTest(testIndex, 'grid_columns', cols)}
+                                rowLabels={test.row_labels}
+                                onRowLabelsChange={(labels) => updateTest(testIndex, 'row_labels', labels)}
                               />
                             </div>
 
