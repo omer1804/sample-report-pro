@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, FileText, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { format } from 'date-fns';
 import ReportDetailsForm from '../components/reports/ReportDetailsForm';
 import FabricsSection from '../components/reports/FabricsSection';
 import TestsSection from '../components/reports/TestsSection';
