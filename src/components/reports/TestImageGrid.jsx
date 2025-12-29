@@ -90,6 +90,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     setNewColumnName('');
   };
 
+  const addRow = () => {
+    const newGrid = [...grid, Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))];
+    onChange(newGrid);
+    
+    const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
+    onRowLabelsChange(newLabels);
+  };
+
   const removeColumn = (colIndex) => {
     if (config.columns.length <= 1) return;
     
@@ -105,27 +113,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   return (
     <div className="space-y-3">
-      {/* Add Column Section */}
-      <div className="flex gap-2 items-end bg-blue-50 p-3 rounded-lg border border-blue-200">
-        <div className="flex-1">
-          <label className="text-xs font-medium text-slate-700 mb-1 block">
-            Add More Iterations (if test fails)
-          </label>
-          <Input
-            value={newColumnName}
-            onChange={(e) => setNewColumnName(e.target.value)}
-            placeholder="e.g., 60, 70, 80..."
-            className="bg-white"
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') addColumn();
-            }}
-          />
-        </div>
-        <Button onClick={addColumn} size="sm" className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Column
-        </Button>
-      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
