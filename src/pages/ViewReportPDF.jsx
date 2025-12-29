@@ -130,11 +130,21 @@ export default function ViewReportPDF() {
                           className="border p-1"
                           style={{
                             borderWidth: cell.is_selected ? '3px' : '1px',
-                            borderColor: cell.is_selected ? '#ef4444' : '#94a3b8'
+                            borderColor: cell.is_selected ? '#ef4444' : '#94a3b8',
+                            width: '150px',
+                            height: '150px'
                           }}
                         >
                           {cell.image_url && (
-                            <img src={cell.image_url} alt="" className="w-full h-24 object-cover" />
+                            <img 
+                              src={cell.image_url} 
+                              alt="" 
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain'
+                              }}
+                            />
                           )}
                         </td>
                       ))}
