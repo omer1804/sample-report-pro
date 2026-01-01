@@ -41,6 +41,21 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
     );
   }
+  
+  // Sync grid columns with config.columns - fix mismatches
+  grid = grid.map(row => {
+    if (row.length === config.columns.length) return row;
+    
+    // If row has more cells than columns, trim it
+    if (row.length > config.columns.length) {
+      return row.slice(0, config.columns.length);
+    }
+    
+    // If row has fewer cells than columns, pad it
+    const paddingNeeded = config.columns.length - row.length;
+    const padding = Array(paddingNeeded).fill(null).map(() => ({ image_url: '', is_selected: false }));
+    return [...row, ...padding];
+  });
 
   // Initialize row labels - match grid length
   let labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
@@ -54,6 +69,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       `Area ${String.fromCharCode(65 + labels.length + i)}`
     );
     labels = [...labels, ...additionalLabels];
+  } else if (labels.length > grid.length) {
+    // Trim excess labels
+    labels = labels.slice(0, grid.length);
   }
 
   const updateRowLabel = (rowIndex, newLabel) => {
