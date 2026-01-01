@@ -27,24 +27,21 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
+  const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
+  
   // Initialize if needed
   React.useEffect(() => {
     if (!imagesGrid || imagesGrid.length === 0) {
-      const defaultCols = getDefaultColumns();
       const defaultGrid = Array(3).fill(null).map(() => 
-        Array(defaultCols.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
       const defaultLabels = ['Area A', 'Area B', 'Area C'];
       
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
-      if (!columns || columns.length === 0) {
-        onColumnsChange(defaultCols);
-      }
     }
-  }, [testType]);
+  }, []);
 
-  const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   const grid = imagesGrid || [];
   const labels = rowLabels || [];
 
