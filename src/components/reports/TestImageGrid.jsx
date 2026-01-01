@@ -27,52 +27,39 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
-  const config = {
-    columns: columns && columns.length > 0 ? columns : getDefaultColumns(),
-    rows: 3
-  };
-
-  // Initialize grid if empty or mismatched
-  let grid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : [];
+  // Determine columns config
+  const activeColumns = columns && columns.length > 0 ? columns : getDefaultColumns();
   
-  // Initialize with default 3 rows if completely empty
-  if (grid.length === 0) {
-    grid = Array(config.rows).fill(null).map(() => 
-      Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-    );
-  }
-  
-  // Sync grid columns with config.columns - fix mismatches
-  grid = grid.map(row => {
-    if (row.length === config.columns.length) return row;
+  // Initialize or sync grid
+  React.useEffect(() => {
+    const needsInit = !imagesGrid || imagesGrid.length === 0;
+    const needsSync = imagesGrid && imagesGrid.length > 0 && imagesGrid[0] && imagesGrid[0].length !== activeColumns.length;
     
-    // If row has more cells than columns, trim it
-    if (row.length > config.columns.length) {
-      return row.slice(0, config.columns.length);
+    if (needsInit) {
+      // Create default 3x grid
+      const newGrid = Array(3).fill(null).map(() => 
+        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+      );
+      onChange(newGrid);
+      
+      const newLabels = ['Area A', 'Area B', 'Area C'];
+      onRowLabelsChange(newLabels);
+    } else if (needsSync) {
+      // Sync existing grid with column count
+      const syncedGrid = imagesGrid.map(row => {
+        if (row.length === activeColumns.length) return row;
+        if (row.length > activeColumns.length) return row.slice(0, activeColumns.length);
+        
+        const paddingNeeded = activeColumns.length - row.length;
+        const padding = Array(paddingNeeded).fill(null).map(() => ({ image_url: '', is_selected: false }));
+        return [...row, ...padding];
+      });
+      onChange(syncedGrid);
     }
-    
-    // If row has fewer cells than columns, pad it
-    const paddingNeeded = config.columns.length - row.length;
-    const padding = Array(paddingNeeded).fill(null).map(() => ({ image_url: '', is_selected: false }));
-    return [...row, ...padding];
-  });
+  }, [activeColumns.length, testType]);
 
-  // Initialize row labels - match grid length
-  let labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
-  
-  // Ensure labels match grid rows
-  if (labels.length === 0 && grid.length > 0) {
-    labels = Array(grid.length).fill(null).map((_, i) => `Area ${String.fromCharCode(65 + i)}`);
-  } else if (labels.length < grid.length) {
-    // Add missing labels
-    const additionalLabels = Array(grid.length - labels.length).fill(null).map((_, i) => 
-      `Area ${String.fromCharCode(65 + labels.length + i)}`
-    );
-    labels = [...labels, ...additionalLabels];
-  } else if (labels.length > grid.length) {
-    // Trim excess labels
-    labels = labels.slice(0, grid.length);
-  }
+  const grid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : [];
+  const labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
@@ -80,6 +67,10 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     onRowLabelsChange(newLabels);
     setEditingRow(null);
   };
+
+  if (grid.length === 0) {
+    return <div className="text-center py-8 text-slate-500">Initializing grid...</div>;
+  }
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
@@ -114,7 +105,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       return;
     }
     
-    const newColumns = [...config.columns, newColumnName.trim()];
+    const newColumns = [...activeColumns, newColumnName.trim()];
     const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
     
     onColumnsChange(newColumns);
@@ -123,7 +114,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
-    const newRow = Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
+    const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
     const newGrid = [...grid, newRow];
     const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
     
@@ -132,12 +123,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const removeColumn = (colIndex) => {
-    if (config.columns.length <= 1) {
+    if (activeColumns.length <= 1) {
       alert('Cannot remove the last column');
       return;
     }
     
-    const newColumns = config.columns.filter((_, i) => i !== colIndex);
+    const newColumns = activeColumns.filter((_, i) => i !== colIndex);
     const newGrid = grid.map(row => row.filter((_, i) => i !== colIndex));
     
     onColumnsChange(newColumns);
@@ -158,7 +149,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const updateColumnName = (colIndex, newName) => {
-    const newColumns = [...config.columns];
+    const newColumns = [...activeColumns];
     newColumns[colIndex] = newName;
     onColumnsChange(newColumns);
     setEditingCol(null);
@@ -192,7 +183,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
             <th className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 bg-slate-200">
               Sample Area
             </th>
-            {config.columns.map((col, idx) => (
+            {activeColumns.map((col, idx) => (
               <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
                 {editingCol === idx ? (
                   <Input
@@ -271,7 +262,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                 <td 
                   key={colIndex} 
                   className={`border ${cell.is_selected ? 'border-red-500 border-4' : 'border-slate-300'} p-1 relative`}
-                  style={{ width: `${100 / config.columns.length}%`, height: '140px' }}
+                  style={{ width: `${100 / activeColumns.length}%`, height: '140px' }}
                 >
                   {cell.image_url ? (
                     <div className="relative w-full h-full group">
