@@ -324,13 +324,13 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
         <p className="text-xs text-slate-700">
           <strong>Tip:</strong> Click on an image to view it larger with zoom. Use "Select as fail point" to mark the critical failure point with a red border.
         </p>
-        </div>
-        </div>
+      </div>
 
-        <ImageViewerModal 
+      <ImageViewerModal 
         imageUrl={viewerImage} 
         isOpen={!!viewerImage} 
         onClose={() => setViewerImage(null)} 
-        />
-        );
-        }
+      />
+    </div>
+  );
+}
