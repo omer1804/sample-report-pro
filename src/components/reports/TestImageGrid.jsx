@@ -45,9 +45,16 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   }, [testType]);
 
-  // Use actual data or empty array
-  const grid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
-  const labels = (rowLabels && rowLabels.length > 0) ? rowLabels : [];
+  // Always show grid when testType exists
+  const grid = (imagesGrid && imagesGrid.length > 0) 
+    ? imagesGrid 
+    : (testType ? Array(3).fill(null).map(() => 
+        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+      ) : []);
+  
+  const labels = (rowLabels && rowLabels.length > 0) 
+    ? rowLabels 
+    : (testType ? ['Area A', 'Area B', 'Area C'] : []);
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
