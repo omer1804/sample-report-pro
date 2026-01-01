@@ -177,10 +177,13 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                     {col}
                   </div>
                 )}
-                {idx > 0 && (
+                {idx > 0 && editingCol !== idx && (
                   <button
-                    onClick={() => removeColumn(idx)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeColumn(idx);
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     title="Remove column"
                   >
                     <Plus className="w-3 h-3 rotate-45" />
@@ -214,10 +217,13 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                     {labels[rowIndex]}
                   </div>
                 )}
-                {grid.length > 1 && (
+                {grid.length > 1 && editingRow !== rowIndex && (
                   <button
-                    onClick={() => removeRow(rowIndex)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeRow(rowIndex);
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     title="Remove row"
                   >
                     <Plus className="w-3 h-3 rotate-45" />

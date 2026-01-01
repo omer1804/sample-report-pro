@@ -229,7 +229,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
       {/* Floating Add Test Button */}
       <Button
         onClick={addTest}
-        className="fixed bottom-6 right-28 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
+        className="fixed bottom-20 right-6 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
         size="lg"
       >
         <Plus className="w-5 h-5" />
