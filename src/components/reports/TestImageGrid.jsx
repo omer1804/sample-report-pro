@@ -28,10 +28,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
+  const grid = imagesGrid || [];
+  const labels = rowLabels || [];
   
   // Initialize if needed
   React.useEffect(() => {
-    if (!imagesGrid || imagesGrid.length === 0) {
+    if (grid.length === 0) {
       const defaultGrid = Array(3).fill(null).map(() => 
         Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
@@ -40,10 +42,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
     }
-  }, []);
-
-  const grid = imagesGrid || [];
-  const labels = rowLabels || [];
+  }, [grid.length, activeColumns.length]);
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
@@ -136,10 +135,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     onColumnsChange(newColumns);
     setEditingCol(null);
   };
-
-  if (grid.length === 0) {
-    return <div className="text-center py-8 text-slate-500">Loading...</div>;
-  }
 
   return (
     <div className="space-y-3">
