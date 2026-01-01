@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Plus, Check, Columns } from 'lucide-react';
+import { Upload, Plus, Check, X } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,25 +27,26 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
-  // Determine active columns - use provided or defaults
-  const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
-  
-  // Get current grid and labels
-  const grid = imagesGrid || [];
-  const labels = rowLabels || [];
-
-  // Initialize grid on mount if empty
+  // Initialize if needed
   React.useEffect(() => {
     if (!imagesGrid || imagesGrid.length === 0) {
+      const defaultCols = getDefaultColumns();
       const defaultGrid = Array(3).fill(null).map(() => 
-        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+        Array(defaultCols.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
       const defaultLabels = ['Area A', 'Area B', 'Area C'];
       
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
+      if (!columns || columns.length === 0) {
+        onColumnsChange(defaultCols);
+      }
     }
-  }, []);
+  }, [testType]);
+
+  const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
+  const grid = imagesGrid || [];
+  const labels = rowLabels || [];
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
@@ -53,10 +54,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     onRowLabelsChange(newLabels);
     setEditingRow(null);
   };
-
-  if (grid.length === 0) {
-    return <div className="text-center py-8 text-slate-500">Loading...</div>;
-  }
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
@@ -66,8 +63,13 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const newGrid = JSON.parse(JSON.stringify(grid));
-      newGrid[rowIndex][colIndex].image_url = file_url;
+      const newGrid = grid.map((row, rIdx) => 
+        row.map((cell, cIdx) => 
+          rIdx === rowIndex && cIdx === colIndex 
+            ? { ...cell, image_url: file_url }
+            : cell
+        )
+      );
       onChange(newGrid);
     } catch (error) {
       console.error('Upload failed:', error);
@@ -77,17 +79,17 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const toggleSelected = (rowIndex, colIndex) => {
-    const newGrid = JSON.parse(JSON.stringify(grid));
-    // First, unselect all
-    newGrid.forEach(row => row.forEach(cell => cell.is_selected = false));
-    // Then select this one
-    newGrid[rowIndex][colIndex].is_selected = !grid[rowIndex][colIndex].is_selected;
+    const newGrid = grid.map((row, rIdx) => 
+      row.map((cell, cIdx) => ({
+        ...cell,
+        is_selected: rIdx === rowIndex && cIdx === colIndex ? !cell.is_selected : false
+      }))
+    );
     onChange(newGrid);
   };
 
   const addColumn = () => {
-    const columnName = newColumnName.trim() || `Col ${activeColumns.length + 1}`;
-    
+    const columnName = newColumnName.trim() || `${activeColumns.length * 10}`;
     const newColumns = [...activeColumns, columnName];
     const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
     
@@ -138,7 +140,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     setEditingCol(null);
   };
 
-  const hasAnyImages = grid.some(row => row.some(cell => cell.image_url));
+  if (grid.length === 0) {
+    return <div className="text-center py-8 text-slate-500">Loading...</div>;
+  }
 
   return (
     <div className="space-y-3">
@@ -197,7 +201,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     title="Remove column"
                   >
-                    <Plus className="w-3 h-3 rotate-45" />
+                    <X className="w-3 h-3" />
                   </button>
                 )}
               </th>
@@ -237,7 +241,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     title="Remove row"
                   >
-                    <Plus className="w-3 h-3 rotate-45" />
+                    <X className="w-3 h-3" />
                   </button>
                 )}
               </td>
