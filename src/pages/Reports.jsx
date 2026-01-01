@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import JSZip from 'jszip';
 
 export default function Reports() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,6 +60,63 @@ export default function Reports() {
       } catch (error) {
         alert('Failed to duplicate report');
       }
+    }
+  };
+
+  const downloadImagesZip = async (report) => {
+    try {
+      const zip = new JSZip();
+      const tests = await base44.entities.FabricTest.filter({ report_id: report.id });
+      
+      // Add fabric images
+      if (report.fabrics) {
+        for (let i = 0; i < report.fabrics.length; i++) {
+          const fabric = report.fabrics[i];
+          if (fabric.images && fabric.images.length > 0) {
+            const fabricFolder = zip.folder(`Fabric_${i + 1}_${fabric.name || 'Unnamed'}`);
+            for (let j = 0; j < fabric.images.length; j++) {
+              const imgUrl = fabric.images[j];
+              const response = await fetch(imgUrl);
+              const blob = await response.blob();
+              fabricFolder.file(`fabric_image_${j + 1}.jpg`, blob);
+            }
+          }
+        }
+      }
+
+      // Add test images
+      for (const test of tests) {
+        const fabricName = test.fabric_name || 'Unnamed';
+        const testType = test.test_type.replace(/_/g, ' ');
+        const testFolder = zip.folder(`Fabric_${test.fabric_index + 1}_${fabricName}/Test_${testType}`);
+        
+        if (test.images_grid && test.images_grid.length > 0) {
+          for (let rowIdx = 0; rowIdx < test.images_grid.length; rowIdx++) {
+            const row = test.images_grid[rowIdx];
+            const rowLabel = test.row_labels?.[rowIdx] || `Row_${rowIdx + 1}`;
+            for (let colIdx = 0; colIdx < row.length; colIdx++) {
+              const cell = row[colIdx];
+              if (cell.image_url) {
+                const colLabel = test.grid_columns?.[colIdx] || `Col_${colIdx + 1}`;
+                const response = await fetch(cell.image_url);
+                const blob = await response.blob();
+                testFolder.file(`${rowLabel}_${colLabel}.jpg`, blob);
+              }
+            }
+          }
+        }
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${report.customer_name || 'Report'}_Images.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to create zip:', error);
+      alert('Failed to download images');
     }
   };
 
@@ -195,10 +253,19 @@ export default function Reports() {
                       </Button>
                     </Link>
                     <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">
-                      <Button variant="outline" size="icon">
+                      <Button variant="outline" size="icon" title="Export PDF">
                         <FileDown className="w-4 h-4" />
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => downloadImagesZip(report)}
+                      className="text-purple-500 hover:text-purple-700 hover:bg-purple-50"
+                      title="Download images as ZIP"
+                    >
+                      <FolderArchive className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="outline"
                       size="icon"
