@@ -32,17 +32,29 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     rows: 3
   };
 
-  // Initialize grid if empty
-  const grid = imagesGrid && imagesGrid.length > 0 
-    ? imagesGrid 
-    : Array(config.rows).fill(null).map(() => 
-        Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-      );
+  // Initialize grid if empty or mismatched
+  let grid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : [];
+  
+  // Initialize with default 3 rows if completely empty
+  if (grid.length === 0) {
+    grid = Array(config.rows).fill(null).map(() => 
+      Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+    );
+  }
 
-  // Initialize row labels
-  const labels = rowLabels && rowLabels.length > 0 
-    ? rowLabels 
-    : ['Area A', 'Area B', 'Area C'];
+  // Initialize row labels - match grid length
+  let labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
+  
+  // Ensure labels match grid rows
+  if (labels.length === 0 && grid.length > 0) {
+    labels = Array(grid.length).fill(null).map((_, i) => `Area ${String.fromCharCode(65 + i)}`);
+  } else if (labels.length < grid.length) {
+    // Add missing labels
+    const additionalLabels = Array(grid.length - labels.length).fill(null).map((_, i) => 
+      `Area ${String.fromCharCode(65 + labels.length + i)}`
+    );
+    labels = [...labels, ...additionalLabels];
+  }
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
@@ -79,44 +91,51 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addColumn = () => {
-    if (!newColumnName.trim()) return;
+    if (!newColumnName.trim()) {
+      alert('Please enter a column name');
+      return;
+    }
     
     const newColumns = [...config.columns, newColumnName.trim()];
-    onColumnsChange(newColumns);
-    
-    // Extend the grid
     const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
-    onChange(newGrid);
     
+    onColumnsChange(newColumns);
+    onChange(newGrid);
     setNewColumnName('');
   };
 
   const addRow = () => {
-    const newGrid = [...grid, Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))];
-    onChange(newGrid);
-    
+    const newRow = Array(config.columns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
+    const newGrid = [...grid, newRow];
     const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
+    
+    onChange(newGrid);
     onRowLabelsChange(newLabels);
   };
 
   const removeColumn = (colIndex) => {
-    if (config.columns.length <= 1) return;
+    if (config.columns.length <= 1) {
+      alert('Cannot remove the last column');
+      return;
+    }
     
     const newColumns = config.columns.filter((_, i) => i !== colIndex);
-    onColumnsChange(newColumns);
-    
-    // Remove from grid
     const newGrid = grid.map(row => row.filter((_, i) => i !== colIndex));
+    
+    onColumnsChange(newColumns);
     onChange(newGrid);
   };
 
   const removeRow = (rowIndex) => {
-    if (grid.length <= 1) return;
+    if (grid.length <= 1) {
+      alert('Cannot remove the last row');
+      return;
+    }
     
     const newGrid = grid.filter((_, i) => i !== rowIndex);
-    onChange(newGrid);
-    
     const newLabels = labels.filter((_, i) => i !== rowIndex);
+    
+    onChange(newGrid);
     onRowLabelsChange(newLabels);
   };
 
