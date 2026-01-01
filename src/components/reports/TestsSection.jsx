@@ -79,163 +79,162 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
           <p>No tests added yet. Click the floating button to add a test.</p>
         </div>
       ) : (
-                <div className="space-y-6">
-                  {tests.map((test, testIndex) => {
-                    if (test.fabricIndex !== fabricIndex) return null;
-                    
-                    return (
-                      <div key={testIndex} className="border border-slate-200 rounded-lg p-6 space-y-4 bg-white">
-                        <div className="flex items-start justify-between mb-4">
-                          <h4 className="text-md font-semibold text-slate-700">Test {testIndex + 1}</h4>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeTest(testIndex)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+        <div className="space-y-6">
+          {tests.map((test, testIndex) => {
+            if (test.fabricIndex !== fabricIndex) return null;
+            
+            return (
+              <div key={testIndex} className="border border-slate-200 rounded-lg p-6 space-y-4 bg-white">
+                <div className="flex items-start justify-between mb-4">
+                  <h4 className="text-md font-semibold text-slate-700">Test {testIndex + 1}</h4>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeTest(testIndex)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-slate-700">Test Type</Label>
-                            <Select
-                              value={test.test_type}
-                              onValueChange={(value) => updateTest(testIndex, 'test_type', value)}
-                            >
-                              <SelectTrigger className="border-slate-300">
-                                <SelectValue placeholder="Select test type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {TEST_TYPES.map((testType) => (
-                                  <SelectItem key={testType.value} value={testType.value}>
-                                    {testType.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-slate-700">Test Type</Label>
+                    <Select
+                      value={test.test_type}
+                      onValueChange={(value) => updateTest(testIndex, 'test_type', value)}
+                    >
+                      <SelectTrigger className="border-slate-300">
+                        <SelectValue placeholder="Select test type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TEST_TYPES.map((testType) => (
+                          <SelectItem key={testType.value} value={testType.value}>
+                            {testType.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700">Result</Label>
+                    <Select
+                      value={test.result}
+                      onValueChange={(value) => updateTest(testIndex, 'result', value)}
+                    >
+                      <SelectTrigger className="border-slate-300">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pass">
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                            Pass
+                          </span>
+                        </SelectItem>
+                        <SelectItem value="fail">
+                          <span className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            Fail
+                          </span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {test.test_type && (
+                  <>
+                    <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                      <h5 className="font-semibold text-sm text-slate-700 mb-2">Test Parameters (Editable)</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {test.test_parameters?.pressure !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Pressure</Label>
+                            <Input
+                              value={test.test_parameters.pressure}
+                              onChange={(e) => updateTestParameter(testIndex, 'pressure', e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder="e.g., 9Kpa"
+                            />
                           </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-slate-700">Result</Label>
-                            <Select
-                              value={test.result}
-                              onValueChange={(value) => updateTest(testIndex, 'result', value)}
-                            >
-                              <SelectTrigger className="border-slate-300">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pass">
-                                  <span className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                    Pass
-                                  </span>
-                                </SelectItem>
-                                <SelectItem value="fail">
-                                  <span className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                                    Fail
-                                  </span>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                        )}
+                        {test.test_parameters?.sample_size !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Sample Size</Label>
+                            <Input
+                              value={test.test_parameters.sample_size}
+                              onChange={(e) => updateTestParameter(testIndex, 'sample_size', e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder="e.g., 38 +- 2mm"
+                            />
                           </div>
-                        </div>
-
-                        {test.test_type && (
-                          <>
-                            <div className="bg-slate-50 rounded-lg p-4 space-y-3">
-                              <h5 className="font-semibold text-sm text-slate-700 mb-2">Test Parameters (Editable)</h5>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {test.test_parameters?.pressure !== undefined && (
-                                  <div className="space-y-1">
-                                    <Label className="text-xs text-slate-600">Pressure</Label>
-                                    <Input
-                                      value={test.test_parameters.pressure}
-                                      onChange={(e) => updateTestParameter(testIndex, 'pressure', e.target.value)}
-                                      className="h-8 text-sm"
-                                      placeholder="e.g., 9Kpa"
-                                    />
-                                  </div>
-                                )}
-                                {test.test_parameters?.sample_size !== undefined && (
-                                  <div className="space-y-1">
-                                    <Label className="text-xs text-slate-600">Sample Size</Label>
-                                    <Input
-                                      value={test.test_parameters.sample_size}
-                                      onChange={(e) => updateTestParameter(testIndex, 'sample_size', e.target.value)}
-                                      className="h-8 text-sm"
-                                      placeholder="e.g., 38 +- 2mm"
-                                    />
-                                  </div>
-                                )}
-                                {test.test_parameters?.revolutions !== undefined && (
-                                  <div className="space-y-1">
-                                    <Label className="text-xs text-slate-600">Revolutions</Label>
-                                    <Input
-                                      value={test.test_parameters.revolutions}
-                                      onChange={(e) => updateTestParameter(testIndex, 'revolutions', e.target.value)}
-                                      className="h-8 text-sm"
-                                      placeholder="e.g., 50 rub revolutions"
-                                    />
-                                  </div>
-                                )}
-                                {test.test_parameters?.checkpoint !== undefined && (
-                                  <div className="space-y-1">
-                                    <Label className="text-xs text-slate-600">Checkpoint</Label>
-                                    <Input
-                                      value={test.test_parameters.checkpoint}
-                                      onChange={(e) => updateTestParameter(testIndex, 'checkpoint', e.target.value)}
-                                      className="h-8 text-sm"
-                                      placeholder="e.g., Checkpoint every 10"
-                                    />
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label className="text-slate-700">Test Images Grid</Label>
-                              <TestImageGrid
-                                testType={test.test_type}
-                                imagesGrid={test.images_grid}
-                                onChange={(grid) => updateTest(testIndex, 'images_grid', grid)}
-                                columns={test.grid_columns}
-                                onColumnsChange={(cols) => updateTest(testIndex, 'grid_columns', cols)}
-                                rowLabels={test.row_labels}
-                                onRowLabelsChange={(labels) => updateTest(testIndex, 'row_labels', labels)}
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label className="text-slate-700">Notes</Label>
-                              <Textarea
-                                value={test.notes || ''}
-                                onChange={(e) => updateTest(testIndex, 'notes', e.target.value)}
-                                placeholder="Additional observations or notes about this test..."
-                                className="border-slate-300 min-h-[80px]"
-                              />
-                            </div>
-                          </>
+                        )}
+                        {test.test_parameters?.revolutions !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Revolutions</Label>
+                            <Input
+                              value={test.test_parameters.revolutions}
+                              onChange={(e) => updateTestParameter(testIndex, 'revolutions', e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder="e.g., 50 rub revolutions"
+                            />
+                          </div>
+                        )}
+                        {test.test_parameters?.checkpoint !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Checkpoint</Label>
+                            <Input
+                              value={test.test_parameters.checkpoint}
+                              onChange={(e) => updateTestParameter(testIndex, 'checkpoint', e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder="e.g., Checkpoint every 10"
+                            />
+                          </div>
                         )}
                       </div>
-                    );
-                    })}
                     </div>
-                    )}
 
-                    {/* Floating Add Test Button */}
-                    <Button
-                    onClick={addTest}
-                    className="fixed bottom-6 right-28 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
-                    size="lg"
-                    >
-                    <Plus className="w-5 h-5" />
-                    Add Test
-                    </Button>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Test Images Grid</Label>
+                      <TestImageGrid
+                        testType={test.test_type}
+                        imagesGrid={test.images_grid}
+                        onChange={(grid) => updateTest(testIndex, 'images_grid', grid)}
+                        columns={test.grid_columns}
+                        onColumnsChange={(cols) => updateTest(testIndex, 'grid_columns', cols)}
+                        rowLabels={test.row_labels}
+                        onRowLabelsChange={(labels) => updateTest(testIndex, 'row_labels', labels)}
+                      />
                     </div>
-                    );
-                    }
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Notes</Label>
+                      <Textarea
+                        value={test.notes || ''}
+                        onChange={(e) => updateTest(testIndex, 'notes', e.target.value)}
+                        placeholder="Additional observations or notes about this test..."
+                        className="border-slate-300 min-h-[80px]"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Floating Add Test Button */}
+      <Button
+        onClick={addTest}
+        className="fixed bottom-6 right-28 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
+        size="lg"
+      >
+        <Plus className="w-5 h-5" />
+        Add Test
+      </Button>
+    </div>
+  );
 }
