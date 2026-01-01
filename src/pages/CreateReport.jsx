@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, FileText, Loader2, FileDown } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Loader2, FileDown, Copy, FolderArchive } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { format } from 'date-fns';
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ScrollToTop from '../components/ScrollToTop';
+import JSZip from 'jszip';
 
 export default function CreateReport() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -173,6 +174,98 @@ export default function CreateReport() {
     }
   };
 
+  const duplicateReport = async () => {
+    if (!reportId) return;
+    if (confirm('Duplicate this report?')) {
+      try {
+        const report = existingReport;
+        const duplicatedReport = await base44.entities.Report.create({
+          ...report,
+          customer_name: `${report.customer_name || 'Untitled'} (Copy)`,
+          status: 'draft',
+          date_completed: new Date().toISOString().split('T')[0],
+        });
+
+        const existingTests = await base44.entities.FabricTest.filter({ report_id: reportId });
+        for (const test of existingTests) {
+          await base44.entities.FabricTest.create({
+            report_id: duplicatedReport.id,
+            fabric_index: test.fabric_index,
+            fabric_name: test.fabric_name,
+            test_type: test.test_type,
+            test_parameters: test.test_parameters,
+            result: test.result,
+            images_grid: test.images_grid,
+            grid_columns: test.grid_columns,
+            row_labels: test.row_labels,
+            notes: test.notes
+          });
+        }
+
+        window.location.href = createPageUrl('CreateReport') + `?id=${duplicatedReport.id}`;
+      } catch (error) {
+        alert('Failed to duplicate report');
+      }
+    }
+  };
+
+  const downloadImagesZip = async () => {
+    if (!reportId) return;
+    try {
+      const zip = new JSZip();
+      const report = existingReport;
+      const fabricTests = await base44.entities.FabricTest.filter({ report_id: reportId });
+      
+      if (report.fabrics) {
+        for (let i = 0; i < report.fabrics.length; i++) {
+          const fabric = report.fabrics[i];
+          if (fabric.images && fabric.images.length > 0) {
+            const fabricFolder = zip.folder(`Fabric_${i + 1}_${fabric.name || 'Unnamed'}`);
+            for (let j = 0; j < fabric.images.length; j++) {
+              const imgUrl = fabric.images[j];
+              const response = await fetch(imgUrl);
+              const blob = await response.blob();
+              fabricFolder.file(`fabric_image_${j + 1}.jpg`, blob);
+            }
+          }
+        }
+      }
+
+      for (const test of fabricTests) {
+        const fabricName = test.fabric_name || 'Unnamed';
+        const testType = test.test_type.replace(/_/g, ' ');
+        const testFolder = zip.folder(`Fabric_${test.fabric_index + 1}_${fabricName}/Test_${testType}`);
+        
+        if (test.images_grid && test.images_grid.length > 0) {
+          for (let rowIdx = 0; rowIdx < test.images_grid.length; rowIdx++) {
+            const row = test.images_grid[rowIdx];
+            const rowLabel = test.row_labels?.[rowIdx] || `Row_${rowIdx + 1}`;
+            for (let colIdx = 0; colIdx < row.length; colIdx++) {
+              const cell = row[colIdx];
+              if (cell.image_url) {
+                const colLabel = test.grid_columns?.[colIdx] || `Col_${colIdx + 1}`;
+                const response = await fetch(cell.image_url);
+                const blob = await response.blob();
+                testFolder.file(`${rowLabel}_${colLabel}.jpg`, blob);
+              }
+            }
+          }
+        }
+      }
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${report.customer_name || 'Report'}_Images.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to create zip:', error);
+      alert('Failed to download images');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-6xl mx-auto p-6">
@@ -198,12 +291,30 @@ export default function CreateReport() {
             </div>
             <div className="flex gap-3">
               {reportId && (
-                <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}`} target="_blank">
-                  <Button variant="outline" className="gap-2">
-                    <FileDown className="w-4 h-4" />
-                    Export PDF
+                <>
+                  <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}`} target="_blank">
+                    <Button variant="outline" className="gap-2">
+                      <FileDown className="w-4 h-4" />
+                      Export PDF
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    onClick={downloadImagesZip}
+                    className="gap-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                  >
+                    <FolderArchive className="w-4 h-4" />
+                    Download ZIP
                   </Button>
-                </Link>
+                  <Button
+                    variant="outline"
+                    onClick={duplicateReport}
+                    className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Duplicate
+                  </Button>
+                </>
               )}
               <Button
                 onClick={() => handleSave('in_progress')}
