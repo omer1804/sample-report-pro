@@ -29,13 +29,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
-  // Initialize grid when needed
+  // Initialize grid when test type is set
   React.useEffect(() => {
     if (!testType) return;
     
-    const needsInit = !imagesGrid || imagesGrid.length === 0;
-    
-    if (needsInit) {
+    // Only initialize if grid is truly empty
+    if (!imagesGrid || imagesGrid.length === 0) {
       const defaultGrid = Array(3).fill(null).map(() => 
         Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
@@ -44,7 +43,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
     }
-  }, [testType, imagesGrid]);
+  }, [testType]);
 
   // Use actual data or empty array
   const grid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
