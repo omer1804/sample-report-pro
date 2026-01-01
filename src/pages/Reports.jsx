@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 export default function Reports() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('-date_completed'); // newest first
+
   const { data: reports = [], isLoading } = useQuery({
-    queryKey: ['reports'],
-    queryFn: () => base44.entities.Report.list('-updated_date'),
+    queryKey: ['reports', sortOrder],
+    queryFn: () => base44.entities.Report.list(sortOrder),
   });
 
   const deleteReport = async (id) => {
@@ -30,6 +35,17 @@ export default function Reports() {
     }
   };
 
+  const filteredReports = reports.filter(report => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      report.project_name?.toLowerCase().includes(query) ||
+      report.application_engineer?.toLowerCase().includes(query) ||
+      report.requestor?.toLowerCase().includes(query) ||
+      report.machine_model?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-7xl mx-auto p-6">
@@ -46,8 +62,30 @@ export default function Reports() {
                 New Report
               </Button>
             </Link>
-          </div>
-        </div>
+            </div>
+
+            {/* Search and Sort */}
+            <div className="flex gap-3 mt-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search by project, engineer, requestor, machine..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="-date_completed">Newest First</SelectItem>
+                <SelectItem value="date_completed">Oldest First</SelectItem>
+              </SelectContent>
+            </Select>
+            </div>
+            </div>
 
         {/* Reports Grid */}
         {isLoading ? (
@@ -75,9 +113,17 @@ export default function Reports() {
               </Link>
             </CardContent>
           </Card>
+        ) : filteredReports.length === 0 ? (
+          <Card className="border-2 border-dashed border-slate-300">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <FileText className="w-16 h-16 text-slate-300 mb-4" />
+              <h3 className="text-xl font-semibold text-slate-700 mb-2">No reports found</h3>
+              <p className="text-slate-500">Try adjusting your search</p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reports.map((report) => (
+            {filteredReports.map((report) => (
               <Card key={report.id} className="hover:shadow-lg transition-shadow border-slate-200">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
@@ -88,15 +134,18 @@ export default function Reports() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    {report.application_engineer} - {format(new Date(report.date_completed), 'MMM dd, yyyy')}
+                    {report.project_name || 'Untitled Project'}
                   </h3>
+                  <p className="text-sm text-slate-500 mb-3">
+                    {format(new Date(report.date_completed), 'MMM dd, yyyy')}
+                  </p>
                   
                   <div className="space-y-1 text-sm text-slate-600 mb-4">
+                    {report.application_engineer && (
+                      <p><span className="font-medium">Engineer:</span> {report.application_engineer}</p>
+                    )}
                     {report.requestor && (
                       <p><span className="font-medium">Requestor:</span> {report.requestor}</p>
-                    )}
-                    {report.machine_model && (
-                      <p><span className="font-medium">Machine:</span> {report.machine_model}</p>
                     )}
                     {report.fabrics && report.fabrics.length > 0 && (
                       <p><span className="font-medium">Fabrics:</span> {report.fabrics.length}</p>

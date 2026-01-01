@@ -18,6 +18,7 @@ export default function CreateReport() {
   const reportId = urlParams.get('id');
 
   const [details, setDetails] = useState({
+    project_name: '',
     date_completed: new Date().toISOString().split('T')[0],
     application_engineer: '',
     report_type: 'sample',
@@ -61,6 +62,7 @@ export default function CreateReport() {
   useEffect(() => {
     if (existingReport) {
       setDetails({
+        project_name: existingReport.project_name || '',
         date_completed: existingReport.date_completed,
         application_engineer: existingReport.application_engineer,
         report_type: existingReport.report_type,
