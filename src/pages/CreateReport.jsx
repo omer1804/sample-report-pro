@@ -225,12 +225,10 @@ export default function CreateReport() {
         </div>
 
         {/* Form Sections */}
-        <div className="space-y-6">
+        <div className="space-y-6 pb-24">
           <ReportDetailsForm details={details} onChange={setDetails} />
-          
-          <FabricsSection fabrics={fabrics} onChange={setFabrics} />
-          
-          <TestsSection fabrics={fabrics} tests={tests} onChange={setTests} />
+
+          <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} />
           
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">

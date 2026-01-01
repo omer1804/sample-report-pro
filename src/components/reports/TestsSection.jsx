@@ -17,12 +17,11 @@ const TEST_TYPES = [
   { value: 'bally_flex_minus20', label: 'Bally Flex -20°C', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } }
 ];
 
-export default function TestsSection({ fabrics, tests, onChange }) {
-  const [selectedFabric, setSelectedFabric] = useState(0);
+export default function TestsSection({ fabricIndex, fabricName, tests, onChange }) {
 
-  const addTest = (fabricIndex) => {
+  const addTest = () => {
     const newTest = {
-      fabricIndex,
+      fabricIndex: fabricIndex,
       test_type: '',
       test_parameters: {},
       result: 'fail',
@@ -63,64 +62,23 @@ export default function TestsSection({ fabrics, tests, onChange }) {
     onChange(updated);
   };
 
-  const fabricTests = tests.filter(t => t.fabricIndex === selectedFabric);
-
-  if (fabrics.length === 0) {
-    return (
-      <Card className="border-slate-200 shadow-sm">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
-          <CardTitle className="flex items-center gap-2 text-slate-800">
-            <FlaskConical className="w-5 h-5 text-slate-600" />
-            Tests
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="text-center py-12 text-slate-500">
-            <FlaskConical className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>Add fabrics first before adding tests.</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const fabricTests = tests.filter(t => t.fabricIndex === fabricIndex);
 
   return (
-    <Card className="border-slate-200 shadow-sm">
-      <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-slate-800">
-            <FlaskConical className="w-5 h-5 text-slate-600" />
-            Tests
-          </CardTitle>
+    <div className="border border-slate-200 rounded-lg p-6 space-y-4 bg-slate-50">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+          <FlaskConical className="w-5 h-5 text-slate-600" />
+          Tests for {fabricName}
+        </h3>
+      </div>
+
+      {fabricTests.length === 0 ? (
+        <div className="text-center py-8 text-slate-500 border-2 border-dashed border-slate-300 rounded-lg bg-white">
+          <FlaskConical className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>No tests added yet. Click the floating button to add a test.</p>
         </div>
-      </CardHeader>
-      <CardContent className="pt-6">
-        <Tabs value={selectedFabric.toString()} onValueChange={(v) => setSelectedFabric(parseInt(v))}>
-          <TabsList className="mb-4">
-            {fabrics.map((fabric, index) => (
-              <TabsTrigger key={index} value={index.toString()}>
-                {fabric.name || `Fabric ${index + 1}`}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {fabrics.map((fabric, fabricIndex) => (
-            <TabsContent key={fabricIndex} value={fabricIndex.toString()} className="space-y-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-slate-700">
-                  Tests for {fabric.name || `Fabric ${fabricIndex + 1}`}
-                </h3>
-                <Button onClick={() => addTest(fabricIndex)} size="sm" variant="outline" className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Test
-                </Button>
-              </div>
-
-              {fabricTests.length === 0 ? (
-                <div className="text-center py-8 text-slate-500 border-2 border-dashed border-slate-200 rounded-lg">
-                  <p>No tests added for this fabric yet.</p>
-                </div>
-              ) : (
+      ) : (
                 <div className="space-y-6">
                   {tests.map((test, testIndex) => {
                     if (test.fabricIndex !== fabricIndex) return null;
@@ -264,13 +222,20 @@ export default function TestsSection({ fabrics, tests, onChange }) {
                         )}
                       </div>
                     );
-                  })}
-                </div>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
-      </CardContent>
-    </Card>
-  );
+                    })}
+                    </div>
+                    )}
+
+                    {/* Floating Add Test Button */}
+                    <Button
+                    onClick={addTest}
+                    className="fixed bottom-6 right-28 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
+                    size="lg"
+                    >
+                    <Plus className="w-5 h-5" />
+                    Add Test
+                    </Button>
+                    </div>
+                    );
+                    }
 }
