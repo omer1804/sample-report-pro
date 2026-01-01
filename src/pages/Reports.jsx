@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,41 @@ export default function Reports() {
     if (confirm('Are you sure you want to delete this report?')) {
       await base44.entities.Report.delete(id);
       window.location.reload();
+    }
+  };
+
+  const duplicateReport = async (report) => {
+    if (confirm('Duplicate this report?')) {
+      try {
+        // Create duplicate report
+        const duplicatedReport = await base44.entities.Report.create({
+          ...report,
+          customer_name: `${report.customer_name || 'Untitled'} (Copy)`,
+          status: 'draft',
+          date_completed: new Date().toISOString().split('T')[0],
+        });
+
+        // Duplicate tests
+        const tests = await base44.entities.FabricTest.filter({ report_id: report.id });
+        for (const test of tests) {
+          await base44.entities.FabricTest.create({
+            report_id: duplicatedReport.id,
+            fabric_index: test.fabric_index,
+            fabric_name: test.fabric_name,
+            test_type: test.test_type,
+            test_parameters: test.test_parameters,
+            result: test.result,
+            images_grid: test.images_grid,
+            grid_columns: test.grid_columns,
+            row_labels: test.row_labels,
+            notes: test.notes
+          });
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert('Failed to duplicate report');
+      }
     }
   };
 
@@ -164,6 +199,15 @@ export default function Reports() {
                         <FileDown className="w-4 h-4" />
                       </Button>
                     </Link>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => duplicateReport(report)}
+                      className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                      title="Duplicate report"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
