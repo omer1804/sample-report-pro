@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import ReportDetailsForm from '../components/reports/ReportDetailsForm';
 import FabricsSection from '../components/reports/FabricsSection';
 import TestsSection from '../components/reports/TestsSection';
+import TestSummaryTable from '../components/reports/TestSummaryTable';
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ export default function CreateReport() {
   const reportId = urlParams.get('id');
 
   const [details, setDetails] = useState({
-    project_name: '',
+    customer_name: '',
     date_completed: new Date().toISOString().split('T')[0],
     application_engineer: '',
     report_type: 'sample',
@@ -62,7 +63,7 @@ export default function CreateReport() {
   useEffect(() => {
     if (existingReport) {
       setDetails({
-        project_name: existingReport.project_name || '',
+        customer_name: existingReport.customer_name || '',
         date_completed: existingReport.date_completed,
         application_engineer: existingReport.application_engineer,
         report_type: existingReport.report_type,
@@ -229,7 +230,9 @@ export default function CreateReport() {
           <ReportDetailsForm details={details} onChange={setDetails} />
 
           <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} />
-          
+
+          <TestSummaryTable fabrics={fabrics} tests={tests} onTestResultChange={setTests} />
+
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
               <CardTitle className="text-slate-800">Conclusion</CardTitle>

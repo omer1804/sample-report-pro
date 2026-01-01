@@ -39,7 +39,7 @@ export default function Reports() {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
-      report.project_name?.toLowerCase().includes(query) ||
+      report.customer_name?.toLowerCase().includes(query) ||
       report.application_engineer?.toLowerCase().includes(query) ||
       report.requestor?.toLowerCase().includes(query) ||
       report.machine_model?.toLowerCase().includes(query)
@@ -69,7 +69,7 @@ export default function Reports() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search by project, engineer, requestor, machine..."
+                placeholder="Search by customer, engineer, requestor, machine..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -134,7 +134,7 @@ export default function Reports() {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    {report.project_name || 'Untitled Project'}
+                    {report.customer_name || 'Untitled Customer'}
                   </h3>
                   <p className="text-sm text-slate-500 mb-3">
                     {format(new Date(report.date_completed), 'MMM dd, yyyy')}
