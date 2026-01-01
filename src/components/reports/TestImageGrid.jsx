@@ -8,6 +8,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   const [uploading, setUploading] = useState('');
   const [newColumnName, setNewColumnName] = useState('');
   const [editingRow, setEditingRow] = useState(null);
+  const [editingCol, setEditingCol] = useState(null);
 
   const getDefaultColumns = () => {
     switch (testType) {
@@ -109,10 +110,43 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     onChange(newGrid);
   };
 
+  const removeRow = (rowIndex) => {
+    if (grid.length <= 1) return;
+    
+    const newGrid = grid.filter((_, i) => i !== rowIndex);
+    onChange(newGrid);
+    
+    const newLabels = labels.filter((_, i) => i !== rowIndex);
+    onRowLabelsChange(newLabels);
+  };
+
+  const updateColumnName = (colIndex, newName) => {
+    const newColumns = [...config.columns];
+    newColumns[colIndex] = newName;
+    onColumnsChange(newColumns);
+    setEditingCol(null);
+  };
+
   const hasAnyImages = grid.some(row => row.some(cell => cell.image_url));
 
   return (
     <div className="space-y-3">
+      {/* Add Column Section */}
+      <div className="flex gap-2 items-center bg-blue-50 p-3 rounded-lg border border-blue-200">
+        <Input
+          value={newColumnName}
+          onChange={(e) => setNewColumnName(e.target.value)}
+          placeholder="Add column (e.g., 60, 70, 80...)"
+          className="bg-white h-9"
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') addColumn();
+          }}
+        />
+        <Button onClick={addColumn} size="sm" className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add Column
+        </Button>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
@@ -123,7 +157,26 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
             </th>
             {config.columns.map((col, idx) => (
               <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
-                {col}
+                {editingCol === idx ? (
+                  <Input
+                    value={col}
+                    onChange={(e) => updateColumnName(idx, e.target.value)}
+                    onBlur={() => setEditingCol(null)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') setEditingCol(null);
+                    }}
+                    className="h-7 text-sm text-center"
+                    autoFocus
+                  />
+                ) : (
+                  <div 
+                    onClick={() => setEditingCol(idx)}
+                    className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded"
+                    title="Click to edit"
+                  >
+                    {col}
+                  </div>
+                )}
                 {idx > 0 && (
                   <button
                     onClick={() => removeColumn(idx)}
@@ -160,6 +213,15 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                   >
                     {labels[rowIndex]}
                   </div>
+                )}
+                {grid.length > 1 && (
+                  <button
+                    onClick={() => removeRow(rowIndex)}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove row"
+                  >
+                    <Plus className="w-3 h-3 rotate-45" />
+                  </button>
                 )}
               </td>
               {row.map((cell, colIndex) => (
