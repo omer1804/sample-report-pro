@@ -29,10 +29,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
-  // Initialize if needed
+  // Initialize grid on mount or when test type changes
   React.useEffect(() => {
-    const needsInit = !imagesGrid || imagesGrid.length === 0 || 
-                      (imagesGrid.length > 0 && imagesGrid[0] && imagesGrid[0].length !== activeColumns.length);
+    if (!testType) return; // Don't initialize until test type is selected
+    
+    const needsInit = !imagesGrid || imagesGrid.length === 0;
     
     if (needsInit) {
       const defaultGrid = Array(3).fill(null).map(() => 
@@ -43,10 +44,10 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
     }
-  }, [testType, activeColumns.length]);
+  }, [testType]);
 
-  const grid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : [];
-  const labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
+  const grid = imagesGrid || [];
+  const labels = rowLabels || [];
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
