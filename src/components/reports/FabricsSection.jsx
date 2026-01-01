@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, Upload, Image as ImageIcon, FlaskConical } from 'lucide-react';
+import { Plus, Trash2, Upload, Image as ImageIcon, FlaskConical, Copy } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import TestsSection from './TestsSection';
 
@@ -25,6 +25,32 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
 
   const removeFabric = (index) => {
     onChange(fabrics.filter((_, i) => i !== index));
+  };
+
+  const duplicateFabric = (index) => {
+    const fabricToDuplicate = fabrics[index];
+    const duplicated = {
+      ...fabricToDuplicate,
+      name: `${fabricToDuplicate.name} (Copy)`
+    };
+    const newFabrics = [...fabrics];
+    newFabrics.splice(index + 1, 0, duplicated);
+    onChange(newFabrics);
+    setSelectedFabric(index + 1);
+
+    // Duplicate tests for this fabric
+    const fabricTests = tests.filter(t => t.fabricIndex === index);
+    const duplicatedTests = fabricTests.map(test => ({
+      ...test,
+      fabricIndex: index + 1
+    }));
+    
+    // Update fabric indices for tests after the duplicated fabric
+    const updatedTests = tests.map(test => 
+      test.fabricIndex > index ? { ...test, fabricIndex: test.fabricIndex + 1 } : test
+    );
+    
+    onTestsChange([...updatedTests, ...duplicatedTests]);
   };
 
   const updateFabric = (index, field, value) => {
@@ -88,14 +114,25 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                   <div className="border border-slate-200 rounded-lg p-6 space-y-4 bg-white">
                     <div className="flex items-start justify-between">
                       <h3 className="text-lg font-semibold text-slate-800">Fabric Details</h3>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeFabric(index)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => duplicateFabric(index)}
+                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          title="Duplicate this fabric and its tests"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeFabric(index)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="space-y-4">

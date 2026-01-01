@@ -3,12 +3,14 @@ import { Upload, Plus, Check, X } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ImageViewerModal from './ImageViewerModal';
 
 export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange }) {
   const [uploading, setUploading] = useState('');
   const [newColumnName, setNewColumnName] = useState('');
   const [editingRow, setEditingRow] = useState(null);
   const [editingCol, setEditingCol] = useState(null);
+  const [viewerImage, setViewerImage] = useState(null);
 
   const getDefaultColumns = () => {
     switch (testType) {
@@ -261,8 +263,17 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                         src={cell.image_url} 
                         alt={`Test ${rowIndex}-${colIndex}`}
                         className="w-full h-full object-cover rounded cursor-pointer"
-                        onClick={() => toggleSelected(rowIndex, colIndex)}
+                        onClick={() => setViewerImage(cell.image_url)}
                       />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelected(rowIndex, colIndex);
+                        }}
+                        className="absolute top-1 left-1 bg-slate-800/70 text-white rounded px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        {cell.is_selected ? '✓ Selected' : 'Select as fail point'}
+                      </button>
                       {cell.is_selected && (
                         <div className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
                           <Check className="w-4 h-4" />
@@ -311,9 +322,15 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
         <p className="text-xs text-slate-700">
-          <strong>Tip:</strong> Click on an image to highlight it with a red border. This indicates the critical point where the test failed.
+          <strong>Tip:</strong> Click on an image to view it larger with zoom. Use "Select as fail point" to mark the critical failure point with a red border.
         </p>
-      </div>
-    </div>
-  );
-}
+        </div>
+        </div>
+
+        <ImageViewerModal 
+        imageUrl={viewerImage} 
+        isOpen={!!viewerImage} 
+        onClose={() => setViewerImage(null)} 
+        />
+        );
+        }
