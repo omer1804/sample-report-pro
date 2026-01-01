@@ -27,39 +27,25 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
-  // Determine columns config
-  const activeColumns = columns && columns.length > 0 ? columns : getDefaultColumns();
+  // Determine active columns - use provided or defaults
+  const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
-  // Initialize or sync grid
+  // Get current grid and labels
+  const grid = imagesGrid || [];
+  const labels = rowLabels || [];
+
+  // Initialize grid on mount if empty
   React.useEffect(() => {
-    const needsInit = !imagesGrid || imagesGrid.length === 0;
-    const needsSync = imagesGrid && imagesGrid.length > 0 && imagesGrid[0] && imagesGrid[0].length !== activeColumns.length;
-    
-    if (needsInit) {
-      // Create default 3x grid
-      const newGrid = Array(3).fill(null).map(() => 
+    if (!imagesGrid || imagesGrid.length === 0) {
+      const defaultGrid = Array(3).fill(null).map(() => 
         Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
-      onChange(newGrid);
+      const defaultLabels = ['Area A', 'Area B', 'Area C'];
       
-      const newLabels = ['Area A', 'Area B', 'Area C'];
-      onRowLabelsChange(newLabels);
-    } else if (needsSync) {
-      // Sync existing grid with column count
-      const syncedGrid = imagesGrid.map(row => {
-        if (row.length === activeColumns.length) return row;
-        if (row.length > activeColumns.length) return row.slice(0, activeColumns.length);
-        
-        const paddingNeeded = activeColumns.length - row.length;
-        const padding = Array(paddingNeeded).fill(null).map(() => ({ image_url: '', is_selected: false }));
-        return [...row, ...padding];
-      });
-      onChange(syncedGrid);
+      onChange(defaultGrid);
+      onRowLabelsChange(defaultLabels);
     }
-  }, [activeColumns.length, testType]);
-
-  const grid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : [];
-  const labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
+  }, []);
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
@@ -69,7 +55,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   if (grid.length === 0) {
-    return <div className="text-center py-8 text-slate-500">Initializing grid...</div>;
+    return <div className="text-center py-8 text-slate-500">Loading...</div>;
   }
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
@@ -100,12 +86,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addColumn = () => {
-    if (!newColumnName.trim()) {
-      alert('Please enter a column name');
-      return;
-    }
+    const columnName = newColumnName.trim() || `Col ${activeColumns.length + 1}`;
     
-    const newColumns = [...activeColumns, newColumnName.trim()];
+    const newColumns = [...activeColumns, columnName];
     const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
     
     onColumnsChange(newColumns);
@@ -164,7 +147,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
         <Input
           value={newColumnName}
           onChange={(e) => setNewColumnName(e.target.value)}
-          placeholder="Add column (e.g., 60, 70, 80...)"
+          placeholder="Column name (optional, e.g., 60, 70...)"
           className="bg-white h-9"
           onKeyPress={(e) => {
             if (e.key === 'Enter') addColumn();
