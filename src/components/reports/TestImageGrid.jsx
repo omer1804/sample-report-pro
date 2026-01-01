@@ -27,9 +27,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
-  // Initialize if needed
+  // Initialize only once on mount if empty
+  const [initialized, setInitialized] = React.useState(false);
+  
   React.useEffect(() => {
-    if (!imagesGrid || imagesGrid.length === 0) {
+    if (!initialized && (!imagesGrid || imagesGrid.length === 0)) {
       const defaultCols = getDefaultColumns();
       const defaultGrid = Array(3).fill(null).map(() => 
         Array(defaultCols.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
@@ -41,8 +43,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       if (!columns || columns.length === 0) {
         onColumnsChange(defaultCols);
       }
+      setInitialized(true);
     }
-  }, [testType]);
+  }, [initialized]);
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   const grid = imagesGrid || [];
