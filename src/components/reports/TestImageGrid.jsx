@@ -27,6 +27,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
+  const getDefaultGrid = (colCount) => {
+    return Array(3).fill(null).map(() => 
+      Array(colCount).fill(null).map(() => ({ image_url: '', is_selected: false }))
+    );
+  };
+
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
   // Initialize if needed
@@ -35,18 +41,16 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                       (imagesGrid.length > 0 && imagesGrid[0] && imagesGrid[0].length !== activeColumns.length);
     
     if (needsInit) {
-      const defaultGrid = Array(3).fill(null).map(() => 
-        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-      );
+      const defaultGrid = getDefaultGrid(activeColumns.length);
       const defaultLabels = ['Area A', 'Area B', 'Area C'];
       
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
     }
-  }, [testType, activeColumns.length]);
+  }, []);
 
-  const grid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : [];
-  const labels = rowLabels && rowLabels.length > 0 ? rowLabels : [];
+  const grid = imagesGrid || [];
+  const labels = rowLabels || [];
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...labels];
