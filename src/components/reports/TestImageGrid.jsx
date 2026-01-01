@@ -89,7 +89,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addColumn = () => {
-    if (!grid || grid.length === 0) return;
     const columnName = newColumnName.trim() || `${activeColumns.length * 10}`;
     const newColumns = [...activeColumns, columnName];
     const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
@@ -100,7 +99,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
-    if (!grid || activeColumns.length === 0) return;
     const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
     const newGrid = [...grid, newRow];
     const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
@@ -142,9 +140,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     setEditingCol(null);
   };
 
-  // Don't show loading - let initialization happen first
-  if (!grid || grid.length === 0) {
-    return null;
+  if (grid.length === 0) {
+    return <div className="text-center py-8 text-slate-500">Loading...</div>;
   }
 
   return (
