@@ -312,7 +312,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                     </label>
                   )}
                 </td>
-              ))}
+                );
+              })}
             </tr>
           ))}
         </tbody>
