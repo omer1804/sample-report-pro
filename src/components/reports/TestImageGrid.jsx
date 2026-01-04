@@ -46,19 +46,26 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   }, [testType]);
 
-  // Always show grid when testType exists
-  const grid = (imagesGrid && imagesGrid.length > 0) 
-    ? imagesGrid 
-    : (testType ? Array(3).fill(null).map(() => 
+  // Use actual props or create defaults
+  const grid = React.useMemo(() => {
+    if (imagesGrid && imagesGrid.length > 0) return imagesGrid;
+    if (testType) {
+      return Array(3).fill(null).map(() => 
         Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-      ) : []);
+      );
+    }
+    return [];
+  }, [imagesGrid, testType, activeColumns.length]);
   
-  const labels = (rowLabels && rowLabels.length > 0) 
-    ? rowLabels 
-    : (testType ? ['Area A', 'Area B', 'Area C'] : []);
+  const labels = React.useMemo(() => {
+    if (rowLabels && rowLabels.length > 0) return rowLabels;
+    if (testType) return ['Area A', 'Area B', 'Area C'];
+    return [];
+  }, [rowLabels, testType]);
 
   const updateRowLabel = (rowIndex, newLabel) => {
-    const newLabels = [...labels];
+    const currentLabels = rowLabels && rowLabels.length > 0 ? rowLabels : labels;
+    const newLabels = [...currentLabels];
     newLabels[rowIndex] = newLabel;
     onRowLabelsChange(newLabels);
     setEditingRow(null);
@@ -72,7 +79,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const newGrid = grid.map((row, rIdx) => 
+      const currentGrid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : grid;
+      const newGrid = currentGrid.map((row, rIdx) => 
         row.map((cell, cIdx) => 
           rIdx === rowIndex && cIdx === colIndex 
             ? { ...cell, image_url: file_url }
@@ -88,7 +96,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const toggleSelected = (rowIndex, colIndex) => {
-    const newGrid = grid.map((row, rIdx) => 
+    const currentGrid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : grid;
+    const newGrid = currentGrid.map((row, rIdx) => 
       row.map((cell, cIdx) => ({
         ...cell,
         is_selected: rIdx === rowIndex && cIdx === colIndex ? !cell.is_selected : false
@@ -131,10 +140,10 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       return;
     }
     
+    const currentGrid = imagesGrid && imagesGrid.length > 0 ? imagesGrid : grid;
     const newColumns = activeColumns.filter((_, i) => i !== colIndex);
-    const newGrid = grid.map(row => row.filter((_, i) => i !== colIndex));
+    const newGrid = currentGrid.map(row => row.filter((_, i) => i !== colIndex));
     
-    // Update grid first, then columns to ensure consistency
     onChange(newGrid);
     onColumnsChange(newColumns);
   };
@@ -156,7 +165,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const updateColumnName = (colIndex, newName) => {
-    const newColumns = [...activeColumns];
+    const currentColumns = columns && columns.length > 0 ? columns : activeColumns;
+    const newColumns = [...currentColumns];
     newColumns[colIndex] = newName;
     onColumnsChange(newColumns);
     setEditingCol(null);
