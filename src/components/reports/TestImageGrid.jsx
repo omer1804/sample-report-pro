@@ -256,7 +256,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                   </button>
                 )}
               </td>
-              {row.map((cell, colIndex) => (
+              {activeColumns.map((_, colIndex) => {
+                const cell = row[colIndex] || { image_url: '', is_selected: false };
+                return (
                 <td 
                   key={colIndex} 
                   className={`border ${cell.is_selected ? 'border-red-500 border-4' : 'border-slate-300'} p-1 relative`}
