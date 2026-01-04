@@ -122,7 +122,8 @@ export default function CreateReport() {
         ...details,
         fabrics,
         conclusion,
-        status
+        status,
+        last_saved: new Date().toISOString()
       };
 
       let savedReportId = reportId;

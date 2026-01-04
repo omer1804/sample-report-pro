@@ -59,6 +59,7 @@ export default function ViewReportPDF() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             {report.customer_name && <div><strong>Customer:</strong> {report.customer_name}</div>}
             <div><strong>Date Completed:</strong> {format(new Date(report.date_completed), 'dd/MM/yy')}</div>
+            {report.last_saved && <div><strong>Last Saved:</strong> {format(new Date(report.last_saved), 'dd/MM/yy HH:mm')}</div>}
             <div><strong>Application Engineer:</strong> {report.application_engineer}</div>
             <div><strong>Type:</strong> {report.report_type === 'demo' ? '☐ Demo ☒ Sample' : '☒ Demo ☐ Sample'}</div>
             <div><strong>Requestor:</strong> {report.requestor || '-'}</div>
