@@ -8,10 +8,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Trash2, Upload, Image as ImageIcon, FlaskConical, Copy } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import TestsSection from './TestsSection';
+import ImageViewerModal from './ImageViewerModal';
 
 export default function FabricsSection({ fabrics, onChange, tests, onTestsChange }) {
   const [uploading, setUploading] = useState({});
   const [selectedFabric, setSelectedFabric] = useState(0);
+  const [viewerImage, setViewerImage] = useState(null);
 
   const addFabric = () => {
     const newIndex = fabrics.length;
@@ -198,10 +200,14 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <img
                                 src={imageUrl}
                                 alt={`Fabric ${index + 1} - ${imgIndex + 1}`}
-                                className="w-24 h-24 object-cover rounded-lg border-2 border-slate-200"
+                                className="w-24 h-24 object-cover rounded-lg border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-colors"
+                                onClick={() => setViewerImage(imageUrl)}
                               />
                               <button
-                                onClick={() => removeImage(index, imgIndex)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeImage(index, imgIndex);
+                                }}
                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -250,6 +256,12 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
         <Plus className="w-5 h-5" />
         Add Fabric
       </Button>
+
+      <ImageViewerModal 
+        imageUrl={viewerImage} 
+        isOpen={!!viewerImage} 
+        onClose={() => setViewerImage(null)} 
+      />
     </>
   );
 }
