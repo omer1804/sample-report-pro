@@ -134,7 +134,11 @@ export default function ViewReportPDF() {
 
         {/* Tests */}
         {report.fabrics?.map((fabric, fabricIdx) => {
-          const fabricTests = tests.filter(t => t.fabric_index === fabricIdx);
+          const fabricTests = tests.filter(t => t.fabric_index === fabricIdx).sort((a, b) => {
+            const aId = a.id || '';
+            const bId = b.id || '';
+            return aId.localeCompare(bId);
+          });
           
           return fabricTests.map((test, testIdx) => {
             const columns = test.grid_columns && test.grid_columns.length > 0 
