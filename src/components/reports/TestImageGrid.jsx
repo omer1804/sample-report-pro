@@ -119,13 +119,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
-    // Always use actual data from props
-    const currentGrid = imagesGrid || [];
-    const currentLabels = rowLabels || [];
-    
     const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
-    const newGrid = [...currentGrid, newRow];
-    const newLabels = [...currentLabels, `Area ${String.fromCharCode(65 + currentLabels.length)}`];
+    const newGrid = [...grid, newRow];
+    const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
@@ -150,21 +146,17 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const removeRow = (rowIndex) => {
-    // Always use actual data from props
-    const currentGrid = imagesGrid || [];
-    const currentLabels = rowLabels || [];
-    
-    if (currentGrid.length <= 1) {
+    if (grid.length <= 1) {
       alert('Cannot remove the last row');
       return;
     }
     
-    if (!confirm(`Remove row "${currentLabels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) {
+    if (!confirm(`Remove row "${labels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) {
       return;
     }
     
-    const newGrid = currentGrid.filter((_, i) => i !== rowIndex);
-    const newLabels = currentLabels.filter((_, i) => i !== rowIndex);
+    const newGrid = grid.filter((_, i) => i !== rowIndex);
+    const newLabels = labels.filter((_, i) => i !== rowIndex);
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
