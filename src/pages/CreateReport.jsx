@@ -19,6 +19,7 @@ import JSZip from 'jszip';
 export default function CreateReport() {
   const urlParams = new URLSearchParams(window.location.search);
   const reportId = urlParams.get('id');
+  const isViewMode = urlParams.get('view') === 'true';
 
   const [details, setDetails] = useState({
     customer_name: '',
@@ -313,32 +314,36 @@ export default function CreateReport() {
                   </Button>
                 </>
               )}
-              <Button
-                onClick={() => handleSave('in_progress')}
-                variant="outline"
-                disabled={saving}
-                className="gap-2"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save Draft
-              </Button>
-              <Button
-                onClick={() => handleSave('completed')}
-                disabled={saving}
-                className="bg-green-600 hover:bg-green-700 gap-2"
-              >
-                <FileText className="w-4 h-4" />
-                Complete Report
-              </Button>
+              {!isViewMode && (
+                <>
+                  <Button
+                    onClick={() => handleSave('in_progress')}
+                    variant="outline"
+                    disabled={saving}
+                    className="gap-2"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save Draft
+                  </Button>
+                  <Button
+                    onClick={() => handleSave('completed')}
+                    disabled={saving}
+                    className="bg-green-600 hover:bg-green-700 gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Complete Report
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         {/* Form Sections */}
         <div className="space-y-6 pb-24">
-          <ReportDetailsForm details={details} onChange={setDetails} />
+          <ReportDetailsForm details={details} onChange={setDetails} readOnly={isViewMode} />
 
-          <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} />
+          <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} readOnly={isViewMode} />
 
           <TestSummaryTable fabrics={fabrics} tests={tests} onTestResultChange={setTests} />
 
@@ -354,6 +359,7 @@ export default function CreateReport() {
                   onChange={(e) => setConclusion(e.target.value)}
                   placeholder="Enter conclusion and recommendations..."
                   className="border-slate-300 min-h-[120px]"
+                  readOnly={isViewMode}
                 />
               </div>
             </CardContent>

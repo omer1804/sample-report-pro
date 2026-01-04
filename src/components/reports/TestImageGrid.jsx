@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ImageViewerModal from './ImageViewerModal';
 
-export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange }) {
+export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange, readOnly = false }) {
   const [uploading, setUploading] = useState('');
   const [editingRow, setEditingRow] = useState(null);
   const [editingCol, setEditingCol] = useState(null);
@@ -176,7 +176,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
             </th>
             {activeColumns.map((col, idx) => (
               <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
-                {editingCol === idx ? (
+                {editingCol === idx && !readOnly ? (
                   <Input
                     value={col}
                     onChange={(e) => updateColumnName(idx, e.target.value)}
@@ -189,14 +189,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                   />
                 ) : (
                   <div 
-                    onClick={() => setEditingCol(idx)}
-                    className="cursor-pointer hover:bg-slate-200 px-2 py-1 rounded"
-                    title="Click to edit"
+                    onClick={() => !readOnly && setEditingCol(idx)}
+                    className={readOnly ? "" : "cursor-pointer hover:bg-slate-200 px-2 py-1 rounded"}
+                    title={readOnly ? "" : "Click to edit"}
                   >
                     {col}
                   </div>
                 )}
-                {idx > 0 && editingCol !== idx && (
+                {idx > 0 && editingCol !== idx && !readOnly && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -216,7 +216,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
           {grid.map((row, rowIndex) => (
             <tr key={rowIndex}>
               <td className="border border-slate-300 p-2 bg-slate-50 font-medium text-slate-700 text-sm relative group">
-                {editingRow === rowIndex ? (
+                {editingRow === rowIndex && !readOnly ? (
                   <Input
                     value={labels[rowIndex]}
                     onChange={(e) => updateRowLabel(rowIndex, e.target.value)}
@@ -229,14 +229,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                   />
                 ) : (
                   <div 
-                    onClick={() => setEditingRow(rowIndex)}
-                    className="cursor-pointer hover:bg-slate-100 px-2 py-1 rounded"
-                    title="Click to edit"
+                    onClick={() => !readOnly && setEditingRow(rowIndex)}
+                    className={readOnly ? "" : "cursor-pointer hover:bg-slate-100 px-2 py-1 rounded"}
+                    title={readOnly ? "" : "Click to edit"}
                   >
                     {labels[rowIndex]}
                   </div>
                 )}
-                {grid.length > 1 && editingRow !== rowIndex && (
+                {grid.length > 1 && editingRow !== rowIndex && !readOnly && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -265,30 +265,34 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                           className="w-full h-full object-cover rounded cursor-pointer"
                           onClick={() => setViewerImage(cell.image_url)}
                         />
-                        <div className="absolute top-1 left-1 flex gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleSelected(rowIndex, colIndex);
-                            }}
-                            className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs hover:opacity-90 transition-opacity`}
-                            title={cell.is_selected ? 'Unmark as fail point' : 'Mark as fail point'}
-                          >
-                            {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
-                          </button>
-                        </div>
-                        <label className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleImageUpload(rowIndex, colIndex, e)}
-                            className="hidden"
-                            disabled={uploading === `${rowIndex}-${colIndex}`}
-                          />
-                          <Plus className="w-3 h-3" />
-                        </label>
+                        {!readOnly && (
+                          <>
+                            <div className="absolute top-1 left-1 flex gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSelected(rowIndex, colIndex);
+                                }}
+                                className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs hover:opacity-90 transition-opacity`}
+                                title={cell.is_selected ? 'Unmark as fail point' : 'Mark as fail point'}
+                              >
+                                {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
+                              </button>
+                            </div>
+                            <label className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(rowIndex, colIndex, e)}
+                                className="hidden"
+                                disabled={uploading === `${rowIndex}-${colIndex}`}
+                              />
+                              <Plus className="w-3 h-3" />
+                            </label>
+                          </>
+                        )}
                       </div>
-                    ) : (
+                    ) : !readOnly ? (
                       <label className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-300 rounded cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
                         <input
                           type="file"
@@ -303,7 +307,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                           <Upload className="w-6 h-6 text-slate-400" />
                         )}
                       </label>
-                    )}
+                    ) : null}
                   </td>
                 );
               })}
@@ -313,16 +317,18 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       </table>
 
       {/* Add Buttons */}
-      <div className="flex gap-2">
-        <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Column
-        </Button>
-        <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Sample Area
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="flex gap-2">
+          <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Column
+          </Button>
+          <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Sample Area
+          </Button>
+        </div>
+      )}
       </div>
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">

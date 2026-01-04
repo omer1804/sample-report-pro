@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -251,10 +251,15 @@ export default function Reports() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}`} className="flex-1">
+                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}&view=true`} className="flex-1">
                       <Button variant="outline" className="w-full gap-2">
                         <Eye className="w-4 h-4" />
-                        Edit
+                        View
+                      </Button>
+                    </Link>
+                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}`}>
+                      <Button variant="outline" size="icon" title="Edit Report">
+                        <Pencil className="w-4 h-4" />
                       </Button>
                     </Link>
                     <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">

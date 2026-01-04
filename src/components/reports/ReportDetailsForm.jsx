@@ -4,8 +4,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
-export default function ReportDetailsForm({ details, onChange }) {
+export default function ReportDetailsForm({ details, onChange, readOnly = false }) {
   const handleChange = (field, value) => {
+    if (readOnly) return;
     onChange({ ...details, [field]: value });
   };
 
@@ -27,6 +28,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               onChange={(e) => handleChange('customer_name', e.target.value)}
               placeholder="Enter customer name"
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -38,6 +40,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               onChange={(e) => handleChange('task_number', e.target.value)}
               placeholder="Enter task number"
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -49,6 +52,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               value={details.date_completed || ''}
               onChange={(e) => handleChange('date_completed', e.target.value)}
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -60,6 +64,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               onChange={(e) => handleChange('application_engineer', e.target.value)}
               placeholder="Engineer name"
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -74,6 +79,7 @@ export default function ReportDetailsForm({ details, onChange }) {
                   checked={details.report_type === 'demo'}
                   onChange={(e) => handleChange('report_type', e.target.value)}
                   className="w-4 h-4 text-blue-600"
+                  disabled={readOnly}
                 />
                 <span className="text-sm text-slate-700">Demo</span>
               </label>
@@ -85,6 +91,7 @@ export default function ReportDetailsForm({ details, onChange }) {
                   checked={details.report_type === 'sample'}
                   onChange={(e) => handleChange('report_type', e.target.value)}
                   className="w-4 h-4 text-blue-600"
+                  disabled={readOnly}
                 />
                 <span className="text-sm text-slate-700">Sample</span>
               </label>
@@ -99,6 +106,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               onChange={(e) => handleChange('requestor', e.target.value)}
               placeholder="Requestor name"
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -110,6 +118,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               onChange={(e) => handleChange('machine_model', e.target.value)}
               placeholder="e.g., Atlas Max"
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -121,6 +130,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               onChange={(e) => handleChange('ink_version', e.target.value)}
               placeholder="e.g., Robusto U10"
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -131,6 +141,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               value={details.setup || ''}
               onChange={(e) => handleChange('setup', e.target.value)}
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 
@@ -141,6 +152,7 @@ export default function ReportDetailsForm({ details, onChange }) {
               value={details.resolution || ''}
               onChange={(e) => handleChange('resolution', e.target.value)}
               className="border-slate-300"
+              readOnly={readOnly}
             />
           </div>
 

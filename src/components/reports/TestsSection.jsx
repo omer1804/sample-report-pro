@@ -17,7 +17,7 @@ const TEST_TYPES = [
   { value: 'bally_flex_minus20', label: 'Bally Flex -20°C', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } }
 ];
 
-export default function TestsSection({ fabricIndex, fabricName, tests, onChange }) {
+export default function TestsSection({ fabricIndex, fabricName, tests, onChange, readOnly = false }) {
 
   const addTest = () => {
     const newTest = {
@@ -89,14 +89,16 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
               <div key={testIndex} className="border border-slate-200 rounded-lg p-6 space-y-4 bg-white">
                 <div className="flex items-start justify-between mb-4">
                   <h4 className="text-md font-semibold text-slate-700">Test {fabricIndex + 1}.{fabricTestIndex}</h4>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removeTest(testIndex)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeTest(testIndex)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -105,6 +107,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                     <Select
                       value={test.test_type}
                       onValueChange={(value) => updateTest(testIndex, 'test_type', value)}
+                      disabled={readOnly}
                     >
                       <SelectTrigger className="border-slate-300">
                         <SelectValue placeholder="Select test type" />
@@ -124,6 +127,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                     <Select
                       value={test.result}
                       onValueChange={(value) => updateTest(testIndex, 'result', value)}
+                      disabled={readOnly}
                     >
                       <SelectTrigger className="border-slate-300">
                         <SelectValue />
@@ -159,6 +163,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                               onChange={(e) => updateTestParameter(testIndex, 'pressure', e.target.value)}
                               className="h-8 text-sm"
                               placeholder="e.g., 9Kpa"
+                              readOnly={readOnly}
                             />
                           </div>
                         )}
@@ -170,6 +175,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                               onChange={(e) => updateTestParameter(testIndex, 'sample_size', e.target.value)}
                               className="h-8 text-sm"
                               placeholder="e.g., 38 +- 2mm"
+                              readOnly={readOnly}
                             />
                           </div>
                         )}
@@ -181,6 +187,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                               onChange={(e) => updateTestParameter(testIndex, 'revolutions', e.target.value)}
                               className="h-8 text-sm"
                               placeholder="e.g., 50 rub revolutions"
+                              readOnly={readOnly}
                             />
                           </div>
                         )}
@@ -192,6 +199,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                               onChange={(e) => updateTestParameter(testIndex, 'checkpoint', e.target.value)}
                               className="h-8 text-sm"
                               placeholder="e.g., Checkpoint every 10"
+                              readOnly={readOnly}
                             />
                           </div>
                         )}
@@ -208,6 +216,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                         onColumnsChange={(cols) => updateTest(testIndex, 'grid_columns', cols)}
                         rowLabels={test.row_labels}
                         onRowLabelsChange={(labels) => updateTest(testIndex, 'row_labels', labels)}
+                        readOnly={readOnly}
                       />
                     </div>
 
@@ -218,6 +227,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
                         onChange={(e) => updateTest(testIndex, 'notes', e.target.value)}
                         placeholder="Additional observations or notes about this test..."
                         className="border-slate-300 min-h-[80px]"
+                        readOnly={readOnly}
                       />
                     </div>
                   </>
@@ -229,14 +239,16 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
       )}
 
       {/* Floating Add Test Button */}
-      <Button
-        onClick={addTest}
-        className="fixed bottom-20 right-6 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
-        size="lg"
-      >
-        <Plus className="w-5 h-5" />
-        Add Test
-      </Button>
+      {!readOnly && (
+        <Button
+          onClick={addTest}
+          className="fixed bottom-20 right-6 h-14 px-6 gap-2 shadow-xl bg-green-600 hover:bg-green-700 z-50"
+          size="lg"
+        >
+          <Plus className="w-5 h-5" />
+          Add Test
+        </Button>
+      )}
     </div>
   );
 }

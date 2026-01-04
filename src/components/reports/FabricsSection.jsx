@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import TestsSection from './TestsSection';
 import ImageViewerModal from './ImageViewerModal';
 
-export default function FabricsSection({ fabrics, onChange, tests, onTestsChange }) {
+export default function FabricsSection({ fabrics, onChange, tests, onTestsChange, readOnly = false }) {
   const [uploading, setUploading] = useState({});
   const [selectedFabric, setSelectedFabric] = useState(0);
   const [viewerImage, setViewerImage] = useState(null);
@@ -116,25 +116,27 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                   <div className="border border-slate-200 rounded-lg p-6 space-y-4 bg-white">
                     <div className="flex items-start justify-between">
                       <h3 className="text-lg font-semibold text-slate-800">Fabric Details</h3>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => duplicateFabric(index)}
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                          title="Duplicate this fabric and its tests"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeFabric(index)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {!readOnly && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => duplicateFabric(index)}
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                            title="Duplicate this fabric and its tests"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeFabric(index)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-4">
@@ -145,6 +147,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                           onChange={(e) => updateFabric(index, 'name', e.target.value)}
                           placeholder="e.g., Butter Yellow"
                           className="border-slate-300"
+                          readOnly={readOnly}
                         />
                       </div>
 
@@ -155,6 +158,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                           onChange={(e) => updateFabric(index, 'material_description', e.target.value)}
                           placeholder="e.g., 97% Recycled Polyester + 3% Elastane"
                           className="border-slate-300 min-h-[80px]"
+                          readOnly={readOnly}
                         />
                       </div>
 
@@ -166,6 +170,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
                             placeholder="e.g., 85/80"
                             className="border-slate-300"
+                            readOnly={readOnly}
                           />
                         </div>
 
@@ -177,6 +182,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             onChange={(e) => updateFabric(index, 'curing_time_min', e.target.value ? Number(e.target.value) : null)}
                             placeholder="e.g., 180"
                             className="border-slate-300"
+                            readOnly={readOnly}
                           />
                         </div>
 
@@ -188,6 +194,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             onChange={(e) => updateFabric(index, 'curing_temp_celsius', e.target.value ? Number(e.target.value) : null)}
                             placeholder="e.g., 160"
                             className="border-slate-300"
+                            readOnly={readOnly}
                           />
                         </div>
                       </div>
@@ -203,31 +210,35 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                                 className="w-24 h-24 object-cover rounded-lg border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-colors"
                                 onClick={() => setViewerImage(imageUrl)}
                               />
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeImage(index, imgIndex);
-                                }}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
+                              {!readOnly && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeImage(index, imgIndex);
+                                  }}
+                                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              )}
                             </div>
                           ))}
-                          <label className="w-24 h-24 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => handleImageUpload(index, e)}
-                              className="hidden"
-                              disabled={uploading[index]}
-                            />
-                            {uploading[index] ? (
-                              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <Upload className="w-5 h-5 text-slate-400" />
-                            )}
-                          </label>
+                          {!readOnly && (
+                            <label className="w-24 h-24 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(index, e)}
+                                className="hidden"
+                                disabled={uploading[index]}
+                              />
+                              {uploading[index] ? (
+                                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <Upload className="w-5 h-5 text-slate-400" />
+                              )}
+                            </label>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -238,7 +249,8 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                     fabricIndex={index} 
                     fabricName={fabric.name || `Fabric ${index + 1}`}
                     tests={tests} 
-                    onChange={onTestsChange} 
+                    onChange={onTestsChange}
+                    readOnly={readOnly}
                   />
                 </TabsContent>
               ))}
@@ -248,14 +260,16 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
       </Card>
 
       {/* Floating Add Fabric Button */}
-      <Button
-        onClick={addFabric}
-        className="fixed bottom-6 right-6 h-14 px-6 gap-2 shadow-xl bg-blue-600 hover:bg-blue-700 z-50"
-        size="lg"
-      >
-        <Plus className="w-5 h-5" />
-        Add Fabric
-      </Button>
+      {!readOnly && (
+        <Button
+          onClick={addFabric}
+          className="fixed bottom-6 right-6 h-14 px-6 gap-2 shadow-xl bg-blue-600 hover:bg-blue-700 z-50"
+          size="lg"
+        >
+          <Plus className="w-5 h-5" />
+          Add Fabric
+        </Button>
+      )}
 
       <ImageViewerModal 
         imageUrl={viewerImage} 
