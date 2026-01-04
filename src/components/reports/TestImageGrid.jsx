@@ -7,7 +7,6 @@ import ImageViewerModal from './ImageViewerModal';
 
 export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange }) {
   const [uploading, setUploading] = useState('');
-  const [newColumnName, setNewColumnName] = useState('');
   const [editingRow, setEditingRow] = useState(null);
   const [editingCol, setEditingCol] = useState(null);
   const [viewerImage, setViewerImage] = useState(null);
@@ -99,13 +98,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addColumn = () => {
-    const columnName = newColumnName.trim() || `${activeColumns.length * 10}`;
+    const columnName = `Col ${activeColumns.length + 1}`;
     const newColumns = [...activeColumns, columnName];
     const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
     
     onColumnsChange(newColumns);
     onChange(newGrid);
-    setNewColumnName('');
   };
 
   const addRow = () => {
@@ -157,23 +155,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   return (
     <div className="space-y-3">
-      {/* Add Column Section */}
-      <div className="flex gap-2 items-center bg-blue-50 p-3 rounded-lg border border-blue-200">
-        <Input
-          value={newColumnName}
-          onChange={(e) => setNewColumnName(e.target.value)}
-          placeholder="Column name (optional, e.g., 60, 70...)"
-          className="bg-white h-9"
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') addColumn();
-          }}
-        />
-        <Button onClick={addColumn} size="sm" className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add Column
-        </Button>
-      </div>
-
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
         <thead>
@@ -319,11 +300,17 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
         </tbody>
       </table>
 
-      {/* Add Row Button */}
-      <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
-        <Plus className="w-4 h-4" />
-        Add Sample Area
-      </Button>
+      {/* Add Buttons */}
+      <div className="flex gap-2">
+        <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add Column
+        </Button>
+        <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add Sample Area
+        </Button>
+      </div>
       </div>
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
