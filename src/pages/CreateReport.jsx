@@ -30,9 +30,6 @@ export default function CreateReport() {
     ink_version: '',
     setup: '',
     resolution: '',
-    curing_time_min: null,
-    curing_temp_celsius: null,
-    working_point: '',
     status: 'draft'
   });
   const [fabrics, setFabrics] = useState([]);
@@ -74,9 +71,6 @@ export default function CreateReport() {
         ink_version: existingReport.ink_version,
         setup: existingReport.setup,
         resolution: existingReport.resolution,
-        curing_time_min: existingReport.curing_time_min,
-        curing_temp_celsius: existingReport.curing_temp_celsius,
-        working_point: existingReport.working_point,
         status: existingReport.status
       });
       setFabrics(existingReport.fabrics || []);

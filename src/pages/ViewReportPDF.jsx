@@ -67,9 +67,6 @@ export default function ViewReportPDF() {
             <div><strong>Ink Version:</strong> {report.ink_version || '-'}</div>
             <div><strong>Set Up:</strong> {report.setup || '-'}</div>
             <div><strong>Resolution:</strong> {report.resolution || '-'}</div>
-            <div><strong>Curing Time:</strong> {report.curing_time_min ? `${report.curing_time_min} min` : '-'}</div>
-            <div><strong>Curing Temp:</strong> {report.curing_temp_celsius ? `${report.curing_temp_celsius}°C` : '-'}</div>
-            <div><strong>Working Point:</strong> {report.working_point || '-'}</div>
           </div>
         </div>
 
@@ -81,6 +78,11 @@ export default function ViewReportPDF() {
               <div key={idx}>
                 <p className="font-semibold">{idx + 1}. {fabric.name}</p>
                 <p className="text-sm">{fabric.material_description}</p>
+                <div className="text-sm mt-1 space-y-1">
+                  {fabric.working_point && <p><strong>Working Point:</strong> {fabric.working_point}</p>}
+                  {fabric.curing_time_min && <p><strong>Curing Time:</strong> {fabric.curing_time_min} min</p>}
+                  {fabric.curing_temp_celsius && <p><strong>Curing Temp:</strong> {fabric.curing_temp_celsius}°C</p>}
+                </div>
                 {fabric.images && fabric.images.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {fabric.images.map((img, imgIdx) => (
