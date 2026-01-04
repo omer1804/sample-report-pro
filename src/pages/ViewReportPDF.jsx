@@ -58,6 +58,7 @@ export default function ViewReportPDF() {
           <h1 className="text-2xl font-bold mb-2">Sample Durability Test Report</h1>
           <div className="grid grid-cols-2 gap-4 text-sm">
             {report.customer_name && <div><strong>Customer:</strong> {report.customer_name}</div>}
+            {report.task_number && <div><strong>Task Number:</strong> {report.task_number}</div>}
             <div><strong>Date Completed:</strong> {format(new Date(report.date_completed), 'dd/MM/yy')}</div>
             {report.last_saved && <div><strong>Last Saved:</strong> {format(new Date(report.last_saved), 'dd/MM/yy HH:mm')}</div>}
             <div><strong>Application Engineer:</strong> {report.application_engineer}</div>

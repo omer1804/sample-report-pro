@@ -19,13 +19,24 @@ export default function ReportDetailsForm({ details, onChange }) {
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2">
             <Label htmlFor="customer_name" className="text-slate-700">Customer Name</Label>
             <Input
               id="customer_name"
               value={details.customer_name || ''}
               onChange={(e) => handleChange('customer_name', e.target.value)}
               placeholder="Enter customer name"
+              className="border-slate-300"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task_number" className="text-slate-700">Task Number</Label>
+            <Input
+              id="task_number"
+              value={details.task_number || ''}
+              onChange={(e) => handleChange('task_number', e.target.value)}
+              placeholder="Enter task number"
               className="border-slate-300"
             />
           </div>

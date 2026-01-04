@@ -22,6 +22,7 @@ export default function CreateReport() {
 
   const [details, setDetails] = useState({
     customer_name: '',
+    task_number: '',
     date_completed: new Date().toISOString().split('T')[0],
     application_engineer: '',
     report_type: 'sample',
@@ -63,6 +64,7 @@ export default function CreateReport() {
     if (existingReport) {
       setDetails({
         customer_name: existingReport.customer_name || '',
+        task_number: existingReport.task_number || '',
         date_completed: existingReport.date_completed,
         application_engineer: existingReport.application_engineer,
         report_type: existingReport.report_type,
