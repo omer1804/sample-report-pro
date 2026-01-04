@@ -100,16 +100,22 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   const addColumn = () => {
     const columnName = `Col ${activeColumns.length + 1}`;
     const newColumns = [...activeColumns, columnName];
-    const newGrid = grid.map(row => [...row, { image_url: '', is_selected: false }]);
     
-    onColumnsChange(newColumns);
+    // Ensure we work with the actual grid data
+    const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : grid;
+    const newGrid = currentGrid.map(row => [...row, { image_url: '', is_selected: false }]);
+    
     onChange(newGrid);
+    onColumnsChange(newColumns);
   };
 
   const addRow = () => {
+    const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : grid;
+    const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : labels;
+    
     const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
-    const newGrid = [...grid, newRow];
-    const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
+    const newGrid = [...currentGrid, newRow];
+    const newLabels = [...currentLabels, `Area ${String.fromCharCode(65 + currentLabels.length)}`];
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
