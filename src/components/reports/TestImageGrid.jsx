@@ -123,6 +123,10 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       return;
     }
     
+    if (!confirm(`Remove column "${activeColumns[colIndex]}"?`)) {
+      return;
+    }
+    
     const newColumns = activeColumns.filter((_, i) => i !== colIndex);
     const newGrid = grid.map(row => row.filter((_, i) => i !== colIndex));
     
