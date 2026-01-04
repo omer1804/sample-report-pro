@@ -265,20 +265,18 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                         className="w-full h-full object-cover rounded cursor-pointer"
                         onClick={() => setViewerImage(cell.image_url)}
                       />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSelected(rowIndex, colIndex);
-                        }}
-                        className="absolute top-1 left-1 bg-slate-800/70 text-white rounded px-2 py-1 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        {cell.is_selected ? '✓ Selected' : 'Select as fail point'}
-                      </button>
-                      {cell.is_selected && (
-                        <div className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1">
-                          <Check className="w-4 h-4" />
-                        </div>
-                      )}
+                      <div className="absolute top-1 left-1 flex gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelected(rowIndex, colIndex);
+                          }}
+                          className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs hover:opacity-90 transition-opacity`}
+                          title={cell.is_selected ? 'Unmark as fail point' : 'Mark as fail point'}
+                        >
+                          {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
+                        </button>
+                      </div>
                       <label className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <input
                           type="file"
