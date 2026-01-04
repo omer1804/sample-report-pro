@@ -30,9 +30,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
-  // Initialize grid when test type is set
+  // Initialize grid when test type is set (only once)
+  const [initialized, setInitialized] = React.useState(false);
+  
   React.useEffect(() => {
-    if (!testType) return;
+    if (!testType || initialized) return;
     
     // Only initialize if grid is truly empty or undefined
     if (!imagesGrid || imagesGrid.length === 0) {
@@ -43,8 +45,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
+      setInitialized(true);
+    } else if (imagesGrid && imagesGrid.length > 0) {
+      setInitialized(true);
     }
-  }, [testType, activeColumns.length]);
+  }, [testType, initialized, imagesGrid]);
 
   // Use actual data, not memoized fallbacks
   const grid = imagesGrid || [];
