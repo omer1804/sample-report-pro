@@ -92,22 +92,64 @@ export default function ViewReportPDF() {
           </div>
         </div>
 
-        {/* Tests */}
-        {tests.map((test, testIdx) => {
-          const fabric = report.fabrics?.[test.fabric_index];
-          const columns = test.grid_columns && test.grid_columns.length > 0 
-            ? test.grid_columns 
-            : getDefaultColumns(test.test_type);
-          const rowLabels = test.row_labels && test.row_labels.length > 0
-            ? test.row_labels
-            : ['Area A', 'Area B', 'Area C'];
+        {/* Summary Tables */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">Test Summary</h2>
+          <div className="flex gap-4 flex-wrap">
+            {report.fabrics?.map((fabric, fabricIdx) => {
+              const fabricTests = tests.filter(t => t.fabric_index === fabricIdx);
+              if (fabricTests.length === 0) return null;
+              
+              return (
+                <table key={fabricIdx} className="border-collapse border border-slate-400">
+                  <thead>
+                    <tr>
+                      <th className="border border-slate-400 px-4 py-2 bg-slate-100 text-sm" colSpan="2">
+                        {fabric.name || `Fabric ${fabricIdx + 1}`}
+                      </th>
+                    </tr>
+                    <tr>
+                      <th className="border border-slate-400 px-4 py-2 bg-slate-50 text-xs">Test</th>
+                      <th className="border border-slate-400 px-4 py-2 bg-slate-50 text-xs">Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fabricTests.map((test, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-slate-400 px-4 py-1 text-xs">{getTestLabel(test.test_type)}</td>
+                        <td 
+                          className="border border-slate-400 px-4 py-1 text-xs font-semibold text-center text-white"
+                          style={{backgroundColor: test.result === 'pass' ? '#22c55e' : '#ef4444'}}
+                        >
+                          {test.result === 'pass' ? 'Pass' : 'Fail'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              );
+            })}
+          </div>
+        </div>
 
-          return (
-            <div key={testIdx} className="mb-12 page-break">
-              <h2 className="text-lg font-bold mb-2">Fabric: {fabric?.name || test.fabric_name}</h2>
-              <h3 className="text-md font-semibold mb-4" style={{backgroundColor: '#ffff00', display: 'inline-block', padding: '2px 8px'}}>
-                Test: {getTestLabel(test.test_type)}
-              </h3>
+        {/* Tests */}
+        {report.fabrics?.map((fabric, fabricIdx) => {
+          const fabricTests = tests.filter(t => t.fabric_index === fabricIdx);
+          
+          return fabricTests.map((test, testIdx) => {
+            const columns = test.grid_columns && test.grid_columns.length > 0 
+              ? test.grid_columns 
+              : getDefaultColumns(test.test_type);
+            const rowLabels = test.row_labels && test.row_labels.length > 0
+              ? test.row_labels
+              : ['Area A', 'Area B', 'Area C'];
+
+            return (
+              <div key={`${fabricIdx}-${testIdx}`} className="mb-12 page-break">
+                <h2 className="text-lg font-bold mb-2">Fabric {fabricIdx + 1}: {fabric.name}</h2>
+                <h3 className="text-md font-semibold mb-4" style={{backgroundColor: '#ffff00', display: 'inline-block', padding: '2px 8px'}}>
+                  Test {fabricIdx + 1}.{testIdx + 1}: {getTestLabel(test.test_type)}
+                </h3>
 
               {/* Test Grid */}
               <table className="w-full border-collapse mb-4">
@@ -190,8 +232,9 @@ export default function ViewReportPDF() {
                   <p className="text-sm">• {test.notes}</p>
                 </div>
               )}
-            </div>
-          );
+              </div>
+            );
+          });
         })}
 
         {/* Conclusion */}
