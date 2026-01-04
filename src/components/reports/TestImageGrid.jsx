@@ -106,9 +106,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
+    const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : grid;
+    const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : labels;
+    
     const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
-    const newGrid = [...grid, newRow];
-    const newLabels = [...labels, `Area ${String.fromCharCode(65 + labels.length)}`];
+    const newGrid = [...currentGrid, newRow];
+    const newLabels = [...currentLabels, `Area ${String.fromCharCode(65 + currentLabels.length)}`];
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
