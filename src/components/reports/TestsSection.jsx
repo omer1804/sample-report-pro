@@ -82,11 +82,13 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange 
         <div className="space-y-6">
           {tests.map((test, testIndex) => {
             if (test.fabricIndex !== fabricIndex) return null;
-            
+
+            const fabricTestIndex = fabricTests.findIndex((t, idx) => tests[testIndex] === t) + 1;
+
             return (
               <div key={testIndex} className="border border-slate-200 rounded-lg p-6 space-y-4 bg-white">
                 <div className="flex items-start justify-between mb-4">
-                  <h4 className="text-md font-semibold text-slate-700">Test {testIndex + 1}</h4>
+                  <h4 className="text-md font-semibold text-slate-700">Test {fabricIndex + 1}.{fabricTestIndex}</h4>
                   <Button
                     variant="ghost"
                     size="icon"
