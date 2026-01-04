@@ -259,32 +259,44 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
               {activeColumns.map((_, colIndex) => {
                 const cell = row[colIndex] || { image_url: '', is_selected: false };
                 return (
-                <td 
-                  key={colIndex} 
-                  className={`border ${cell.is_selected ? 'border-red-500 border-4' : 'border-slate-300'} p-1 relative`}
-                  style={{ width: `${100 / activeColumns.length}%`, height: '140px' }}
-                >
-                  {cell.image_url ? (
-                    <div className="relative w-full h-full group">
-                      <img 
-                        src={cell.image_url} 
-                        alt={`Test ${rowIndex}-${colIndex}`}
-                        className="w-full h-full object-cover rounded cursor-pointer"
-                        onClick={() => setViewerImage(cell.image_url)}
-                      />
-                      <div className="absolute top-1 left-1 flex gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSelected(rowIndex, colIndex);
-                          }}
-                          className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs hover:opacity-90 transition-opacity`}
-                          title={cell.is_selected ? 'Unmark as fail point' : 'Mark as fail point'}
-                        >
-                          {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
-                        </button>
+                  <td 
+                    key={colIndex} 
+                    className={`border ${cell.is_selected ? 'border-red-500 border-4' : 'border-slate-300'} p-1 relative`}
+                    style={{ width: `${100 / activeColumns.length}%`, height: '140px' }}
+                  >
+                    {cell.image_url ? (
+                      <div className="relative w-full h-full group">
+                        <img 
+                          src={cell.image_url} 
+                          alt={`Test ${rowIndex}-${colIndex}`}
+                          className="w-full h-full object-cover rounded cursor-pointer"
+                          onClick={() => setViewerImage(cell.image_url)}
+                        />
+                        <div className="absolute top-1 left-1 flex gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSelected(rowIndex, colIndex);
+                            }}
+                            className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs hover:opacity-90 transition-opacity`}
+                            title={cell.is_selected ? 'Unmark as fail point' : 'Mark as fail point'}
+                          >
+                            {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
+                          </button>
+                        </div>
+                        <label className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(rowIndex, colIndex, e)}
+                            className="hidden"
+                            disabled={uploading === `${rowIndex}-${colIndex}`}
+                          />
+                          <Plus className="w-3 h-3" />
+                        </label>
                       </div>
-                      <label className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    ) : (
+                      <label className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-300 rounded cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
                         <input
                           type="file"
                           accept="image/*"
@@ -292,26 +304,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                           className="hidden"
                           disabled={uploading === `${rowIndex}-${colIndex}`}
                         />
-                        <Plus className="w-3 h-3" />
+                        {uploading === `${rowIndex}-${colIndex}` ? (
+                          <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Upload className="w-6 h-6 text-slate-400" />
+                        )}
                       </label>
-                    </div>
-                  ) : (
-                    <label className="w-full h-full flex items-center justify-center border-2 border-dashed border-slate-300 rounded cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(rowIndex, colIndex, e)}
-                        className="hidden"
-                        disabled={uploading === `${rowIndex}-${colIndex}`}
-                      />
-                      {uploading === `${rowIndex}-${colIndex}` ? (
-                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Upload className="w-6 h-6 text-slate-400" />
-                      )}
-                    </label>
-                  )}
-                </td>
+                    )}
+                  </td>
                 );
               })}
             </tr>
