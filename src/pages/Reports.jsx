@@ -229,9 +229,14 @@ export default function Reports() {
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
                     {report.customer_name || 'Untitled Customer'}
                   </h3>
-                  <p className="text-sm text-slate-500 mb-3">
+                  <p className="text-sm text-slate-500 mb-1">
                     {format(new Date(report.date_completed), 'MMM dd, yyyy')}
                   </p>
+                  {report.last_saved && (
+                    <p className="text-xs text-slate-400 mb-3">
+                      Last saved: {format(new Date(report.last_saved), 'MMM dd, yyyy HH:mm')}
+                    </p>
+                  )}
                   
                   <div className="space-y-1 text-sm text-slate-600 mb-4">
                     {report.application_engineer && (
