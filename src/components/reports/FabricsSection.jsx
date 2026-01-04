@@ -156,6 +156,40 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         />
                       </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Working Point</Label>
+                          <Input
+                            value={fabric.working_point || ''}
+                            onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
+                            placeholder="e.g., 85/80"
+                            className="border-slate-300"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Curing Time (min)</Label>
+                          <Input
+                            type="number"
+                            value={fabric.curing_time_min || ''}
+                            onChange={(e) => updateFabric(index, 'curing_time_min', e.target.value ? Number(e.target.value) : null)}
+                            placeholder="e.g., 180"
+                            className="border-slate-300"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Curing Temp (°C)</Label>
+                          <Input
+                            type="number"
+                            value={fabric.curing_temp_celsius || ''}
+                            onChange={(e) => updateFabric(index, 'curing_temp_celsius', e.target.value ? Number(e.target.value) : null)}
+                            placeholder="e.g., 160"
+                            className="border-slate-300"
+                          />
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <Label className="text-slate-700">Fabric Images</Label>
                         <div className="flex flex-wrap gap-3">

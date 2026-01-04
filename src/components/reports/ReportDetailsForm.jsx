@@ -133,38 +133,7 @@ export default function ReportDetailsForm({ details, onChange }) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="curing_time_min" className="text-slate-700">Curing Time (minutes)</Label>
-            <Input
-              id="curing_time_min"
-              type="number"
-              value={details.curing_time_min || ''}
-              onChange={(e) => handleChange('curing_time_min', parseFloat(e.target.value))}
-              className="border-slate-300"
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="curing_temp_celsius" className="text-slate-700">Curing Temp (Celsius)</Label>
-            <Input
-              id="curing_temp_celsius"
-              type="number"
-              value={details.curing_temp_celsius || ''}
-              onChange={(e) => handleChange('curing_temp_celsius', parseFloat(e.target.value))}
-              className="border-slate-300"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="working_point" className="text-slate-700">Working Point</Label>
-            <Input
-              id="working_point"
-              value={details.working_point || ''}
-              onChange={(e) => handleChange('working_point', e.target.value)}
-              placeholder="e.g., 85/80"
-              className="border-slate-300"
-            />
-          </div>
         </div>
       </CardContent>
     </Card>
