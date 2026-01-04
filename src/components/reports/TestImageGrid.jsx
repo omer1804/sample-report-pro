@@ -46,22 +46,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   }, [testType, activeColumns.length]);
 
-  // Use actual props or create defaults
-  const grid = React.useMemo(() => {
-    if (imagesGrid && imagesGrid.length > 0) return imagesGrid;
-    if (testType) {
-      return Array(3).fill(null).map(() => 
-        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-      );
-    }
-    return [];
-  }, [imagesGrid, testType, activeColumns.length]);
-  
-  const labels = React.useMemo(() => {
-    if (rowLabels && rowLabels.length > 0) return rowLabels;
-    if (testType) return ['Area A', 'Area B', 'Area C'];
-    return [];
-  }, [rowLabels, testType]);
+  // Use actual data, not memoized fallbacks
+  const grid = imagesGrid || [];
+  const labels = rowLabels || [];
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const currentLabels = rowLabels && rowLabels.length > 0 ? rowLabels : labels;
