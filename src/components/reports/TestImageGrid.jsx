@@ -130,8 +130,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     const newColumns = activeColumns.filter((_, i) => i !== colIndex);
     const newGrid = grid.map(row => row.filter((_, i) => i !== colIndex));
     
-    onColumnsChange(newColumns);
+    // Update grid first, then columns to ensure consistency
     onChange(newGrid);
+    onColumnsChange(newColumns);
   };
 
   const removeRow = (rowIndex) => {
