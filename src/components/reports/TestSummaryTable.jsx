@@ -33,61 +33,67 @@ export default function TestSummaryTable({ fabrics, tests, onTestResultChange })
             <p>No tests added yet</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-slate-100">
-                  <th className="border border-slate-300 p-3 text-left text-sm font-semibold text-slate-700">Fabric</th>
-                  <th className="border border-slate-300 p-3 text-left text-sm font-semibold text-slate-700">Test Type</th>
-                  <th className="border border-slate-300 p-3 text-center text-sm font-semibold text-slate-700">Result</th>
-                  <th className="border border-slate-300 p-3 text-left text-sm font-semibold text-slate-700">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tests.map((test, testIndex) => {
-                  const fabric = fabrics[test.fabricIndex];
-                  const fabricName = fabric?.name || `Fabric ${test.fabricIndex + 1}`;
-                  
-                  return (
-                    <tr key={testIndex} className="hover:bg-slate-50">
-                      <td className="border border-slate-300 p-3 text-sm font-medium text-slate-700">
-                        {fabricName}
-                      </td>
-                      <td className="border border-slate-300 p-3 text-sm text-slate-600">
-                        {TEST_LABELS[test.test_type] || test.test_type}
-                      </td>
-                      <td className="border border-slate-300 p-3 text-center">
-                        <Select
-                          value={test.result}
-                          onValueChange={(value) => updateTestResult(testIndex, value)}
-                        >
-                          <SelectTrigger className="w-32 mx-auto">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pass">
-                              <span className="flex items-center gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-green-600" />
-                                Pass
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="fail">
-                              <span className="flex items-center gap-2">
-                                <XCircle className="w-4 h-4 text-red-600" />
-                                Fail
-                              </span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="border border-slate-300 p-3 text-sm text-slate-600">
-                        {test.notes || '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="space-y-6">
+            {fabrics.map((fabric, fabricIndex) => {
+              const fabricTests = tests.filter(t => t.fabricIndex === fabricIndex);
+              if (fabricTests.length === 0) return null;
+
+              return (
+                <div key={fabricIndex} className="overflow-x-auto">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                    {fabric.name || `Fabric ${fabricIndex + 1}`}
+                  </h3>
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100">
+                        <th className="border border-slate-300 p-3 text-left text-sm font-semibold text-slate-700">Test Type</th>
+                        <th className="border border-slate-300 p-3 text-center text-sm font-semibold text-slate-700">Result</th>
+                        <th className="border border-slate-300 p-3 text-left text-sm font-semibold text-slate-700">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fabricTests.map((test, idx) => {
+                        const testIndex = tests.indexOf(test);
+                        return (
+                          <tr key={testIndex} className="hover:bg-slate-50">
+                            <td className="border border-slate-300 p-3 text-sm text-slate-600">
+                              {TEST_LABELS[test.test_type] || test.test_type}
+                            </td>
+                            <td className="border border-slate-300 p-3 text-center">
+                              <Select
+                                value={test.result}
+                                onValueChange={(value) => updateTestResult(testIndex, value)}
+                              >
+                                <SelectTrigger className="w-32 mx-auto">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pass">
+                                    <span className="flex items-center gap-2">
+                                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                      Pass
+                                    </span>
+                                  </SelectItem>
+                                  <SelectItem value="fail">
+                                    <span className="flex items-center gap-2">
+                                      <XCircle className="w-4 h-4 text-red-600" />
+                                      Fail
+                                    </span>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </td>
+                            <td className="border border-slate-300 p-3 text-sm text-slate-600">
+                              {test.notes || '-'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
           </div>
         )}
       </CardContent>
