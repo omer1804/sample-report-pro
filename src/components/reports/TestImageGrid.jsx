@@ -34,7 +34,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   React.useEffect(() => {
     if (!testType) return;
     
-    // Only initialize if grid is truly empty
+    // Only initialize if grid is truly empty or undefined
     if (!imagesGrid || imagesGrid.length === 0) {
       const defaultGrid = Array(3).fill(null).map(() => 
         Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
@@ -44,7 +44,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
     }
-  }, [testType]);
+  }, [testType, activeColumns.length]);
 
   // Use actual props or create defaults
   const grid = React.useMemo(() => {
@@ -119,8 +119,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
-    const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : grid;
-    const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : labels;
+    // Always use actual data from props
+    const currentGrid = imagesGrid || [];
+    const currentLabels = rowLabels || [];
     
     const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
     const newGrid = [...currentGrid, newRow];
@@ -149,11 +150,16 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const removeRow = (rowIndex) => {
-    const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : grid;
-    const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : labels;
+    // Always use actual data from props
+    const currentGrid = imagesGrid || [];
+    const currentLabels = rowLabels || [];
     
     if (currentGrid.length <= 1) {
       alert('Cannot remove the last row');
+      return;
+    }
+    
+    if (!confirm(`Remove row "${currentLabels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) {
       return;
     }
     
