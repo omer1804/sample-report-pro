@@ -140,13 +140,16 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const removeRow = (rowIndex) => {
-    if (grid.length <= 1) {
+    const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : grid;
+    const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : labels;
+    
+    if (currentGrid.length <= 1) {
       alert('Cannot remove the last row');
       return;
     }
     
-    const newGrid = grid.filter((_, i) => i !== rowIndex);
-    const newLabels = labels.filter((_, i) => i !== rowIndex);
+    const newGrid = currentGrid.filter((_, i) => i !== rowIndex);
+    const newLabels = currentLabels.filter((_, i) => i !== rowIndex);
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
