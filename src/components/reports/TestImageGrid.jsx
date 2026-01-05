@@ -77,9 +77,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
+    if (!testType) {
+      alert('Please select a test type first');
+      return;
+    }
+
     // Get current data or start fresh
-    const grid = imagesGrid || [];
-    const labels = rowLabels || [];
+    const grid = Array.isArray(imagesGrid) ? imagesGrid : [];
+    const labels = Array.isArray(rowLabels) ? rowLabels : [];
     
     // Create new row with cells for each column
     const newRow = [];
@@ -94,11 +99,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     const newLabel = `Area ${String.fromCharCode(65 + labels.length)}`;
     const newLabels = [...labels, newLabel];
     
-    // Update state
+    // Update state - make sure both are called
     onChange(newGrid);
     onRowLabelsChange(newLabels);
     
-    console.log('Added row. New grid length:', newGrid.length);
+    console.log('Row added! New grid:', newGrid, 'New labels:', newLabels);
   };
 
   const removeColumn = (colIndex) => {
