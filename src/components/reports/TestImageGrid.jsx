@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, Plus, Check, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, Plus, X } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,36 +28,30 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
   };
 
-  const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
-  
-  // Initialize grid - always ensure we have 3 rows to start
-  React.useEffect(() => {
+  const activeColumns = columns?.length > 0 ? columns : getDefaultColumns();
+
+  // Initialize grid with 3 rows when test type changes
+  useEffect(() => {
     if (!testType) return;
     
-    // Only initialize if completely empty
+    // If no grid data exists, create default 3 rows
     if (!imagesGrid || imagesGrid.length === 0) {
-      const defaultGrid = Array(3).fill(null).map(() => 
-        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-      );
-      const defaultLabels = ['Area A', 'Area B', 'Area C'];
-      
-      // Set initial data
-      onChange(defaultGrid);
-      onRowLabelsChange(defaultLabels);
+      const newGrid = [];
+      for (let i = 0; i < 3; i++) {
+        const row = [];
+        for (let j = 0; j < activeColumns.length; j++) {
+          row.push({ image_url: '', is_selected: false });
+        }
+        newGrid.push(row);
+      }
+      onChange(newGrid);
+      onRowLabelsChange(['Area A', 'Area B', 'Area C']);
     }
-  }, [testType, activeColumns.length]);
+  }, [testType]);
 
-  // Use grid data - provide default if empty
-  const grid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
-  const labels = (rowLabels && rowLabels.length > 0) ? rowLabels : [];
-
-  const updateRowLabel = (rowIndex, newLabel) => {
-    const currentLabels = rowLabels || [];
-    const newLabels = [...currentLabels];
-    newLabels[rowIndex] = newLabel;
-    onRowLabelsChange(newLabels);
-    setEditingRow(null);
-  };
+  // Current grid and labels
+  const currentGrid = imagesGrid || [];
+  const currentLabels = rowLabels || [];
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
@@ -67,7 +61,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const currentGrid = imagesGrid || [];
       const newGrid = currentGrid.map((row, rIdx) => 
         row.map((cell, cIdx) => 
           rIdx === rowIndex && cIdx === colIndex 
@@ -84,7 +77,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const toggleSelected = (rowIndex, colIndex) => {
-    const currentGrid = imagesGrid || [];
     const newGrid = currentGrid.map((row, rIdx) => 
       row.map((cell, cIdx) => ({
         ...cell,
@@ -97,8 +89,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   const addColumn = () => {
     const columnName = `Col ${activeColumns.length + 1}`;
     const newColumns = [...activeColumns, columnName];
-    
-    const currentGrid = imagesGrid || [];
     const newGrid = currentGrid.map(row => [...row, { image_url: '', is_selected: false }]);
     
     onChange(newGrid);
@@ -106,12 +96,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
-    const currentGrid = imagesGrid || [];
-    const currentLabels = rowLabels || [];
+    const newRow = [];
+    for (let i = 0; i < activeColumns.length; i++) {
+      newRow.push({ image_url: '', is_selected: false });
+    }
     
-    const newRow = Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }));
     const newGrid = [...currentGrid, newRow];
-    const newLabels = [...currentLabels, `Area ${String.fromCharCode(65 + currentLabels.length)}`];
+    const newLabel = `Area ${String.fromCharCode(65 + currentLabels.length)}`;
+    const newLabels = [...currentLabels, newLabel];
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
@@ -123,11 +115,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       return;
     }
     
-    if (!confirm(`Remove column "${activeColumns[colIndex]}"?`)) {
-      return;
-    }
+    if (!confirm(`Remove column "${activeColumns[colIndex]}"?`)) return;
     
-    const currentGrid = imagesGrid || [];
     const newColumns = activeColumns.filter((_, i) => i !== colIndex);
     const newGrid = currentGrid.map(row => row.filter((_, i) => i !== colIndex));
     
@@ -136,117 +125,115 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const removeRow = (rowIndex) => {
-    if (grid.length <= 1) {
+    if (currentGrid.length <= 1) {
       alert('Cannot remove the last row');
       return;
     }
     
-    if (!confirm(`Remove row "${labels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) {
-      return;
-    }
+    if (!confirm(`Remove row "${currentLabels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) return;
     
-    const newGrid = grid.filter((_, i) => i !== rowIndex);
-    const newLabels = labels.filter((_, i) => i !== rowIndex);
+    const newGrid = currentGrid.filter((_, i) => i !== rowIndex);
+    const newLabels = currentLabels.filter((_, i) => i !== rowIndex);
     
     onChange(newGrid);
     onRowLabelsChange(newLabels);
   };
 
   const updateColumnName = (colIndex, newName) => {
-    const currentColumns = columns || activeColumns;
-    const newColumns = [...currentColumns];
+    const newColumns = [...activeColumns];
     newColumns[colIndex] = newName;
     onColumnsChange(newColumns);
     setEditingCol(null);
+  };
+
+  const updateRowLabel = (rowIndex, newLabel) => {
+    const newLabels = [...currentLabels];
+    newLabels[rowIndex] = newLabel;
+    onRowLabelsChange(newLabels);
+    setEditingRow(null);
   };
 
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-slate-100">
-            <th className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 bg-slate-200">
-              Sample Area
-            </th>
-            {activeColumns.map((col, idx) => (
-              <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
-                {editingCol === idx && !readOnly ? (
-                  <Input
-                    value={col}
-                    onChange={(e) => updateColumnName(idx, e.target.value)}
-                    onBlur={() => setEditingCol(null)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') setEditingCol(null);
-                    }}
-                    className="h-7 text-sm text-center"
-                    autoFocus
-                  />
-                ) : (
-                  <div 
-                    onClick={() => !readOnly && setEditingCol(idx)}
-                    className={readOnly ? "" : "cursor-pointer hover:bg-slate-200 px-2 py-1 rounded"}
-                    title={readOnly ? "" : "Click to edit"}
-                  >
-                    {col}
-                  </div>
-                )}
-                {idx > 0 && editingCol !== idx && !readOnly && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeColumn(idx);
-                    }}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    title="Remove column"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
+          <thead>
+            <tr className="bg-slate-100">
+              <th className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 bg-slate-200">
+                Sample Area
               </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {grid.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              <td className="border border-slate-300 p-2 bg-slate-50 font-medium text-slate-700 text-sm relative group">
-                {editingRow === rowIndex && !readOnly ? (
-                  <Input
-                    value={labels[rowIndex]}
-                    onChange={(e) => updateRowLabel(rowIndex, e.target.value)}
-                    onBlur={() => setEditingRow(null)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') setEditingRow(null);
-                    }}
-                    className="h-7 text-sm"
-                    autoFocus
-                  />
-                ) : (
-                  <div 
-                    onClick={() => !readOnly && setEditingRow(rowIndex)}
-                    className={readOnly ? "" : "cursor-pointer hover:bg-slate-100 px-2 py-1 rounded"}
-                    title={readOnly ? "" : "Click to edit"}
-                  >
-                    {labels[rowIndex]}
-                  </div>
-                )}
-                {grid.length > 1 && editingRow !== rowIndex && !readOnly && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeRow(rowIndex);
-                    }}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    title="Remove row"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </td>
-              {activeColumns.map((_, colIndex) => {
-                const cell = row[colIndex] || { image_url: '', is_selected: false };
-                return (
+              {activeColumns.map((col, idx) => (
+                <th key={idx} className="border border-slate-300 p-2 text-sm font-semibold text-slate-700 relative group">
+                  {editingCol === idx && !readOnly ? (
+                    <Input
+                      value={col}
+                      onChange={(e) => updateColumnName(idx, e.target.value)}
+                      onBlur={() => setEditingCol(null)}
+                      onKeyPress={(e) => e.key === 'Enter' && setEditingCol(null)}
+                      className="h-7 text-sm text-center"
+                      autoFocus
+                    />
+                  ) : (
+                    <div 
+                      onClick={() => !readOnly && setEditingCol(idx)}
+                      className={readOnly ? "" : "cursor-pointer hover:bg-slate-200 px-2 py-1 rounded"}
+                      title={readOnly ? "" : "Click to edit"}
+                    >
+                      {col}
+                    </div>
+                  )}
+                  {idx > 0 && editingCol !== idx && !readOnly && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeColumn(idx);
+                      }}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      title="Remove column"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentGrid.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                <td className="border border-slate-300 p-2 bg-slate-50 font-medium text-slate-700 text-sm relative group">
+                  {editingRow === rowIndex && !readOnly ? (
+                    <Input
+                      value={currentLabels[rowIndex] || ''}
+                      onChange={(e) => updateRowLabel(rowIndex, e.target.value)}
+                      onBlur={() => setEditingRow(null)}
+                      onKeyPress={(e) => e.key === 'Enter' && setEditingRow(null)}
+                      className="h-7 text-sm"
+                      autoFocus
+                    />
+                  ) : (
+                    <div 
+                      onClick={() => !readOnly && setEditingRow(rowIndex)}
+                      className={readOnly ? "" : "cursor-pointer hover:bg-slate-100 px-2 py-1 rounded"}
+                      title={readOnly ? "" : "Click to edit"}
+                    >
+                      {currentLabels[rowIndex] || `Row ${rowIndex + 1}`}
+                    </div>
+                  )}
+                  {currentGrid.length > 1 && editingRow !== rowIndex && !readOnly && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeRow(rowIndex);
+                      }}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      title="Remove row"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </td>
+                {row.map((cell, colIndex) => (
                   <td 
                     key={colIndex} 
                     className={`border ${cell.is_selected ? 'border-red-500 border-4' : 'border-slate-300'} p-1 relative`}
@@ -304,26 +291,25 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                       </label>
                     ) : null}
                   </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {/* Add Buttons */}
-      {!readOnly && (
-        <div className="flex gap-2">
-          <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Column
-          </Button>
-          <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Sample Area
-          </Button>
-        </div>
-      )}
+        {/* Add Buttons */}
+        {!readOnly && (
+          <div className="flex gap-2 mt-3">
+            <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Column
+            </Button>
+            <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Sample Area
+            </Button>
+          </div>
+        )}
       </div>
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
