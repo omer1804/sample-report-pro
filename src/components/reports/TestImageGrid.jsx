@@ -147,6 +147,20 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   return (
     <div className="space-y-3">
+      {/* Add Buttons at Top */}
+      {!readOnly && (
+        <div className="flex gap-2">
+          <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Sample Area
+          </Button>
+          <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Column
+          </Button>
+        </div>
+      )}
+      
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -296,20 +310,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
             )}
           </tbody>
         </table>
-
-        {/* Add Buttons */}
-        {!readOnly && (
-          <div className="flex gap-2 mt-3">
-            <Button onClick={addColumn} size="sm" variant="outline" className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Column
-            </Button>
-            <Button onClick={addRow} size="sm" variant="outline" className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Sample Area
-            </Button>
-          </div>
-        )}
       </div>
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
