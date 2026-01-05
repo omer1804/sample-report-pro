@@ -30,11 +30,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = columns?.length > 0 ? columns : getDefaultColumns();
 
-  // Initialize grid with 3 rows when test type changes
+  // Initialize grid with 3 rows when component mounts or test type changes
   useEffect(() => {
     if (!testType) return;
     
-    // If no grid data exists, create default 3 rows
+    // If no grid data exists OR grid is empty array, create default 3 rows
     if (!imagesGrid || imagesGrid.length === 0) {
       const newGrid = [];
       for (let i = 0; i < 3; i++) {
@@ -47,11 +47,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       onChange(newGrid);
       onRowLabelsChange(['Area A', 'Area B', 'Area C']);
     }
-  }, [testType]);
+  }, [testType, imagesGrid?.length, activeColumns.length]);
 
-  // Current grid and labels
-  const currentGrid = imagesGrid || [];
-  const currentLabels = rowLabels || [];
+  // Current grid and labels - force display even if data is incoming
+  const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
+  const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : [];
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
