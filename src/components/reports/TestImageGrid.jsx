@@ -30,28 +30,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = columns?.length > 0 ? columns : getDefaultColumns();
 
-  // Initialize grid with 3 rows when component mounts or test type changes
-  useEffect(() => {
-    if (!testType) return;
-    
-    // If no grid data exists OR grid is empty array, create default 3 rows
-    if (!imagesGrid || imagesGrid.length === 0) {
-      const newGrid = [];
-      for (let i = 0; i < 3; i++) {
-        const row = [];
-        for (let j = 0; j < activeColumns.length; j++) {
-          row.push({ image_url: '', is_selected: false });
-        }
-        newGrid.push(row);
-      }
-      onChange(newGrid);
-      onRowLabelsChange(['Area A', 'Area B', 'Area C']);
-    }
-  }, [testType, imagesGrid?.length, activeColumns.length]);
-
-  // Current grid and labels - force display even if data is incoming
-  const currentGrid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
-  const currentLabels = (rowLabels && rowLabels.length > 0) ? rowLabels : [];
+  // Current grid and labels
+  const currentGrid = imagesGrid || [];
+  const currentLabels = rowLabels || [];
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
@@ -96,17 +77,28 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const addRow = () => {
+    // Get current data or start fresh
+    const grid = imagesGrid || [];
+    const labels = rowLabels || [];
+    
+    // Create new row with cells for each column
     const newRow = [];
     for (let i = 0; i < activeColumns.length; i++) {
       newRow.push({ image_url: '', is_selected: false });
     }
     
-    const newGrid = [...currentGrid, newRow];
-    const newLabel = `Area ${String.fromCharCode(65 + currentLabels.length)}`;
-    const newLabels = [...currentLabels, newLabel];
+    // Add to grid
+    const newGrid = [...grid, newRow];
     
+    // Create label for new row
+    const newLabel = `Area ${String.fromCharCode(65 + labels.length)}`;
+    const newLabels = [...labels, newLabel];
+    
+    // Update state
     onChange(newGrid);
     onRowLabelsChange(newLabels);
+    
+    console.log('Added row. New grid length:', newGrid.length);
   };
 
   const removeColumn = (colIndex) => {
@@ -199,7 +191,14 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
             </tr>
           </thead>
           <tbody>
-            {currentGrid.map((row, rowIndex) => (
+            {currentGrid.length === 0 ? (
+              <tr>
+                <td colSpan={activeColumns.length + 1} className="border border-slate-300 p-8 text-center text-slate-500">
+                  No rows yet. Click "Add Sample Area" to add rows.
+                </td>
+              </tr>
+            ) : (
+              currentGrid.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 <td className="border border-slate-300 p-2 bg-slate-50 font-medium text-slate-700 text-sm relative group">
                   {editingRow === rowIndex && !readOnly ? (
@@ -293,7 +292,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                   </td>
                 ))}
               </tr>
-            ))}
+              ))
+            )}
           </tbody>
         </table>
 
