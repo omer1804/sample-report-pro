@@ -81,8 +81,12 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   const addColumn = () => {
     const columnName = `Col ${activeColumns.length + 1}`;
     const newColumns = [...activeColumns, columnName];
-    const newGrid = currentGrid.map(row => [...row, { image_url: '', is_selected: false }]);
+    const newGrid = localGrid.map(row => [...row, { image_url: '', is_selected: false }]);
     
+    // Update local state immediately
+    setLocalGrid(newGrid);
+    
+    // Update parent
     onChange(newGrid);
     onColumnsChange(newColumns);
   };
