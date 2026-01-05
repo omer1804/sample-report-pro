@@ -30,24 +30,26 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
-  // Initialize grid when test type is set
+  // Initialize grid - always ensure we have 3 rows to start
   React.useEffect(() => {
     if (!testType) return;
-    if (imagesGrid && imagesGrid.length > 0) return; // Already has data
     
-    const cols = activeColumns;
-    const defaultGrid = Array(3).fill(null).map(() => 
-      Array(cols.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
-    );
-    const defaultLabels = ['Area A', 'Area B', 'Area C'];
-    
-    onChange(defaultGrid);
-    onRowLabelsChange(defaultLabels);
-  }, [testType]);
+    // Only initialize if completely empty
+    if (!imagesGrid || imagesGrid.length === 0) {
+      const defaultGrid = Array(3).fill(null).map(() => 
+        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+      );
+      const defaultLabels = ['Area A', 'Area B', 'Area C'];
+      
+      // Set initial data
+      onChange(defaultGrid);
+      onRowLabelsChange(defaultLabels);
+    }
+  }, [testType, activeColumns.length]);
 
-  // Use grid data directly
-  const grid = imagesGrid || [];
-  const labels = rowLabels || [];
+  // Use grid data - provide default if empty
+  const grid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
+  const labels = (rowLabels && rowLabels.length > 0) ? rowLabels : [];
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const currentLabels = rowLabels || [];
