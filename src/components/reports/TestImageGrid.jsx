@@ -10,6 +10,17 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   const [editingRow, setEditingRow] = useState(null);
   const [editingCol, setEditingCol] = useState(null);
   const [viewerImage, setViewerImage] = useState(null);
+  const [localGrid, setLocalGrid] = useState(imagesGrid || []);
+  const [localLabels, setLocalLabels] = useState(rowLabels || []);
+
+  // Sync local state with props
+  useEffect(() => {
+    setLocalGrid(imagesGrid || []);
+  }, [imagesGrid]);
+
+  useEffect(() => {
+    setLocalLabels(rowLabels || []);
+  }, [rowLabels]);
 
   const getDefaultColumns = () => {
     switch (testType) {
@@ -30,9 +41,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = columns?.length > 0 ? columns : getDefaultColumns();
 
-  // Current grid and labels
-  const currentGrid = imagesGrid || [];
-  const currentLabels = rowLabels || [];
+  // Use local state for display
+  const currentGrid = localGrid;
+  const currentLabels = localLabels;
 
   const handleImageUpload = async (rowIndex, colIndex, event) => {
     const file = event.target.files[0];
@@ -82,10 +93,6 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       return;
     }
 
-    // Get current data or start fresh
-    const grid = Array.isArray(imagesGrid) ? imagesGrid : [];
-    const labels = Array.isArray(rowLabels) ? rowLabels : [];
-    
     // Create new row with cells for each column
     const newRow = [];
     for (let i = 0; i < activeColumns.length; i++) {
@@ -93,17 +100,21 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     }
     
     // Add to grid
-    const newGrid = [...grid, newRow];
+    const newGrid = [...localGrid, newRow];
     
     // Create label for new row
-    const newLabel = `Area ${String.fromCharCode(65 + labels.length)}`;
-    const newLabels = [...labels, newLabel];
+    const newLabel = `Area ${String.fromCharCode(65 + localLabels.length)}`;
+    const newLabels = [...localLabels, newLabel];
     
-    // Update state - make sure both are called
+    // Update local state immediately
+    setLocalGrid(newGrid);
+    setLocalLabels(newLabels);
+    
+    // Update parent
     onChange(newGrid);
     onRowLabelsChange(newLabels);
     
-    console.log('Row added! New grid:', newGrid, 'New labels:', newLabels);
+    console.log('Row added! New grid length:', newGrid.length);
   };
 
   const removeColumn = (colIndex) => {
