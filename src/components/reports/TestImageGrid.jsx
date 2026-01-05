@@ -284,7 +284,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                                   e.stopPropagation();
                                   toggleSelected(rowIndex, colIndex);
                                 }}
-                                className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs hover:opacity-90 transition-opacity`}
+                                className={`${cell.is_selected ? 'bg-red-500' : 'bg-slate-800/70'} text-white rounded px-2 py-1 text-xs transition-opacity ${cell.is_selected ? '' : 'opacity-0 group-hover:opacity-100'}`}
                                 title={cell.is_selected ? 'Unmark as fail point' : 'Mark as fail point'}
                               >
                                 {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
