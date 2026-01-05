@@ -122,31 +122,30 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   };
 
   const removeColumn = (colIndex) => {
-    if (activeColumns.length <= 1) {
-      alert('Cannot remove the last column');
-      return;
-    }
-    
     if (!confirm(`Remove column "${activeColumns[colIndex]}"?`)) return;
     
     const newColumns = activeColumns.filter((_, i) => i !== colIndex);
-    const newGrid = currentGrid.map(row => row.filter((_, i) => i !== colIndex));
+    const newGrid = localGrid.map(row => row.filter((_, i) => i !== colIndex));
     
+    // Update local state immediately
+    setLocalGrid(newGrid);
+    
+    // Update parent
     onChange(newGrid);
     onColumnsChange(newColumns);
   };
 
   const removeRow = (rowIndex) => {
-    if (currentGrid.length <= 1) {
-      alert('Cannot remove the last row');
-      return;
-    }
+    if (!confirm(`Remove row "${localLabels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) return;
     
-    if (!confirm(`Remove row "${currentLabels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) return;
+    const newGrid = localGrid.filter((_, i) => i !== rowIndex);
+    const newLabels = localLabels.filter((_, i) => i !== rowIndex);
     
-    const newGrid = currentGrid.filter((_, i) => i !== rowIndex);
-    const newLabels = currentLabels.filter((_, i) => i !== rowIndex);
+    // Update local state immediately
+    setLocalGrid(newGrid);
+    setLocalLabels(newLabels);
     
+    // Update parent
     onChange(newGrid);
     onRowLabelsChange(newLabels);
   };
@@ -208,7 +207,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                       {col}
                     </div>
                   )}
-                  {idx > 0 && editingCol !== idx && !readOnly && (
+                  {editingCol !== idx && !readOnly && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -253,7 +252,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                       {currentLabels[rowIndex] || `Row ${rowIndex + 1}`}
                     </div>
                   )}
-                  {currentGrid.length > 1 && editingRow !== rowIndex && !readOnly && (
+                  {editingRow !== rowIndex && !readOnly && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
