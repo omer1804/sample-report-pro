@@ -30,25 +30,38 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const activeColumns = (columns && columns.length > 0) ? columns : getDefaultColumns();
   
-  // Initialize grid when test type is set
+  // Initialize grid when test type is set - ensure it always has rows
   React.useEffect(() => {
     if (!testType) return;
     
-    // Only initialize if grid is truly empty or undefined
+    // Initialize if grid is empty or undefined
     if (!imagesGrid || imagesGrid.length === 0) {
+      const cols = (columns && columns.length > 0) ? columns : getDefaultColumns();
       const defaultGrid = Array(3).fill(null).map(() => 
-        Array(activeColumns.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
+        Array(cols.length).fill(null).map(() => ({ image_url: '', is_selected: false }))
       );
       const defaultLabels = ['Area A', 'Area B', 'Area C'];
       
       onChange(defaultGrid);
       onRowLabelsChange(defaultLabels);
     }
-  }, [testType, activeColumns.length]);
+  }, [testType]);
 
-  // Use actual data with proper fallbacks
-  const grid = (imagesGrid && imagesGrid.length > 0) ? imagesGrid : [];
-  const labels = (rowLabels && rowLabels.length > 0) ? rowLabels : [];
+  // Always ensure we have a grid to display - create default if needed
+  const grid = React.useMemo(() => {
+    if (imagesGrid && imagesGrid.length > 0) {
+      return imagesGrid;
+    }
+    // Return empty array temporarily while initialization is happening
+    return [];
+  }, [imagesGrid]);
+
+  const labels = React.useMemo(() => {
+    if (rowLabels && rowLabels.length > 0) {
+      return rowLabels;
+    }
+    return [];
+  }, [rowLabels]);
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const currentLabels = rowLabels && rowLabels.length > 0 ? rowLabels : labels;
