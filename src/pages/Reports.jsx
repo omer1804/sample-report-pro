@@ -31,9 +31,10 @@ export default function Reports() {
   const duplicateReport = async (report) => {
     if (confirm('Duplicate this report?')) {
       try {
-        // Create duplicate report
+        // Create duplicate report (exclude id, created_date, updated_date, created_by)
+        const { id, created_date, updated_date, created_by, last_saved, ...reportData } = report;
         const duplicatedReport = await base44.entities.Report.create({
-          ...report,
+          ...reportData,
           customer_name: `${report.customer_name || 'Untitled'} (Copy)`,
           status: 'draft',
           date_completed: new Date().toISOString().split('T')[0],
@@ -56,8 +57,10 @@ export default function Reports() {
           });
         }
 
-        window.location.reload();
+        // Navigate to the duplicated report
+        window.location.href = createPageUrl('CreateReport') + `?id=${duplicatedReport.id}`;
       } catch (error) {
+        console.error('Duplication error:', error);
         alert('Failed to duplicate report');
       }
     }

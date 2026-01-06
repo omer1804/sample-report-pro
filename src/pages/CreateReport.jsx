@@ -177,8 +177,9 @@ export default function CreateReport() {
     if (confirm('Duplicate this report?')) {
       try {
         const report = existingReport;
+        const { id, created_date, updated_date, created_by, last_saved, ...reportData } = report;
         const duplicatedReport = await base44.entities.Report.create({
-          ...report,
+          ...reportData,
           customer_name: `${report.customer_name || 'Untitled'} (Copy)`,
           status: 'draft',
           date_completed: new Date().toISOString().split('T')[0],
