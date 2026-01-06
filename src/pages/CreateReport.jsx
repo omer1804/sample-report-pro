@@ -89,20 +89,29 @@ export default function CreateReport() {
 
   useEffect(() => {
     if (existingTests.length > 0) {
-      const testsData = existingTests.map(test => ({
-        fabricIndex: test.fabric_index,
-        test_type: test.test_type,
-        test_parameters: test.test_parameters,
-        result: test.result,
-        images_grid: test.images_grid || [],
-        grid_columns: test.grid_columns || [],
-        row_labels: test.row_labels || [],
-        notes: test.notes
-      }));
-      console.log('Setting tests from existing:', testsData);
+      const testsData = existingTests.map(test => {
+        console.log('Loading test - images_grid rows:', test.images_grid?.length, 'row_labels:', test.row_labels?.length);
+        return {
+          fabricIndex: test.fabric_index,
+          test_type: test.test_type,
+          test_parameters: test.test_parameters,
+          result: test.result,
+          images_grid: test.images_grid || [],
+          grid_columns: test.grid_columns || [],
+          row_labels: test.row_labels || [],
+          notes: test.notes
+        };
+      });
+      console.log('Setting tests from existing:', testsData.length, 'tests');
+      testsData.forEach((test, idx) => {
+        console.log(`Test ${idx}: rows=${test.images_grid.length}, labels=${test.row_labels.length}`);
+      });
       setTests(testsData);
+    } else if (existingTests.length === 0 && reportId) {
+      console.log('No tests found for report, clearing tests state');
+      setTests([]);
     }
-  }, [existingTests]);
+  }, [existingTests, reportId]);
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -149,7 +158,7 @@ export default function CreateReport() {
         }
 
         // Save new tests
-        console.log('Saving tests:', tests.length, tests);
+        console.log('Saving tests:', tests.length);
         for (const test of tests) {
           const testData = {
             report_id: savedReportId,
@@ -163,7 +172,8 @@ export default function CreateReport() {
             row_labels: test.row_labels || [],
             notes: test.notes
           };
-          console.log('Creating test:', testData);
+          console.log('Creating test with images_grid rows:', testData.images_grid.length, 'row_labels:', testData.row_labels.length);
+          console.log('Full test data:', JSON.stringify(testData, null, 2));
           await base44.entities.FabricTest.create(testData);
         }
       }

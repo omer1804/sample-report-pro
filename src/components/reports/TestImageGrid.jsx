@@ -115,10 +115,9 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     setLocalLabels(newLabels);
     
     // Update parent
+    console.log('TestImageGrid: Adding row. New grid length:', newGrid.length, 'New labels:', newLabels);
     onChange(newGrid);
     onRowLabelsChange(newLabels);
-    
-    console.log('Row added! New grid length:', newGrid.length);
   };
 
   const removeColumn = (colIndex) => {
@@ -146,6 +145,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     setLocalLabels(newLabels);
     
     // Update parent
+    console.log('TestImageGrid: Removing row. New grid length:', newGrid.length, 'New labels:', newLabels);
     onChange(newGrid);
     onRowLabelsChange(newLabels);
   };
