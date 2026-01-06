@@ -129,6 +129,15 @@ export default function CreateReport() {
       return;
     }
 
+    console.log('=== SAVE STARTING ===');
+    console.log('Tests state before save:', tests.map((t, i) => ({
+      index: i,
+      fabricIndex: t.fabricIndex,
+      gridRows: t.images_grid?.length,
+      labels: t.row_labels?.length,
+      gridData: t.images_grid
+    })));
+
     setSaving(true);
     try {
       const reportData = {
