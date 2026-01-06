@@ -169,12 +169,6 @@ export default function CreateReport() {
 
       setLastSaved(new Date());
       
-      // Refetch data to ensure we have the latest
-      if (savedReportId) {
-        await refetchReport();
-        await refetchTests();
-      }
-      
       if (!silent) {
         alert(`Report ${status === 'completed' ? 'completed' : 'saved'} successfully!`);
         if (status === 'completed') {
