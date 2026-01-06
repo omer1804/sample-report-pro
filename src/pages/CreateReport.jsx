@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, FileText, Loader2, FileDown, Copy, FolderArchive } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,7 @@ export default function CreateReport() {
   const urlParams = new URLSearchParams(window.location.search);
   const reportId = urlParams.get('id');
   const isViewMode = urlParams.get('view') === 'true';
+  const queryClient = useQueryClient();
 
   const [details, setDetails] = useState({
     customer_name: '',
@@ -168,6 +169,12 @@ export default function CreateReport() {
       }
 
       setLastSaved(new Date());
+      
+      // Invalidate and refetch queries to ensure fresh data
+      if (savedReportId) {
+        await queryClient.invalidateQueries({ queryKey: ['fabric-tests', savedReportId] });
+        await queryClient.refetchQueries({ queryKey: ['fabric-tests', savedReportId] });
+      }
       
       if (!silent) {
         alert(`Report ${status === 'completed' ? 'completed' : 'saved'} successfully!`);
