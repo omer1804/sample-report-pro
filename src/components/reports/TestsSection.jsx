@@ -47,8 +47,18 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
   };
 
   const updateTest = (testIndex, field, value) => {
+    console.log('TestsSection.updateTest called - testIndex:', testIndex, 'field:', field, 'value length:', Array.isArray(value) ? value.length : 'N/A');
+    if (field === 'images_grid') {
+      console.log('Updating images_grid to:', JSON.stringify(value));
+    }
+    if (field === 'row_labels') {
+      console.log('Updating row_labels to:', value);
+    }
+    
     const updated = [...tests];
     updated[testIndex] = { ...updated[testIndex], [field]: value };
+    
+    console.log('After update - test images_grid length:', updated[testIndex].images_grid?.length, 'row_labels length:', updated[testIndex].row_labels?.length);
     
     // Auto-populate test parameters when test type changes
     if (field === 'test_type') {
