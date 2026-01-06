@@ -257,7 +257,9 @@ export default function Reports() {
                     <Button 
                       variant="outline" 
                       className="flex-1 gap-2"
-                      onClick={() => window.location.href = createPageUrl('CreateReport') + `?id=${report.id}&view=true`}
+                      onClick={() => {
+                        window.location.href = createPageUrl('CreateReport') + `?id=${report.id}&view=true`;
+                      }}
                     >
                       <Eye className="w-4 h-4" />
                       View
@@ -266,7 +268,9 @@ export default function Reports() {
                       variant="outline" 
                       size="icon" 
                       title="Edit Report"
-                      onClick={() => window.location.href = createPageUrl('CreateReport') + `?id=${report.id}`}
+                      onClick={() => {
+                        window.location.href = createPageUrl('CreateReport') + `?id=${report.id}`;
+                      }}
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>

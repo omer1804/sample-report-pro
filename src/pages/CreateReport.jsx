@@ -41,24 +41,29 @@ export default function CreateReport() {
   const [lastSaved, setLastSaved] = useState(null);
 
   // Load existing report
-  const { data: existingReport } = useQuery({
+  const { data: existingReport, refetch: refetchReport } = useQuery({
     queryKey: ['report', reportId],
     queryFn: async () => {
       if (!reportId) return null;
       const reports = await base44.entities.Report.filter({ id: reportId });
+      console.log('Loading report:', reportId, reports);
       return reports[0] || null;
     },
     enabled: !!reportId,
+    staleTime: 0,
   });
 
   // Load tests for this report
-  const { data: existingTests = [] } = useQuery({
+  const { data: existingTests = [], refetch: refetchTests } = useQuery({
     queryKey: ['fabric-tests', reportId],
     queryFn: async () => {
       if (!reportId) return [];
-      return await base44.entities.FabricTest.filter({ report_id: reportId });
+      const tests = await base44.entities.FabricTest.filter({ report_id: reportId });
+      console.log('Loading tests for report:', reportId, tests);
+      return tests;
     },
     enabled: !!reportId,
+    staleTime: 0,
   });
 
   useEffect(() => {
