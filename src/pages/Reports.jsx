@@ -254,13 +254,13 @@ export default function Reports() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Link to={`/CreateReport?id=${report.id}&view=true`} className="flex-1">
+                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}&view=true`} className="flex-1">
                       <Button variant="outline" className="w-full gap-2">
                         <Eye className="w-4 h-4" />
                         View
                       </Button>
                     </Link>
-                    <Link to={`/CreateReport?id=${report.id}`}>
+                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}`}>
                       <Button variant="outline" size="icon" title="Edit Report">
                         <Pencil className="w-4 h-4" />
                       </Button>
