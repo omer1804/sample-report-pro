@@ -254,26 +254,17 @@ export default function Reports() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 gap-2"
-                      onClick={() => {
-                        window.location.href = createPageUrl('CreateReport') + `?id=${report.id}&view=true`;
-                      }}
-                    >
-                      <Eye className="w-4 h-4" />
-                      View
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      title="Edit Report"
-                      onClick={() => {
-                        window.location.href = createPageUrl('CreateReport') + `?id=${report.id}`;
-                      }}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
+                    <Link to={`/CreateReport?id=${report.id}&view=true`} className="flex-1">
+                      <Button variant="outline" className="w-full gap-2">
+                        <Eye className="w-4 h-4" />
+                        View
+                      </Button>
+                    </Link>
+                    <Link to={`/CreateReport?id=${report.id}`}>
+                      <Button variant="outline" size="icon" title="Edit Report">
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    </Link>
                     <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">
                       <Button variant="outline" size="icon" title="Export PDF">
                         <FileDown className="w-4 h-4" />
