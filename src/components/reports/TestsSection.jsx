@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,6 +18,15 @@ const TEST_TYPES = [
 ];
 
 export default function TestsSection({ fabricIndex, fabricName, tests, onChange, readOnly = false }) {
+
+  useEffect(() => {
+    console.log('TestsSection - tests state updated:', tests.map((t, i) => ({
+      index: i,
+      fabricIndex: t.fabricIndex,
+      gridRows: t.images_grid?.length,
+      labels: t.row_labels?.length
+    })));
+  }, [tests]);
 
   const addTest = () => {
     const newTest = {

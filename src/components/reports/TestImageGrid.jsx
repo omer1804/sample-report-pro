@@ -137,15 +137,20 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
   const removeRow = (rowIndex) => {
     if (!confirm(`Remove row "${localLabels[rowIndex] || `Row ${rowIndex + 1}`}"?`)) return;
     
+    console.log('BEFORE DELETE - localGrid rows:', localGrid.length, 'localLabels:', localLabels.length);
+    
     const newGrid = localGrid.filter((_, i) => i !== rowIndex);
     const newLabels = localLabels.filter((_, i) => i !== rowIndex);
+    
+    console.log('AFTER DELETE - newGrid rows:', newGrid.length, 'newLabels:', newLabels.length);
+    console.log('Calling onChange with newGrid:', JSON.stringify(newGrid));
+    console.log('Calling onRowLabelsChange with newLabels:', newLabels);
     
     // Update local state immediately
     setLocalGrid(newGrid);
     setLocalLabels(newLabels);
     
     // Update parent
-    console.log('TestImageGrid: Removing row. New grid length:', newGrid.length, 'New labels:', newLabels);
     onChange(newGrid);
     onRowLabelsChange(newLabels);
   };
