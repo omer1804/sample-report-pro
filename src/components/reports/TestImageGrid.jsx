@@ -70,10 +70,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
 
   const toggleSelected = (rowIndex, colIndex) => {
     const newGrid = currentGrid.map((row, rIdx) => 
-      row.map((cell, cIdx) => ({
-        ...cell,
-        is_selected: rIdx === rowIndex && cIdx === colIndex ? !cell.is_selected : false
-      }))
+      row.map((cell, cIdx) => 
+        rIdx === rowIndex && cIdx === colIndex 
+          ? { ...cell, is_selected: !cell.is_selected }
+          : cell
+      )
     );
     onChange(newGrid);
   };
