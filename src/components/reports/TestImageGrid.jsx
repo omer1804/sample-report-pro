@@ -293,16 +293,35 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                                 {cell.is_selected ? '✓ Fail Point' : 'Mark Fail'}
                               </button>
                             </div>
-                            <label className="absolute bottom-1 right-1 bg-blue-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleImageUpload(rowIndex, colIndex, e)}
-                                className="hidden"
-                                disabled={uploading === `${rowIndex}-${colIndex}`}
-                              />
-                              <Plus className="w-3 h-3" />
-                            </label>
+                            <div className="absolute bottom-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newGrid = currentGrid.map((row, rIdx) => 
+                                    row.map((c, cIdx) => 
+                                      rIdx === rowIndex && cIdx === colIndex 
+                                        ? { ...c, image_url: '', is_selected: false }
+                                        : c
+                                    )
+                                  );
+                                  onChange(newGrid);
+                                }}
+                                className="bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700"
+                                title="Remove image"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                              <label className="bg-blue-600 text-white rounded-full p-1.5 cursor-pointer hover:bg-blue-700">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleImageUpload(rowIndex, colIndex, e)}
+                                  className="hidden"
+                                  disabled={uploading === `${rowIndex}-${colIndex}`}
+                                />
+                                <Plus className="w-3 h-3" />
+                              </label>
+                            </div>
                           </>
                         )}
                       </div>
