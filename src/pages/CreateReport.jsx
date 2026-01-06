@@ -93,11 +93,12 @@ export default function CreateReport() {
         test_type: test.test_type,
         test_parameters: test.test_parameters,
         result: test.result,
-        images_grid: test.images_grid,
+        images_grid: test.images_grid || [],
         grid_columns: test.grid_columns || [],
         row_labels: test.row_labels || [],
         notes: test.notes
       }));
+      console.log('Setting tests from existing:', testsData);
       setTests(testsData);
     }
   }, [existingTests]);
@@ -141,28 +142,39 @@ export default function CreateReport() {
       // Delete existing tests and recreate
       if (savedReportId) {
         const existingTests = await base44.entities.FabricTest.filter({ report_id: savedReportId });
+        console.log('Deleting existing tests:', existingTests.length);
         for (const test of existingTests) {
           await base44.entities.FabricTest.delete(test.id);
         }
 
         // Save new tests
+        console.log('Saving tests:', tests.length, tests);
         for (const test of tests) {
-          await base44.entities.FabricTest.create({
+          const testData = {
             report_id: savedReportId,
             fabric_index: test.fabricIndex,
             fabric_name: fabrics[test.fabricIndex]?.name || '',
             test_type: test.test_type,
             test_parameters: test.test_parameters,
             result: test.result,
-            images_grid: test.images_grid,
+            images_grid: test.images_grid || [],
             grid_columns: test.grid_columns || [],
             row_labels: test.row_labels || [],
             notes: test.notes
-          });
+          };
+          console.log('Creating test:', testData);
+          await base44.entities.FabricTest.create(testData);
         }
       }
 
       setLastSaved(new Date());
+      
+      // Refetch data to ensure we have the latest
+      if (savedReportId) {
+        await refetchReport();
+        await refetchTests();
+      }
+      
       if (!silent) {
         alert(`Report ${status === 'completed' ? 'completed' : 'saved'} successfully!`);
         if (status === 'completed') {
