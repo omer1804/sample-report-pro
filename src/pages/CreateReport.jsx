@@ -189,12 +189,6 @@ export default function CreateReport() {
 
       setLastSaved(new Date());
       
-      // Invalidate and refetch queries to ensure fresh data
-      if (savedReportId) {
-        await queryClient.invalidateQueries({ queryKey: ['fabric-tests', savedReportId] });
-        await queryClient.refetchQueries({ queryKey: ['fabric-tests', savedReportId] });
-      }
-      
       if (!silent) {
         alert(`Report ${status === 'completed' ? 'completed' : 'saved'} successfully!`);
         if (status === 'completed') {
