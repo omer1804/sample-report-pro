@@ -230,7 +230,20 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
                       <TestImageGrid
                         testType={test.test_type}
                         imagesGrid={test.images_grid}
-                        onChange={(grid) => updateTest(testIndex, 'images_grid', grid)}
+                        onChange={(grid, labels) => {
+                          if (labels !== undefined) {
+                            // Update both grid and labels atomically
+                            const updated = [...tests];
+                            updated[testIndex] = { 
+                              ...updated[testIndex], 
+                              images_grid: grid,
+                              row_labels: labels
+                            };
+                            onChange(updated);
+                          } else {
+                            updateTest(testIndex, 'images_grid', grid);
+                          }
+                        }}
                         columns={test.grid_columns}
                         onColumnsChange={(cols) => updateTest(testIndex, 'grid_columns', cols)}
                         rowLabels={test.row_labels}
