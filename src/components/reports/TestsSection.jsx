@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, FlaskConical } from 'lucide-react';
+import { Plus, Trash2, FlaskConical, ChevronUp, ChevronDown } from 'lucide-react';
 import TestImageGrid from './TestImageGrid';
 
 const TEST_TYPES = [
@@ -44,6 +44,20 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
 
   const removeTest = (testIndex) => {
     onChange(tests.filter((_, i) => i !== testIndex));
+  };
+
+  const moveTestUp = (testIndex) => {
+    if (testIndex === 0) return;
+    const updated = [...tests];
+    [updated[testIndex - 1], updated[testIndex]] = [updated[testIndex], updated[testIndex - 1]];
+    onChange(updated);
+  };
+
+  const moveTestDown = (testIndex) => {
+    if (testIndex === tests.length - 1) return;
+    const updated = [...tests];
+    [updated[testIndex], updated[testIndex + 1]] = [updated[testIndex + 1], updated[testIndex]];
+    onChange(updated);
   };
 
   const updateTest = (testIndex, field, value) => {
@@ -109,14 +123,36 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
                 <div className="flex items-start justify-between mb-4">
                   <h4 className="text-md font-semibold text-slate-700">Test {fabricIndex + 1}.{fabricTestIndex}</h4>
                   {!readOnly && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeTest(testIndex)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => moveTestUp(testIndex)}
+                        disabled={testIndex === 0}
+                        className="text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                        title="Move test up"
+                      >
+                        <ChevronUp className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => moveTestDown(testIndex)}
+                        disabled={testIndex === tests.length - 1}
+                        className="text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                        title="Move test down"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeTest(testIndex)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   )}
                 </div>
 
