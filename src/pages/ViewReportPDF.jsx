@@ -160,49 +160,55 @@ export default function ViewReportPDF() {
                 </h3>
 
               {/* Test Grid */}
-              <table className="w-full border-collapse mb-4">
-                <thead>
-                  <tr>
-                    <th className="border border-slate-400 p-1 text-xs bg-slate-100"></th>
-                    {columns.map((col, idx) => (
-                      <th key={idx} className="border border-slate-400 p-1 text-xs bg-slate-100">{col}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {test.images_grid?.map((row, rowIdx) => (
-                    <tr key={rowIdx}>
-                      <td className="border border-slate-400 p-1 text-xs font-semibold bg-slate-50">
-                        {rowLabels[rowIdx] || `Row ${rowIdx + 1}`}
-                      </td>
-                      {row.map((cell, colIdx) => (
-                        <td 
-                          key={colIdx} 
-                          className="border p-1"
-                          style={{
-                            borderWidth: cell.is_selected ? '3px' : '1px',
-                            borderColor: cell.is_selected ? '#ef4444' : '#94a3b8',
-                            width: '150px',
-                            height: '150px'
-                          }}
-                        >
-                          {cell.image_url && (
-                            <img 
-                              src={cell.image_url} 
-                              alt="" 
-                              style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain'
-                              }}
-                            />
-                          )}
-                        </td>
+              {test.images_grid && test.images_grid.length > 0 ? (
+                <table className="w-full border-collapse mb-4">
+                  <thead>
+                    <tr>
+                      <th className="border border-slate-400 p-1 text-xs bg-slate-100"></th>
+                      {columns.map((col, idx) => (
+                        <th key={idx} className="border border-slate-400 p-1 text-xs bg-slate-100">{col}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {test.images_grid.map((row, rowIdx) => (
+                      <tr key={rowIdx}>
+                        <td className="border border-slate-400 p-1 text-xs font-semibold bg-slate-50">
+                          {rowLabels[rowIdx] || `Row ${rowIdx + 1}`}
+                        </td>
+                        {row.map((cell, colIdx) => (
+                          <td 
+                            key={colIdx} 
+                            className="border p-1"
+                            style={{
+                              borderWidth: cell.is_selected ? '3px' : '1px',
+                              borderColor: cell.is_selected ? '#ef4444' : '#94a3b8',
+                              width: '150px',
+                              height: '150px'
+                            }}
+                          >
+                            {cell.image_url && (
+                              <img 
+                                src={cell.image_url} 
+                                alt="" 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'contain'
+                                }}
+                              />
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="mb-4 p-4 border border-slate-300 bg-slate-50 text-sm text-slate-600">
+                  No test images uploaded yet
+                </div>
+              )}
 
               {/* Test Parameters */}
               <div className="border border-slate-400 inline-block">
