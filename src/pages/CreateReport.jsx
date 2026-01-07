@@ -60,8 +60,8 @@ export default function CreateReport() {
     queryFn: async () => {
       if (!reportId) return [];
       const tests = await base44.entities.FabricTest.filter({ report_id: reportId });
-      console.log('Loading tests for report:', reportId, tests);
-      return tests;
+      // Sort by order field
+      return tests.sort((a, b) => (a.order || 0) - (b.order || 0));
     },
     enabled: !!reportId,
     staleTime: 0,
@@ -158,7 +158,8 @@ export default function CreateReport() {
 
         // Save new tests
         console.log('Saving tests:', tests.length);
-        for (const test of tests) {
+        for (let i = 0; i < tests.length; i++) {
+          const test = tests[i];
           const testData = {
             report_id: savedReportId,
             fabric_index: test.fabricIndex,
@@ -169,7 +170,8 @@ export default function CreateReport() {
             images_grid: test.images_grid || [],
             grid_columns: test.grid_columns || [],
             row_labels: test.row_labels || [],
-            notes: test.notes
+            notes: test.notes,
+            order: i
           };
           console.log('Creating test with images_grid rows:', testData.images_grid.length, 'row_labels:', testData.row_labels.length);
           console.log('Full test data:', JSON.stringify(testData, null, 2));
