@@ -88,30 +88,20 @@ export default function CreateReport() {
   }, [existingReport]);
 
   useEffect(() => {
-    if (existingTests.length > 0) {
-      const testsData = existingTests.map(test => {
-        console.log('Loading test - images_grid rows:', test.images_grid?.length, 'row_labels:', test.row_labels?.length);
-        return {
-          fabricIndex: test.fabric_index,
-          test_type: test.test_type,
-          test_parameters: test.test_parameters,
-          result: test.result,
-          images_grid: test.images_grid || [],
-          grid_columns: test.grid_columns || [],
-          row_labels: test.row_labels || [],
-          notes: test.notes
-        };
-      });
-      console.log('Setting tests from existing:', testsData.length, 'tests');
-      testsData.forEach((test, idx) => {
-        console.log(`Test ${idx}: rows=${test.images_grid.length}, labels=${test.row_labels.length}`);
-      });
+    if (existingTests && existingTests.length > 0) {
+      const testsData = existingTests.map(test => ({
+        fabricIndex: test.fabric_index,
+        test_type: test.test_type,
+        test_parameters: test.test_parameters,
+        result: test.result,
+        images_grid: test.images_grid || [],
+        grid_columns: test.grid_columns || [],
+        row_labels: test.row_labels || [],
+        notes: test.notes
+      }));
       setTests(testsData);
-    } else if (existingTests.length === 0 && reportId) {
-      console.log('No tests found for report, clearing tests state');
-      setTests([]);
     }
-  }, [existingTests, reportId]);
+  }, [existingTests]);
 
   // Auto-save every 30 seconds
   useEffect(() => {
