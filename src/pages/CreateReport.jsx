@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, FileText, Loader2, FileDown, Copy, FolderArchive } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Loader2, FileDown, Copy, FolderArchive, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { format } from 'date-fns';
@@ -148,34 +148,42 @@ export default function CreateReport() {
         window.history.replaceState({}, '', `${createPageUrl('CreateReport')}?id=${savedReportId}`);
       }
 
-      // Delete existing tests and recreate
-      if (savedReportId) {
-        const existingTests = await base44.entities.FabricTest.filter({ report_id: savedReportId });
-        console.log('Deleting existing tests:', existingTests.length);
-        for (const test of existingTests) {
-          await base44.entities.FabricTest.delete(test.id);
-        }
-
-        // Save new tests
-        console.log('Saving tests:', tests.length);
+      // Update tests - keep existing tests, only update order
+      if (savedReportId && tests.length > 0) {
+        console.log('Updating test order for', tests.length, 'tests');
         for (let i = 0; i < tests.length; i++) {
           const test = tests[i];
-          const testData = {
-            report_id: savedReportId,
-            fabric_index: test.fabricIndex,
-            fabric_name: fabrics[test.fabricIndex]?.name || '',
-            test_type: test.test_type,
-            test_parameters: test.test_parameters,
-            result: test.result,
-            images_grid: test.images_grid || [],
-            grid_columns: test.grid_columns || [],
-            row_labels: test.row_labels || [],
-            notes: test.notes,
-            order: i
-          };
-          console.log('Creating test with images_grid rows:', testData.images_grid.length, 'row_labels:', testData.row_labels.length);
-          console.log('Full test data:', JSON.stringify(testData, null, 2));
-          await base44.entities.FabricTest.create(testData);
+          // Find the test ID from existingTests
+          const existingTest = existingTests.find(t => 
+            t.fabric_index === test.fabricIndex && 
+            t.test_type === test.test_type &&
+            JSON.stringify(t.images_grid) === JSON.stringify(test.images_grid)
+          );
+
+          if (existingTest) {
+            // Update existing test with new order
+            await base44.entities.FabricTest.update(existingTest.id, {
+              order: i,
+              result: test.result,
+              notes: test.notes
+            });
+          } else {
+            // Create new test
+            const testData = {
+              report_id: savedReportId,
+              fabric_index: test.fabricIndex,
+              fabric_name: fabrics[test.fabricIndex]?.name || '',
+              test_type: test.test_type,
+              test_parameters: test.test_parameters,
+              result: test.result,
+              images_grid: test.images_grid || [],
+              grid_columns: test.grid_columns || [],
+              row_labels: test.row_labels || [],
+              notes: test.notes,
+              order: i
+            };
+            await base44.entities.FabricTest.create(testData);
+          }
         }
       }
 
@@ -228,6 +236,51 @@ export default function CreateReport() {
       } catch (error) {
         alert('Failed to duplicate report');
       }
+    }
+  };
+
+  const exportReportBackup = async () => {
+    if (!reportId) return;
+    try {
+      const reportData = {
+        report: existingReport,
+        tests: existingTests
+      };
+      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${existingReport.customer_name || 'Report'}_Backup.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Failed to export backup');
+    }
+  };
+
+  const importReportBackup = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      
+      if (confirm('This will restore the report data. Continue?')) {
+        // Restore tests
+        for (const test of data.tests) {
+          const { id, created_date, updated_date, created_by, ...testData } = test;
+          await base44.entities.FabricTest.create({
+            ...testData,
+            report_id: reportId
+          });
+        }
+        
+        alert('Backup restored successfully!');
+        await refetchTests();
+      }
+    } catch (error) {
+      alert('Failed to import backup: ' + error.message);
     }
   };
 
@@ -328,6 +381,30 @@ export default function CreateReport() {
                     <FolderArchive className="w-4 h-4" />
                     Download ZIP
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={exportReportBackup}
+                    className="gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Backup
+                  </Button>
+                  <label>
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={importReportBackup}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      className="gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                      onClick={(e) => e.currentTarget.previousElementSibling.click()}
+                    >
+                      <Upload className="w-4 h-4" />
+                      Restore
+                    </Button>
+                  </label>
                   <Button
                     variant="outline"
                     onClick={duplicateReport}
