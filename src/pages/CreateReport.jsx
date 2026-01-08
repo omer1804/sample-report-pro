@@ -235,18 +235,67 @@ export default function CreateReport() {
   const exportReportBackup = async () => {
     if (!reportId) return;
     try {
+      const zip = new JSZip();
+      
+      // Add JSON backup
       const reportData = {
         report: existingReport,
         tests: existingTests
       };
-      const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+      zip.file('backup.json', JSON.stringify(reportData, null, 2));
+      
+      // Add all images with mapping info
+      const imageMapping = {};
+      
+      // Fabric images
+      if (existingReport.fabrics) {
+        for (let i = 0; i < existingReport.fabrics.length; i++) {
+          const fabric = existingReport.fabrics[i];
+          if (fabric.images && fabric.images.length > 0) {
+            for (let j = 0; j < fabric.images.length; j++) {
+              const imgUrl = fabric.images[j];
+              const filename = `fabric_${i}_${j}.jpg`;
+              imageMapping[imgUrl] = filename;
+              const response = await fetch(imgUrl);
+              const blob = await response.blob();
+              zip.file(`images/${filename}`, blob);
+            }
+          }
+        }
+      }
+      
+      // Test images
+      for (let testIdx = 0; testIdx < existingTests.length; testIdx++) {
+        const test = existingTests[testIdx];
+        if (test.images_grid && test.images_grid.length > 0) {
+          for (let rowIdx = 0; rowIdx < test.images_grid.length; rowIdx++) {
+            const row = test.images_grid[rowIdx];
+            for (let colIdx = 0; colIdx < row.length; colIdx++) {
+              const cell = row[colIdx];
+              if (cell.image_url) {
+                const filename = `test_${testIdx}_${rowIdx}_${colIdx}.jpg`;
+                imageMapping[cell.image_url] = filename;
+                const response = await fetch(cell.image_url);
+                const blob = await response.blob();
+                zip.file(`images/${filename}`, blob);
+              }
+            }
+          }
+        }
+      }
+      
+      // Save mapping
+      zip.file('image_mapping.json', JSON.stringify(imageMapping, null, 2));
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${existingReport.customer_name || 'Report'}_Backup.json`;
+      a.download = `${existingReport.customer_name || 'Report'}_Backup.zip`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
+      console.error('Backup failed:', error);
       alert('Failed to export backup');
     }
   };
@@ -255,24 +304,82 @@ export default function CreateReport() {
     const file = event.target.files[0];
     if (!file) return;
     
+    if (!confirm('This will restore the report data and re-upload all images. Continue?')) {
+      return;
+    }
+    
     try {
-      const text = await file.text();
-      const data = JSON.parse(text);
+      const zip = await JSZip.loadAsync(file);
       
-      if (confirm('This will restore the report data. Continue?')) {
-        // Restore tests
-        for (const test of data.tests) {
-          const { id, created_date, updated_date, created_by, ...testData } = test;
-          await base44.entities.FabricTest.create({
-            ...testData,
-            report_id: reportId
-          });
-        }
+      // Load backup data
+      const backupText = await zip.file('backup.json').async('text');
+      const data = JSON.parse(backupText);
+      
+      // Load image mapping
+      const mappingText = await zip.file('image_mapping.json').async('text');
+      const imageMapping = JSON.parse(mappingText);
+      
+      // Create reverse mapping: old URL -> new URL
+      const urlMapping = {};
+      
+      // Re-upload all images
+      const imageFiles = Object.keys(zip.files).filter(name => name.startsWith('images/'));
+      for (const imagePath of imageFiles) {
+        const imageBlob = await zip.file(imagePath).async('blob');
+        const imageFile = new File([imageBlob], imagePath.split('/').pop(), { type: 'image/jpeg' });
         
-        alert('Backup restored successfully!');
-        await refetchTests();
+        // Upload to server
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
+        
+        // Find old URL for this filename
+        const filename = imagePath.split('/').pop();
+        const oldUrl = Object.keys(imageMapping).find(url => imageMapping[url] === filename);
+        if (oldUrl) {
+          urlMapping[oldUrl] = file_url;
+        }
       }
+      
+      // Update report fabrics with new image URLs
+      const updatedFabrics = data.report.fabrics.map(fabric => ({
+        ...fabric,
+        images: fabric.images?.map(url => urlMapping[url] || url) || []
+      }));
+      
+      await base44.entities.Report.update(reportId, {
+        ...data.report,
+        fabrics: updatedFabrics
+      });
+      
+      // Restore tests with updated image URLs
+      for (const test of data.tests) {
+        const updatedImagesGrid = test.images_grid?.map(row =>
+          row.map(cell => ({
+            ...cell,
+            image_url: cell.image_url ? (urlMapping[cell.image_url] || cell.image_url) : ''
+          }))
+        ) || [];
+        
+        await base44.entities.FabricTest.create({
+          report_id: reportId,
+          fabric_index: test.fabric_index,
+          fabric_name: test.fabric_name,
+          test_type: test.test_type,
+          test_parameters: test.test_parameters,
+          result: test.result,
+          images_grid: updatedImagesGrid,
+          grid_columns: test.grid_columns,
+          row_labels: test.row_labels,
+          notes: test.notes,
+          order: test.order
+        });
+      }
+      
+      alert('Backup restored successfully with all images!');
+      await refetchReport();
+      await refetchTests();
+      window.location.reload();
     } catch (error) {
+      console.error('Restore failed:', error);
       alert('Failed to import backup: ' + error.message);
     }
   };
@@ -385,7 +492,7 @@ export default function CreateReport() {
                   <label>
                     <input
                       type="file"
-                      accept=".json"
+                      accept=".zip"
                       onChange={importReportBackup}
                       className="hidden"
                     />
