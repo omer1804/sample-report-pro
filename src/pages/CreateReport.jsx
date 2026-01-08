@@ -314,10 +314,12 @@ export default function CreateReport() {
     if (!file) return;
     
     if (!confirm('This will create a new report from the backup and re-upload all images. Continue?')) {
+      event.target.value = ''; // Reset input
       return;
     }
     
     setLoadingRestore(true);
+    console.log('Starting restore process...');
     try {
       const zip = await JSZip.loadAsync(file);
       
@@ -410,6 +412,7 @@ export default function CreateReport() {
       console.error('Restore failed:', error);
       alert('Failed to import backup: ' + error.message);
       setLoadingRestore(false);
+      event.target.value = ''; // Reset input on error
     }
   };
 
