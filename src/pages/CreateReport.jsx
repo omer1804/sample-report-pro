@@ -321,13 +321,18 @@ export default function CreateReport() {
     try {
       const zip = await JSZip.loadAsync(file);
       
-      // Load backup data
-      const backupText = await zip.file('backup.json').async('text');
+      // Check if this is a new format backup (with images)
+      const backupFile = zip.file('backup.json');
+      if (!backupFile) {
+        throw new Error('Invalid backup file - missing backup.json');
+      }
+      
+      const backupText = await backupFile.async('text');
       const data = JSON.parse(backupText);
       
-      // Load image mapping
-      const mappingText = await zip.file('image_mapping.json').async('text');
-      const imageMapping = JSON.parse(mappingText);
+      // Check if image mapping exists (new format)
+      const mappingFile = zip.file('image_mapping.json');
+      const imageMapping = mappingFile ? JSON.parse(await mappingFile.async('text')) : {};
       
       // Create reverse mapping: old URL -> new URL
       const urlMapping = {};
