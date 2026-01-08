@@ -304,7 +304,7 @@ export default function CreateReport() {
     const file = event.target.files[0];
     if (!file) return;
     
-    if (!confirm('This will restore the report data and re-upload all images. Continue?')) {
+    if (!confirm('This will create a new report from the backup and re-upload all images. Continue?')) {
       return;
     }
     
@@ -345,10 +345,25 @@ export default function CreateReport() {
         images: fabric.images?.map(url => urlMapping[url] || url) || []
       }));
       
-      await base44.entities.Report.update(reportId, {
-        ...data.report,
-        fabrics: updatedFabrics
-      });
+      // Create or update report
+      const { id, created_date, updated_date, created_by, last_saved, ...reportData } = data.report;
+      let targetReportId = reportId;
+      
+      if (reportId) {
+        // Update existing report
+        await base44.entities.Report.update(reportId, {
+          ...reportData,
+          fabrics: updatedFabrics
+        });
+      } else {
+        // Create new report
+        const newReport = await base44.entities.Report.create({
+          ...reportData,
+          fabrics: updatedFabrics,
+          status: 'draft'
+        });
+        targetReportId = newReport.id;
+      }
       
       // Restore tests with updated image URLs
       for (const test of data.tests) {
@@ -360,7 +375,7 @@ export default function CreateReport() {
         ) || [];
         
         await base44.entities.FabricTest.create({
-          report_id: reportId,
+          report_id: targetReportId,
           fabric_index: test.fabric_index,
           fabric_name: test.fabric_name,
           test_type: test.test_type,
@@ -375,9 +390,7 @@ export default function CreateReport() {
       }
       
       alert('Backup restored successfully with all images!');
-      await refetchReport();
-      await refetchTests();
-      window.location.reload();
+      window.location.href = createPageUrl('CreateReport') + `?id=${targetReportId}`;
     } catch (error) {
       console.error('Restore failed:', error);
       alert('Failed to import backup: ' + error.message);
