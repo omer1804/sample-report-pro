@@ -322,10 +322,11 @@ export default function CreateReport() {
     console.log('Starting restore process...');
     try {
       const zip = await JSZip.loadAsync(file);
-      console.log('ZIP loaded, files:', Object.keys(zip.files));
+      console.log('ZIP loaded successfully');
+      console.log('Files in ZIP:', Object.keys(zip.files));
       
       // Check if this is a new format backup (with images)
-      const backupFile = zip.files['backup.json'];
+      const backupFile = zip.file('backup.json');
       console.log('Backup file found:', !!backupFile);
       
       if (!backupFile) {
@@ -337,7 +338,7 @@ export default function CreateReport() {
       console.log('Backup data loaded successfully');
       
       // Check if image mapping exists (new format)
-      const mappingFile = zip.files['image_mapping.json'];
+      const mappingFile = zip.file('image_mapping.json');
       const imageMapping = mappingFile ? JSON.parse(await mappingFile.async('text')) : {};
       console.log('Image mapping loaded, keys:', Object.keys(imageMapping).length);
       
