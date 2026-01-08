@@ -90,6 +90,7 @@ export default function CreateReport() {
   useEffect(() => {
     if (existingTests && existingTests.length > 0) {
       const testsData = existingTests.map(test => ({
+        id: test.id,  // CRITICAL: Preserve test ID
         fabricIndex: test.fabric_index,
         test_type: test.test_type,
         test_parameters: test.test_parameters,
@@ -148,41 +149,33 @@ export default function CreateReport() {
         window.history.replaceState({}, '', `${createPageUrl('CreateReport')}?id=${savedReportId}`);
       }
 
-      // Update tests - keep existing tests, only update order
+      // Update/create tests based on ID
       if (savedReportId && tests.length > 0) {
-        console.log('Updating test order for', tests.length, 'tests');
+        console.log('Saving', tests.length, 'tests');
         for (let i = 0; i < tests.length; i++) {
           const test = tests[i];
-          // Find the test ID from existingTests
-          const existingTest = existingTests.find(t => 
-            t.fabric_index === test.fabricIndex && 
-            t.test_type === test.test_type &&
-            JSON.stringify(t.images_grid) === JSON.stringify(test.images_grid)
-          );
+          const testData = {
+            report_id: savedReportId,
+            fabric_index: test.fabricIndex,
+            fabric_name: fabrics[test.fabricIndex]?.name || '',
+            test_type: test.test_type,
+            test_parameters: test.test_parameters,
+            result: test.result,
+            images_grid: test.images_grid || [],
+            grid_columns: test.grid_columns || [],
+            row_labels: test.row_labels || [],
+            notes: test.notes,
+            order: i
+          };
 
-          if (existingTest) {
-            // Update existing test with new order
-            await base44.entities.FabricTest.update(existingTest.id, {
-              order: i,
-              result: test.result,
-              notes: test.notes
-            });
+          if (test.id) {
+            // Update existing test - use the preserved ID
+            await base44.entities.FabricTest.update(test.id, testData);
           } else {
             // Create new test
-            const testData = {
-              report_id: savedReportId,
-              fabric_index: test.fabricIndex,
-              fabric_name: fabrics[test.fabricIndex]?.name || '',
-              test_type: test.test_type,
-              test_parameters: test.test_parameters,
-              result: test.result,
-              images_grid: test.images_grid || [],
-              grid_columns: test.grid_columns || [],
-              row_labels: test.row_labels || [],
-              notes: test.notes,
-              order: i
-            };
-            await base44.entities.FabricTest.create(testData);
+            const created = await base44.entities.FabricTest.create(testData);
+            // Update state with new ID to prevent duplicate creation
+            tests[i].id = created.id;
           }
         }
       }
