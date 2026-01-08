@@ -40,6 +40,10 @@ export default function CreateReport() {
   const [conclusion, setConclusion] = useState('');
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [loadingBackup, setLoadingBackup] = useState(false);
+  const [loadingRestore, setLoadingRestore] = useState(false);
+  const [loadingZip, setLoadingZip] = useState(false);
+  const [loadingDuplicate, setLoadingDuplicate] = useState(false);
 
   // Load existing report
   const { data: existingReport, refetch: refetchReport } = useQuery({
@@ -199,6 +203,7 @@ export default function CreateReport() {
   const duplicateReport = async () => {
     if (!reportId) return;
     if (confirm('Duplicate this report?')) {
+      setLoadingDuplicate(true);
       try {
         const report = existingReport;
         const { id, created_date, updated_date, created_by, last_saved, ...reportData } = report;
@@ -226,14 +231,16 @@ export default function CreateReport() {
         }
 
         window.location.href = createPageUrl('CreateReport') + `?id=${duplicatedReport.id}`;
-      } catch (error) {
+        } catch (error) {
         alert('Failed to duplicate report');
-      }
-    }
-  };
+        setLoadingDuplicate(false);
+        }
+        }
+        };
 
   const exportReportBackup = async () => {
     if (!reportId) return;
+    setLoadingBackup(true);
     try {
       const zip = new JSZip();
       
@@ -297,6 +304,8 @@ export default function CreateReport() {
     } catch (error) {
       console.error('Backup failed:', error);
       alert('Failed to export backup');
+    } finally {
+      setLoadingBackup(false);
     }
   };
 
@@ -308,6 +317,7 @@ export default function CreateReport() {
       return;
     }
     
+    setLoadingRestore(true);
     try {
       const zip = await JSZip.loadAsync(file);
       
@@ -394,11 +404,13 @@ export default function CreateReport() {
     } catch (error) {
       console.error('Restore failed:', error);
       alert('Failed to import backup: ' + error.message);
+      setLoadingRestore(false);
     }
   };
 
   const downloadImagesZip = async () => {
     if (!reportId) return;
+    setLoadingZip(true);
     try {
       const zip = new JSZip();
       const report = existingReport;
@@ -451,6 +463,8 @@ export default function CreateReport() {
     } catch (error) {
       console.error('Failed to create zip:', error);
       alert('Failed to download images');
+    } finally {
+      setLoadingZip(false);
     }
   };
 
@@ -484,13 +498,15 @@ export default function CreateReport() {
                   accept=".zip"
                   onChange={importReportBackup}
                   className="hidden"
+                  disabled={loadingRestore}
                 />
                 <Button
                   variant="outline"
                   className="gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
                   onClick={(e) => e.currentTarget.previousElementSibling.click()}
+                  disabled={loadingRestore}
                 >
-                  <Upload className="w-4 h-4" />
+                  {loadingRestore ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                   Restore
                 </Button>
               </label>
@@ -506,24 +522,27 @@ export default function CreateReport() {
                     variant="outline"
                     onClick={downloadImagesZip}
                     className="gap-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                    disabled={loadingZip}
                   >
-                    <FolderArchive className="w-4 h-4" />
+                    {loadingZip ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderArchive className="w-4 h-4" />}
                     Download ZIP
                   </Button>
                   <Button
                     variant="outline"
                     onClick={exportReportBackup}
                     className="gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    disabled={loadingBackup}
                   >
-                    <FileDown className="w-4 h-4" />
+                    {loadingBackup ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
                     Backup
                   </Button>
                   <Button
                     variant="outline"
                     onClick={duplicateReport}
                     className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    disabled={loadingDuplicate}
                   >
-                    <Copy className="w-4 h-4" />
+                    {loadingDuplicate ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
                     Duplicate
                   </Button>
                 </>
