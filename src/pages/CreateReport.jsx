@@ -465,6 +465,22 @@ export default function CreateReport() {
               )}
             </div>
             <div className="flex gap-3">
+              <label>
+                <input
+                  type="file"
+                  accept=".zip"
+                  onChange={importReportBackup}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  className="gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                  onClick={(e) => e.currentTarget.previousElementSibling.click()}
+                >
+                  <Upload className="w-4 h-4" />
+                  Restore
+                </Button>
+              </label>
               {reportId && (
                 <>
                   <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}`} target="_blank">
@@ -489,22 +505,6 @@ export default function CreateReport() {
                     <FileDown className="w-4 h-4" />
                     Backup
                   </Button>
-                  <label>
-                    <input
-                      type="file"
-                      accept=".zip"
-                      onChange={importReportBackup}
-                      className="hidden"
-                    />
-                    <Button
-                      variant="outline"
-                      className="gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
-                      onClick={(e) => e.currentTarget.previousElementSibling.click()}
-                    >
-                      <Upload className="w-4 h-4" />
-                      Restore
-                    </Button>
-                  </label>
                   <Button
                     variant="outline"
                     onClick={duplicateReport}
