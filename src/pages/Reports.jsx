@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,12 @@ import { format } from "date-fns";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import JSZip from 'jszip';
+import * as XLSX from 'xlsx';
 
 export default function Reports() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('-date_completed'); // newest first
+  const [exportingAll, setExportingAll] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ['reports', sortOrder],
@@ -142,6 +144,154 @@ export default function Reports() {
     );
   });
 
+  const exportAllToExcel = async () => {
+    setExportingAll(true);
+    try {
+      const allReportsData = await Promise.all(
+        reports.map(async (report) => {
+          const tests = await base44.entities.FabricTest.filter({ report_id: report.id });
+          return { report, tests };
+        })
+      );
+
+      const wb = XLSX.utils.book_new();
+      
+      // Main Database Sheet - One row per report
+      const dbData = [
+        [
+          'Report ID',
+          'Customer Name',
+          'Task Number',
+          'Date Completed',
+          'Application Engineer',
+          'Report Type',
+          'Requestor',
+          'Machine Model',
+          'Ink Version',
+          'Setup',
+          'Resolution',
+          'Status',
+          'Number of Fabrics',
+          'Total Tests',
+          'Tests Passed',
+          'Tests Failed',
+          'Conclusion'
+        ]
+      ];
+
+      allReportsData.forEach(({ report, tests }) => {
+        const passedTests = tests.filter(t => t.result === 'pass').length;
+        const failedTests = tests.filter(t => t.result === 'fail').length;
+        
+        dbData.push([
+          report.id,
+          report.customer_name || '',
+          report.task_number || '',
+          report.date_completed ? format(new Date(report.date_completed), 'yyyy-MM-dd') : '',
+          report.application_engineer || '',
+          report.report_type || '',
+          report.requestor || '',
+          report.machine_model || '',
+          report.ink_version || '',
+          report.setup || '',
+          report.resolution || '',
+          report.status || '',
+          report.fabrics?.length || 0,
+          tests.length,
+          passedTests,
+          failedTests,
+          report.conclusion || ''
+        ]);
+      });
+
+      const ws1 = XLSX.utils.aoa_to_sheet(dbData);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Reports Database');
+
+      // Fabrics Sheet - One row per fabric
+      const fabricData = [
+        [
+          'Report ID',
+          'Customer Name',
+          'Fabric Index',
+          'Fabric Name',
+          'Material Description',
+          'Working Point',
+          'Ink Consumption - Total',
+          'Ink Consumption - Color',
+          'Ink Consumption - White',
+          'Ink Consumption - Functional',
+          'Curing Time (min)',
+          'Curing Temp (°C)'
+        ]
+      ];
+
+      allReportsData.forEach(({ report }) => {
+        report.fabrics?.forEach((fabric, idx) => {
+          fabricData.push([
+            report.id,
+            report.customer_name || '',
+            idx + 1,
+            fabric.name || '',
+            fabric.material_description || '',
+            fabric.working_point || '',
+            fabric.ink_consumption_total || '',
+            fabric.ink_consumption_color || '',
+            fabric.ink_consumption_white || '',
+            fabric.ink_consumption_functional || '',
+            fabric.curing_time_min || '',
+            fabric.curing_temp_celsius || ''
+          ]);
+        });
+      });
+
+      const ws2 = XLSX.utils.aoa_to_sheet(fabricData);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Fabrics Database');
+
+      // Tests Sheet - One row per test
+      const testData = [
+        [
+          'Report ID',
+          'Customer Name',
+          'Fabric Name',
+          'Test Type',
+          'Result',
+          'Pressure',
+          'Sample Size',
+          'Revolutions',
+          'Checkpoint',
+          'Notes'
+        ]
+      ];
+
+      allReportsData.forEach(({ report, tests }) => {
+        tests.forEach((test) => {
+          testData.push([
+            report.id,
+            report.customer_name || '',
+            test.fabric_name || '',
+            test.test_type || '',
+            test.result || '',
+            test.test_parameters?.pressure || '',
+            test.test_parameters?.sample_size || '',
+            test.test_parameters?.revolutions || '',
+            test.test_parameters?.checkpoint || '',
+            test.notes || ''
+          ]);
+        });
+      });
+
+      const ws3 = XLSX.utils.aoa_to_sheet(testData);
+      XLSX.utils.book_append_sheet(wb, ws3, 'Tests Database');
+
+      XLSX.writeFile(wb, `MediaDB_AllReports_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export database');
+    } finally {
+      setExportingAll(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-7xl mx-auto p-6">
@@ -152,12 +302,23 @@ export default function Reports() {
               <h1 className="text-4xl font-bold text-slate-900 mb-2">Sample Reports</h1>
               <p className="text-slate-600">Textile printing durability test reports</p>
             </div>
-            <Link to={createPageUrl('CreateReport')}>
-              <Button className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-lg">
-                <Plus className="w-5 h-5" />
-                New Report
+            <div className="flex gap-3">
+              <Button
+                onClick={exportAllToExcel}
+                variant="outline"
+                className="gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                disabled={exportingAll || !reports || reports.length === 0}
+              >
+                {exportingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+                Export All to Excel
               </Button>
-            </Link>
+              <Link to={createPageUrl('CreateReport')}>
+                <Button className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-lg">
+                  <Plus className="w-5 h-5" />
+                  New Report
+                </Button>
+              </Link>
+            </div>
             </div>
 
             {/* Search and Sort */}
