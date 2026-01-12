@@ -382,9 +382,9 @@ export default function Reports() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredReports.map((report) => (
               <Card key={report.id} className="hover:shadow-lg transition-shadow border-slate-200">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <FileText className="w-8 h-8 text-blue-600" />
+                <CardContent className="p-6 flex flex-col">
+                  <div className="flex items-center justify-between mb-4 h-8">
+                    <FileText className="w-8 h-8 text-blue-600 flex-shrink-0" />
                     <Badge className={`${getStatusColor(report.status)} border`}>
                       {report.status}
                     </Badge>
