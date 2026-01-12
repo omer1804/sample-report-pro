@@ -414,20 +414,20 @@ export default function Reports() {
                     )}
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Link to={createPageUrl('CreateReport') + `?id=${report.id}&view=true`} className="flex-1">
-                      <Button variant="outline" className="w-full gap-2">
+                      <Button variant="outline" className="w-full h-9 gap-2">
                         <Eye className="w-4 h-4" />
                         View
                       </Button>
                     </Link>
                     <Link to={createPageUrl('CreateReport') + `?id=${report.id}`}>
-                      <Button variant="outline" size="icon" title="Edit Report">
+                      <Button variant="outline" size="icon" className="h-9 w-9" title="Edit Report">
                         <Pencil className="w-4 h-4" />
                       </Button>
                     </Link>
                     <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">
-                      <Button variant="outline" size="icon" title="Export PDF">
+                      <Button variant="outline" size="icon" className="h-9 w-9" title="Export PDF">
                         <FileDown className="w-4 h-4" />
                       </Button>
                     </Link>
@@ -435,7 +435,7 @@ export default function Reports() {
                       variant="outline"
                       size="icon"
                       onClick={() => downloadImagesZip(report)}
-                      className="text-purple-500 hover:text-purple-700 hover:bg-purple-50"
+                      className="h-9 w-9 text-purple-500 hover:text-purple-700 hover:bg-purple-50"
                       title="Download images as ZIP"
                     >
                       <FolderArchive className="w-4 h-4" />
@@ -444,7 +444,7 @@ export default function Reports() {
                       variant="outline"
                       size="icon"
                       onClick={() => duplicateReport(report)}
-                      className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                      className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
                       title="Duplicate report"
                     >
                       <Copy className="w-4 h-4" />
@@ -453,7 +453,7 @@ export default function Reports() {
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteReport(report.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
