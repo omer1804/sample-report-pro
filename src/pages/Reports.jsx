@@ -381,8 +381,8 @@ export default function Reports() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredReports.map((report) => (
-              <Card key={report.id} className="hover:shadow-lg transition-shadow border-slate-200">
-                <CardContent className="p-6 flex flex-col">
+              <Card key={report.id} className="hover:shadow-lg transition-shadow border-slate-200 flex flex-col">
+                <CardContent className="p-6 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-4 h-8">
                     <FileText className="w-8 h-8 text-blue-600 flex-shrink-0" />
                     <Badge className={`${getStatusColor(report.status)} border`}>
@@ -402,7 +402,7 @@ export default function Reports() {
                     </p>
                   )}
                   
-                  <div className="space-y-1 text-sm text-slate-600 mb-4">
+                  <div className="space-y-1 text-sm text-slate-600 mb-4 flex-1">
                     {report.application_engineer && (
                       <p><span className="font-medium">Engineer:</span> {report.application_engineer}</p>
                     )}
@@ -414,7 +414,7 @@ export default function Reports() {
                     )}
                   </div>
 
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-2 items-center mt-auto">
                     <Link to={createPageUrl('CreateReport') + `?id=${report.id}&view=true`} className="flex-1">
                       <Button variant="outline" className="w-full h-9 gap-2">
                         <Eye className="w-4 h-4" />
