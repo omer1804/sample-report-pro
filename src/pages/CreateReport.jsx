@@ -315,21 +315,12 @@ export default function CreateReport() {
     const file = event.target.files[0];
     if (!file) return;
     
-    if (!confirm('This will create a new report from the backup and re-upload all images. Continue?')) {
-      event.target.value = ''; // Reset input
-      return;
-    }
+    const choice = confirm('Import data WITHOUT images (faster)?\n\nClick OK to skip images, Cancel to import everything (slower)');
     
     setLoadingRestore(true);
-    console.log('Starting restore process...');
     try {
       const zip = await JSZip.loadAsync(file);
-      console.log('ZIP loaded successfully');
-      console.log('Files in ZIP:', Object.keys(zip.files));
-      
-      // Check if this is a new format backup (with images)
       const backupFile = zip.file('backup.json');
-      console.log('Backup file found:', !!backupFile);
       
       if (!backupFile) {
         throw new Error('Invalid backup file - missing backup.json');
@@ -337,51 +328,67 @@ export default function CreateReport() {
       
       const backupText = await backupFile.async('text');
       const data = JSON.parse(backupText);
-      console.log('Backup data loaded successfully');
       
-      // Check if image mapping exists (new format)
-      const mappingFile = zip.file('image_mapping.json');
-      const imageMapping = mappingFile ? JSON.parse(await mappingFile.async('text')) : {};
-      console.log('Image mapping loaded, keys:', Object.keys(imageMapping).length);
+      let updatedFabrics = data.report.fabrics;
+      let testsToCreate = data.tests;
       
-      // Create reverse mapping: old URL -> new URL
-      const urlMapping = {};
-      
-      // Re-upload all images
-      const imageFiles = Object.keys(zip.files).filter(name => name.startsWith('images/'));
-      for (const imagePath of imageFiles) {
-        const imageBlob = await zip.file(imagePath).async('blob');
-        const imageFile = new File([imageBlob], imagePath.split('/').pop(), { type: 'image/jpeg' });
+      if (choice) {
+        // Skip images - clear all image references
+        updatedFabrics = data.report.fabrics.map(fabric => ({
+          ...fabric,
+          images: []
+        }));
         
-        // Upload to server
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
+        testsToCreate = data.tests.map(test => ({
+          ...test,
+          images_grid: test.images_grid?.map(row =>
+            row.map(cell => ({ ...cell, image_url: '' }))
+          ) || []
+        }));
+      } else {
+        // Import with images (original logic)
+        const mappingFile = zip.file('image_mapping.json');
+        const imageMapping = mappingFile ? JSON.parse(await mappingFile.async('text')) : {};
+        const urlMapping = {};
         
-        // Find old URL for this filename
-        const filename = imagePath.split('/').pop();
-        const oldUrl = Object.keys(imageMapping).find(url => imageMapping[url] === filename);
-        if (oldUrl) {
-          urlMapping[oldUrl] = file_url;
+        const imageFiles = Object.keys(zip.files).filter(name => name.startsWith('images/'));
+        for (const imagePath of imageFiles) {
+          const imageBlob = await zip.file(imagePath).async('blob');
+          const imageFile = new File([imageBlob], imagePath.split('/').pop(), { type: 'image/jpeg' });
+          const { file_url } = await base44.integrations.Core.UploadFile({ file: imageFile });
+          
+          const filename = imagePath.split('/').pop();
+          const oldUrl = Object.keys(imageMapping).find(url => imageMapping[url] === filename);
+          if (oldUrl) {
+            urlMapping[oldUrl] = file_url;
+          }
         }
+        
+        updatedFabrics = data.report.fabrics.map(fabric => ({
+          ...fabric,
+          images: fabric.images?.map(url => urlMapping[url] || url) || []
+        }));
+        
+        testsToCreate = data.tests.map(test => ({
+          ...test,
+          images_grid: test.images_grid?.map(row =>
+            row.map(cell => ({
+              ...cell,
+              image_url: cell.image_url ? (urlMapping[cell.image_url] || cell.image_url) : ''
+            }))
+          ) || []
+        }));
       }
       
-      // Update report fabrics with new image URLs
-      const updatedFabrics = data.report.fabrics.map(fabric => ({
-        ...fabric,
-        images: fabric.images?.map(url => urlMapping[url] || url) || []
-      }));
-      
-      // Create or update report
       const { id, created_date, updated_date, created_by, last_saved, ...reportData } = data.report;
       let targetReportId = reportId;
       
       if (reportId) {
-        // Update existing report
         await base44.entities.Report.update(reportId, {
           ...reportData,
           fabrics: updatedFabrics
         });
       } else {
-        // Create new report
         const newReport = await base44.entities.Report.create({
           ...reportData,
           fabrics: updatedFabrics,
@@ -390,15 +397,7 @@ export default function CreateReport() {
         targetReportId = newReport.id;
       }
       
-      // Restore tests with updated image URLs
-      for (const test of data.tests) {
-        const updatedImagesGrid = test.images_grid?.map(row =>
-          row.map(cell => ({
-            ...cell,
-            image_url: cell.image_url ? (urlMapping[cell.image_url] || cell.image_url) : ''
-          }))
-        ) || [];
-        
+      for (const test of testsToCreate) {
         await base44.entities.FabricTest.create({
           report_id: targetReportId,
           fabric_index: test.fabric_index,
@@ -406,7 +405,7 @@ export default function CreateReport() {
           test_type: test.test_type,
           test_parameters: test.test_parameters,
           result: test.result,
-          images_grid: updatedImagesGrid,
+          images_grid: test.images_grid,
           grid_columns: test.grid_columns,
           row_labels: test.row_labels,
           notes: test.notes,
@@ -414,13 +413,13 @@ export default function CreateReport() {
         });
       }
       
-      alert('Backup restored successfully with all images!');
+      alert(choice ? 'Backup restored successfully (without images)!\n\nYou can now upload images separately.' : 'Backup restored successfully with all images!');
       window.location.href = createPageUrl('CreateReport') + `?id=${targetReportId}`;
     } catch (error) {
       console.error('Restore failed:', error);
       alert('Failed to import backup: ' + error.message);
       setLoadingRestore(false);
-      event.target.value = ''; // Reset input on error
+      event.target.value = '';
     }
   };
 
