@@ -162,15 +162,28 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-slate-700">Working Point</Label>
-                        <Input
-                          value={fabric.working_point || ''}
-                          onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
-                          placeholder="e.g., 85/80"
-                          className="border-slate-300"
-                          readOnly={readOnly}
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Working Point</Label>
+                          <Input
+                            value={fabric.working_point || ''}
+                            onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
+                            placeholder="e.g., 85/80"
+                            className="border-slate-300"
+                            readOnly={readOnly}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Ink Consumption</Label>
+                          <Input
+                            value={fabric.ink_consumption || ''}
+                            onChange={(e) => updateFabric(index, 'ink_consumption', e.target.value)}
+                            placeholder="e.g., 12 ml/m²"
+                            className="border-slate-300"
+                            readOnly={readOnly}
+                          />
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

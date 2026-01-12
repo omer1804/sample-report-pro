@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ScrollToTop from '../components/ScrollToTop';
 import JSZip from 'jszip';
+import * as XLSX from 'xlsx';
 
 export default function CreateReport() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -44,6 +45,7 @@ export default function CreateReport() {
   const [loadingRestore, setLoadingRestore] = useState(false);
   const [loadingZip, setLoadingZip] = useState(false);
   const [loadingDuplicate, setLoadingDuplicate] = useState(false);
+  const [loadingExcel, setLoadingExcel] = useState(false);
 
   // Load existing report
   const { data: existingReport, refetch: refetchReport } = useQuery({
@@ -482,6 +484,101 @@ export default function CreateReport() {
     }
   };
 
+  const exportToExcel = async () => {
+    if (!reportId) return;
+    setLoadingExcel(true);
+    try {
+      const report = existingReport;
+      const fabricTests = await base44.entities.FabricTest.filter({ report_id: reportId });
+      
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Report Info Sheet
+      const reportInfo = [
+        ['Media DB - Sample Report'],
+        [],
+        ['Customer Name', report.customer_name || ''],
+        ['Task Number', report.task_number || ''],
+        ['Date Completed', format(new Date(report.date_completed), 'dd/MM/yyyy')],
+        ['Application Engineer', report.application_engineer],
+        ['Report Type', report.report_type],
+        ['Requestor', report.requestor || ''],
+        ['Machine Model', report.machine_model || ''],
+        ['Ink Version', report.ink_version || ''],
+        ['Setup', report.setup || ''],
+        ['Resolution', report.resolution || ''],
+        []
+      ];
+      
+      // Fabrics Info
+      reportInfo.push(['Fabrics']);
+      report.fabrics?.forEach((fabric, idx) => {
+        reportInfo.push([`Fabric ${idx + 1}`, fabric.name || '']);
+        reportInfo.push(['Material', fabric.material_description || '']);
+        reportInfo.push(['Working Point', fabric.working_point || '']);
+        reportInfo.push(['Ink Consumption', fabric.ink_consumption || '']);
+        reportInfo.push(['Curing Time (min)', fabric.curing_time_min || '']);
+        reportInfo.push(['Curing Temp (°C)', fabric.curing_temp_celsius || '']);
+        reportInfo.push([]);
+      });
+      
+      // Test Results
+      reportInfo.push(['Test Results']);
+      fabricTests.forEach((test, idx) => {
+        reportInfo.push([
+          `Test ${idx + 1}`,
+          test.fabric_name,
+          getTestLabel(test.test_type),
+          test.result === 'pass' ? 'Pass' : 'Fail'
+        ]);
+      });
+      
+      reportInfo.push([]);
+      reportInfo.push(['Conclusion', report.conclusion || '']);
+      
+      const ws1 = XLSX.utils.aoa_to_sheet(reportInfo);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Report Summary');
+      
+      // Detailed Tests Sheet
+      const testDetails = [['Fabric', 'Test Type', 'Result', 'Parameters', 'Notes']];
+      fabricTests.forEach((test) => {
+        const params = Object.entries(test.test_parameters || {})
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(', ');
+        testDetails.push([
+          test.fabric_name,
+          getTestLabel(test.test_type),
+          test.result === 'pass' ? 'Pass' : 'Fail',
+          params,
+          test.notes || ''
+        ]);
+      });
+      
+      const ws2 = XLSX.utils.aoa_to_sheet(testDetails);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Test Details');
+      
+      // Export
+      XLSX.writeFile(wb, `${report.customer_name || 'Report'}_MediaDB.xlsx`);
+    } catch (error) {
+      console.error('Excel export failed:', error);
+      alert('Failed to export to Excel');
+    } finally {
+      setLoadingExcel(false);
+    }
+  };
+
+  function getTestLabel(testType) {
+    const labels = {
+      sand_grinding: 'Sand Grinding',
+      dry_grinding: 'Dry Grinding',
+      wet_grinding: 'Wet Grinding',
+      bally_flex_rt: 'Bally Flex Room Temperature',
+      bally_flex_minus20: 'Bally Flex -20'
+    };
+    return labels[testType] || testType;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-6xl mx-auto p-6">
@@ -532,6 +629,15 @@ export default function CreateReport() {
                       Export PDF
                     </Button>
                   </Link>
+                  <Button
+                    variant="outline"
+                    onClick={exportToExcel}
+                    className="gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                    disabled={loadingExcel}
+                  >
+                    {loadingExcel ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                    Export Excel
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={downloadImagesZip}
