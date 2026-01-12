@@ -517,7 +517,10 @@ export default function CreateReport() {
         reportInfo.push([`Fabric ${idx + 1}`, fabric.name || '']);
         reportInfo.push(['Material', fabric.material_description || '']);
         reportInfo.push(['Working Point', fabric.working_point || '']);
-        reportInfo.push(['Ink Consumption', fabric.ink_consumption || '']);
+        reportInfo.push(['Ink Consumption - Total', fabric.ink_consumption_total || '']);
+        reportInfo.push(['Ink Consumption - Color', fabric.ink_consumption_color || '']);
+        reportInfo.push(['Ink Consumption - White', fabric.ink_consumption_white || '']);
+        reportInfo.push(['Ink Consumption - Functional', fabric.ink_consumption_functional || '']);
         reportInfo.push(['Curing Time (min)', fabric.curing_time_min || '']);
         reportInfo.push(['Curing Temp (°C)', fabric.curing_temp_celsius || '']);
         reportInfo.push([]);

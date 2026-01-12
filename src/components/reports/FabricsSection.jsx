@@ -162,27 +162,60 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-slate-700">Working Point</Label>
-                          <Input
-                            value={fabric.working_point || ''}
-                            onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
-                            placeholder="e.g., 85/80"
-                            className="border-slate-300"
-                            readOnly={readOnly}
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="text-slate-700">Working Point</Label>
+                        <Input
+                          value={fabric.working_point || ''}
+                          onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
+                          placeholder="e.g., 85/80"
+                          className="border-slate-300"
+                          readOnly={readOnly}
+                        />
+                      </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-slate-700">Ink Consumption</Label>
-                          <Input
-                            value={fabric.ink_consumption || ''}
-                            onChange={(e) => updateFabric(index, 'ink_consumption', e.target.value)}
-                            placeholder="e.g., 12 ml/m²"
-                            className="border-slate-300"
-                            readOnly={readOnly}
-                          />
+                      <div className="bg-slate-50 border-2 border-slate-300 rounded-lg p-4 space-y-3">
+                        <Label className="text-slate-800 font-semibold">Ink Consumption (ml/m²)</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Total</Label>
+                            <Input
+                              value={fabric.ink_consumption_total || ''}
+                              onChange={(e) => updateFabric(index, 'ink_consumption_total', e.target.value)}
+                              placeholder="e.g., 45"
+                              className="border-slate-300 bg-white"
+                              readOnly={readOnly}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Color</Label>
+                            <Input
+                              value={fabric.ink_consumption_color || ''}
+                              onChange={(e) => updateFabric(index, 'ink_consumption_color', e.target.value)}
+                              placeholder="e.g., 30"
+                              className="border-slate-300 bg-white"
+                              readOnly={readOnly}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">White</Label>
+                            <Input
+                              value={fabric.ink_consumption_white || ''}
+                              onChange={(e) => updateFabric(index, 'ink_consumption_white', e.target.value)}
+                              placeholder="e.g., 10"
+                              className="border-slate-300 bg-white"
+                              readOnly={readOnly}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Functional Fluids</Label>
+                            <Input
+                              value={fabric.ink_consumption_functional || ''}
+                              onChange={(e) => updateFabric(index, 'ink_consumption_functional', e.target.value)}
+                              placeholder="e.g., 5"
+                              className="border-slate-300 bg-white"
+                              readOnly={readOnly}
+                            />
+                          </div>
                         </div>
                       </div>
 
