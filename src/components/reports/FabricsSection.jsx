@@ -334,8 +334,9 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600 font-semibold">Total</Label>
                               <Input
                                 value={calculateWhiteColorTotal(fabric)}
-                                className="border-slate-300 bg-slate-100 h-9 font-semibold"
+                                className="border-slate-300 bg-slate-200 h-9 font-semibold cursor-not-allowed"
                                 readOnly
+                                disabled
                               />
                             </div>
                           </div>
@@ -375,8 +376,9 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600 font-semibold">Total</Label>
                               <Input
                                 value={calculateTapCoatTotal(fabric)}
-                                className="border-slate-300 bg-slate-100 h-9 font-semibold"
+                                className="border-slate-300 bg-slate-200 h-9 font-semibold cursor-not-allowed"
                                 readOnly
+                                disabled
                               />
                             </div>
                           </div>
@@ -390,9 +392,10 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <div className="flex items-center gap-2">
                                 <Input
                                   value={fabric.ink_consumption_total || calculateGrandTotal(fabric)}
-                                  className="border-slate-300 bg-slate-100 h-9 font-bold text-lg"
+                                  className="border-slate-300 bg-slate-200 h-9 font-bold text-lg cursor-not-allowed"
                                   style={{minWidth: '100px'}}
                                   readOnly
+                                  disabled
                                 />
                                 <span className="text-sm font-semibold">ML</span>
                               </div>
