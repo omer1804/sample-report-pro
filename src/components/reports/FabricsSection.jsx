@@ -313,7 +313,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">FoF White</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_fof_white || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_fof_white', e.target.value);
