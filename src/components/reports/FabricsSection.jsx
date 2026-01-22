@@ -61,6 +61,52 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
     onChange(updated);
   };
 
+  const calculateWhiteColorTotal = (fabric) => {
+    const values = [
+      parseFloat(fabric.ink_consumption_cyan || 0),
+      parseFloat(fabric.ink_consumption_magenta || 0),
+      parseFloat(fabric.ink_consumption_yellow || 0),
+      parseFloat(fabric.ink_consumption_black || 0),
+      parseFloat(fabric.ink_consumption_neon || 0),
+      parseFloat(fabric.ink_consumption_fof_color || 0),
+      parseFloat(fabric.ink_consumption_white || 0),
+      parseFloat(fabric.ink_consumption_fof_white || 0)
+    ];
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return sum > 0 ? sum.toFixed(2) : '';
+  };
+
+  const calculateTapCoatTotal = (fabric) => {
+    const values = [
+      parseFloat(fabric.ink_consumption_u10 || 0),
+      parseFloat(fabric.ink_consumption_fof_white || 0)
+    ];
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return sum > 0 ? sum.toFixed(2) : '';
+  };
+
+  const calculateGrandTotal = (fabric) => {
+    const values = [
+      parseFloat(fabric.ink_consumption_cyan || 0),
+      parseFloat(fabric.ink_consumption_magenta || 0),
+      parseFloat(fabric.ink_consumption_yellow || 0),
+      parseFloat(fabric.ink_consumption_black || 0),
+      parseFloat(fabric.ink_consumption_neon || 0),
+      parseFloat(fabric.ink_consumption_fof_color || 0),
+      parseFloat(fabric.ink_consumption_white || 0),
+      parseFloat(fabric.ink_consumption_fof_white || 0),
+      parseFloat(fabric.ink_consumption_u10 || 0)
+    ];
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return sum > 0 ? sum.toFixed(2) : '';
+  };
+
+  const calculateTotal = (index) => {
+    const updated = [...fabrics];
+    updated[index].ink_consumption_total = calculateGrandTotal(updated[index]);
+    onChange(updated);
+  };
+
   const handleImageUpload = async (fabricIndex, event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -173,108 +219,184 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         />
                       </div>
 
-                      <div className="bg-slate-50 border-2 border-slate-300 rounded-lg p-4 space-y-3">
-                        <Label className="text-slate-800 font-semibold">Ink Consumption (ml/m²)</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Cyan</Label>
-                            <Input
-                              value={fabric.ink_consumption_cyan || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_cyan', e.target.value)}
-                              placeholder="e.g., 8"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
+                      <div className="bg-slate-50 border-2 border-slate-300 rounded-lg p-4 space-y-4">
+                        <Label className="text-slate-800 font-semibold text-base">Ink Consumption (ml)</Label>
+
+                        {/* White & Color Section */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-slate-700">White & Color</Label>
+                          <div className="flex flex-wrap gap-2 items-end">
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">Cyan</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_cyan || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_cyan', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">Magenta</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_magenta || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_magenta', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">Yellow</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_yellow || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_yellow', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">Black</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_black || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_black', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">Neon</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_neon || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_neon', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">FoF Color</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_fof_color || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_fof_color', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">White</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_white || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_white', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">FoF White</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_fof_white || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_fof_white', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600 font-semibold">Total</Label>
+                              <Input
+                                value={calculateWhiteColorTotal(fabric)}
+                                className="border-slate-300 bg-slate-100 h-9 font-semibold"
+                                readOnly
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Magenta</Label>
-                            <Input
-                              value={fabric.ink_consumption_magenta || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_magenta', e.target.value)}
-                              placeholder="e.g., 8"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
+                        </div>
+
+                        {/* Tap Coat U1o Section */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold text-slate-700">Tap Coat U1o</Label>
+                          <div className="flex flex-wrap gap-2 items-end">
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">U10</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_u10 || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_u10', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600">FoF White</Label>
+                              <Input
+                                type="number"
+                                value={fabric.ink_consumption_fof_white || ''}
+                                onChange={(e) => {
+                                  updateFabric(index, 'ink_consumption_fof_white', e.target.value);
+                                  calculateTotal(index);
+                                }}
+                                className="border-slate-300 bg-white h-9"
+                                readOnly={readOnly}
+                              />
+                            </div>
+                            <div className="space-y-1" style={{minWidth: '70px'}}>
+                              <Label className="text-xs text-slate-600 font-semibold">Total</Label>
+                              <Input
+                                value={calculateTapCoatTotal(fabric)}
+                                className="border-slate-300 bg-slate-100 h-9 font-semibold"
+                                readOnly
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Yellow</Label>
-                            <Input
-                              value={fabric.ink_consumption_yellow || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_yellow', e.target.value)}
-                              placeholder="e.g., 8"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Black</Label>
-                            <Input
-                              value={fabric.ink_consumption_black || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_black', e.target.value)}
-                              placeholder="e.g., 6"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Fof Color</Label>
-                            <Input
-                              value={fabric.ink_consumption_fof_color || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_fof_color', e.target.value)}
-                              placeholder="e.g., 5"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">White</Label>
-                            <Input
-                              value={fabric.ink_consumption_white || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_white', e.target.value)}
-                              placeholder="e.g., 10"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Fof White</Label>
-                            <Input
-                              value={fabric.ink_consumption_fof_white || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_fof_white', e.target.value)}
-                              placeholder="e.g., 5"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">Neon</Label>
-                            <Input
-                              value={fabric.ink_consumption_neon || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_neon', e.target.value)}
-                              placeholder="e.g., 3"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600">U10</Label>
-                            <Input
-                              value={fabric.ink_consumption_u10 || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_u10', e.target.value)}
-                              placeholder="e.g., 2"
-                              className="border-slate-300 bg-white"
-                              readOnly={readOnly}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-slate-600 font-semibold">Total</Label>
-                            <Input
-                              value={fabric.ink_consumption_total || ''}
-                              onChange={(e) => updateFabric(index, 'ink_consumption_total', e.target.value)}
-                              placeholder="e.g., 45"
-                              className="border-slate-300 bg-white font-semibold"
-                              readOnly={readOnly}
-                            />
+                        </div>
+
+                        {/* Total Amount of ink */}
+                        <div className="space-y-2">
+                          <div className="flex items-end gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-sm font-semibold text-slate-700">Total Amount of ink</Label>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  value={fabric.ink_consumption_total || calculateGrandTotal(fabric)}
+                                  className="border-slate-300 bg-slate-100 h-9 font-bold text-lg"
+                                  style={{minWidth: '100px'}}
+                                  readOnly
+                                />
+                                <span className="text-sm font-semibold">ML</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
