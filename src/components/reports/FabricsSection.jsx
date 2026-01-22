@@ -229,7 +229,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">Cyan</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_cyan || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_cyan', e.target.value);
@@ -242,7 +241,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">Magenta</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_magenta || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_magenta', e.target.value);
@@ -255,7 +253,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">Yellow</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_yellow || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_yellow', e.target.value);
@@ -268,7 +265,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">Black</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_black || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_black', e.target.value);
@@ -281,7 +277,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">Neon</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_neon || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_neon', e.target.value);
@@ -294,7 +289,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">FoF Color</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_fof_color || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_fof_color', e.target.value);
@@ -307,7 +301,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">White</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_white || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_white', e.target.value);
@@ -349,7 +342,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">U10</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_u10 || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_u10', e.target.value);
@@ -362,7 +354,6 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">FoF White</Label>
                               <Input
-                                type="number"
                                 value={fabric.ink_consumption_fof_white || ''}
                                 onChange={(e) => {
                                   updateFabric(index, 'ink_consumption_fof_white', e.target.value);
