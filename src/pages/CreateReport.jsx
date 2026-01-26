@@ -155,6 +155,17 @@ export default function CreateReport() {
         window.history.replaceState({}, '', `${createPageUrl('CreateReport')}?id=${savedReportId}`);
       }
 
+      // Handle test deletions - delete tests that exist in DB but not in current state
+      if (savedReportId) {
+        const currentTestIds = tests.filter(t => t.id).map(t => t.id);
+        const existingTests = await base44.entities.FabricTest.filter({ report_id: savedReportId });
+        for (const existingTest of existingTests) {
+          if (!currentTestIds.includes(existingTest.id)) {
+            await base44.entities.FabricTest.delete(existingTest.id);
+          }
+        }
+      }
+
       // Update/create tests based on ID
       if (savedReportId && tests.length > 0) {
         console.log('Saving', tests.length, 'tests');
