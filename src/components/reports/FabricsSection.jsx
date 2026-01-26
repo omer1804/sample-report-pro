@@ -76,10 +76,10 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
     return sum > 0 ? sum.toFixed(2) : '';
   };
 
-  const calculateTapCoatTotal = (fabric) => {
+  const calculateTopCoatTotal = (fabric) => {
     const values = [
       parseFloat(fabric.ink_consumption_u10 || 0),
-      parseFloat(fabric.ink_consumption_fof_white || 0)
+      parseFloat(fabric.ink_consumption_fof_white_top_coat || 0)
     ];
     const sum = values.reduce((acc, val) => acc + val, 0);
     return sum > 0 ? sum.toFixed(2) : '';
@@ -95,7 +95,8 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
       parseFloat(fabric.ink_consumption_fof_color || 0),
       parseFloat(fabric.ink_consumption_white || 0),
       parseFloat(fabric.ink_consumption_fof_white || 0),
-      parseFloat(fabric.ink_consumption_u10 || 0)
+      parseFloat(fabric.ink_consumption_u10 || 0),
+      parseFloat(fabric.ink_consumption_fof_white_top_coat || 0)
     ];
     const sum = values.reduce((acc, val) => acc + val, 0);
     return sum > 0 ? sum.toFixed(2) : '';
@@ -311,9 +312,9 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                           </div>
                         </div>
 
-                        {/* Tap Coat U1o Section */}
+                        {/* Top Coat U10 Section */}
                         <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-slate-700">Tap Coat U1o</Label>
+                          <Label className="text-sm font-semibold text-slate-700">Top Coat U10</Label>
                           <div className="flex flex-wrap gap-2 items-end">
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600">U10</Label>
@@ -325,10 +326,10 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               />
                             </div>
                             <div className="space-y-1" style={{minWidth: '70px'}}>
-                              <Label className="text-xs text-slate-600">FoF White</Label>
+                              <Label className="text-xs text-slate-600">FoF White Top Coat</Label>
                               <Input
-                                value={fabric.ink_consumption_fof_white || ''}
-                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_fof_white', e.target.value)}
+                                value={fabric.ink_consumption_fof_white_top_coat || ''}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_fof_white_top_coat', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -336,7 +337,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             <div className="space-y-1" style={{minWidth: '70px'}}>
                               <Label className="text-xs text-slate-600 font-semibold">Total</Label>
                               <Input
-                                value={calculateTapCoatTotal(fabric)}
+                                value={calculateTopCoatTotal(fabric)}
                                 className="border-slate-300 bg-slate-200 h-9 font-semibold cursor-not-allowed"
                                 readOnly
                                 disabled
