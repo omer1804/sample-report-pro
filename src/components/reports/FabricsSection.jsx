@@ -331,10 +331,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">FoF White</Label>
                               <Input
                                 value={fabric.ink_consumption_fof_white || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_fof_white', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_fof_white', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
