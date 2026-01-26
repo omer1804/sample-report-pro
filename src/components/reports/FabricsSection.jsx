@@ -193,7 +193,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         <Input
                           value={fabric.name || ''}
                           onChange={(e) => updateFabric(index, 'name', e.target.value)}
-                          placeholder="e.g., Butter Yellow"
+                          placeholder=""
                           className="border-slate-300"
                           readOnly={readOnly}
                         />
@@ -204,7 +204,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         <Textarea
                           value={fabric.material_description || ''}
                           onChange={(e) => updateFabric(index, 'material_description', e.target.value)}
-                          placeholder="e.g., 97% Recycled Polyester + 3% Elastane"
+                          placeholder=""
                           className="border-slate-300 min-h-[80px]"
                           readOnly={readOnly}
                         />
@@ -215,7 +215,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         <Input
                           value={fabric.working_point || ''}
                           onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
-                          placeholder="e.g., 85/80"
+                          placeholder=""
                           className="border-slate-300"
                           readOnly={readOnly}
                         />
@@ -373,7 +373,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             type="number"
                             value={fabric.curing_time_min || ''}
                             onChange={(e) => updateFabric(index, 'curing_time_min', e.target.value ? Number(e.target.value) : null)}
-                            placeholder="e.g., 180"
+                            placeholder=""
                             className="border-slate-300"
                             readOnly={readOnly}
                           />
@@ -385,7 +385,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                             type="number"
                             value={fabric.curing_temp_celsius || ''}
                             onChange={(e) => updateFabric(index, 'curing_temp_celsius', e.target.value ? Number(e.target.value) : null)}
-                            placeholder="e.g., 160"
+                            placeholder=""
                             className="border-slate-300"
                             readOnly={readOnly}
                           />
