@@ -84,6 +84,81 @@ export default function ViewReportPDF() {
                   {fabric.curing_time_min && <p><strong>Curing Time:</strong> {fabric.curing_time_min} min</p>}
                   {fabric.curing_temp_celsius && <p><strong>Curing Temp:</strong> {fabric.curing_temp_celsius}°C</p>}
                 </div>
+
+                {/* Ink Consumption Table */}
+                <div className="mt-3">
+                  <table className="border-collapse border border-slate-400 text-xs">
+                    <thead>
+                      <tr className="bg-slate-100">
+                        <th className="border border-slate-400 px-2 py-1" colSpan="9">Ink Consumption (ml)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Cyan</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Magenta</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Yellow</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Black</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF Color</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">White</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF White</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_cyan || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_magenta || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_yellow || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_black || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_neon || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_color || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_white || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_white || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center font-bold">{(() => {
+                          const sum = [
+                            parseFloat(fabric.ink_consumption_cyan || 0),
+                            parseFloat(fabric.ink_consumption_magenta || 0),
+                            parseFloat(fabric.ink_consumption_yellow || 0),
+                            parseFloat(fabric.ink_consumption_black || 0),
+                            parseFloat(fabric.ink_consumption_neon || 0),
+                            parseFloat(fabric.ink_consumption_fof_color || 0),
+                            parseFloat(fabric.ink_consumption_white || 0),
+                            parseFloat(fabric.ink_consumption_fof_white || 0)
+                          ].reduce((a, b) => a + b, 0);
+                          return sum > 0 ? sum.toFixed(2) : '-';
+                        })()}</td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">U10</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF White Top Coat</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="6"></td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_u10 || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_white_top_coat || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center font-bold">{(() => {
+                          const sum = [
+                            parseFloat(fabric.ink_consumption_u10 || 0),
+                            parseFloat(fabric.ink_consumption_fof_white_top_coat || 0)
+                          ].reduce((a, b) => a + b, 0);
+                          return sum > 0 ? sum.toFixed(2) : '-';
+                        })()}</td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="6"></td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1 font-bold bg-slate-100" colSpan="8">Grand Total (ml)</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center font-bold bg-slate-100">{fabric.ink_consumption_total || '-'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
                 {fabric.images && fabric.images.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {fabric.images.map((img, imgIdx) => (
