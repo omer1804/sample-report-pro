@@ -101,8 +101,9 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
     return sum > 0 ? sum.toFixed(2) : '';
   };
 
-  const calculateTotal = (index) => {
+  const updateFabricWithTotal = (index, field, value) => {
     const updated = [...fabrics];
+    updated[index] = { ...updated[index], [field]: value };
     updated[index].ink_consumption_total = calculateGrandTotal(updated[index]);
     onChange(updated);
   };
@@ -230,10 +231,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">Cyan</Label>
                               <Input
                                 value={fabric.ink_consumption_cyan || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_cyan', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_cyan', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -242,10 +240,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">Magenta</Label>
                               <Input
                                 value={fabric.ink_consumption_magenta || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_magenta', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_magenta', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -254,10 +249,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">Yellow</Label>
                               <Input
                                 value={fabric.ink_consumption_yellow || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_yellow', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_yellow', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -266,10 +258,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">Black</Label>
                               <Input
                                 value={fabric.ink_consumption_black || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_black', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_black', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -278,10 +267,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">Neon</Label>
                               <Input
                                 value={fabric.ink_consumption_neon || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_neon', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_neon', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -290,10 +276,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">FoF Color</Label>
                               <Input
                                 value={fabric.ink_consumption_fof_color || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_fof_color', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_fof_color', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -302,10 +285,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">White</Label>
                               <Input
                                 value={fabric.ink_consumption_white || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_white', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_white', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
@@ -342,10 +322,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <Label className="text-xs text-slate-600">U10</Label>
                               <Input
                                 value={fabric.ink_consumption_u10 || ''}
-                                onChange={(e) => {
-                                  updateFabric(index, 'ink_consumption_u10', e.target.value);
-                                  calculateTotal(index);
-                                }}
+                                onChange={(e) => updateFabricWithTotal(index, 'ink_consumption_u10', e.target.value)}
                                 className="border-slate-300 bg-white h-9"
                                 readOnly={readOnly}
                               />
