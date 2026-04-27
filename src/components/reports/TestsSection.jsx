@@ -6,18 +6,45 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Trash2, FlaskConical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, FlaskConical, ArrowUp, ArrowDown, Upload } from 'lucide-react';
 import TestImageGrid from './TestImageGrid';
+import { base44 } from "@/api/base44Client";
 
 const TEST_TYPES = [
   { value: 'sand_grinding', label: 'Sand Grinding', params: { pressure: '9Kpa', sample_size: '38 +- 2mm samples', revolutions: '50 rub revolutions', checkpoint: 'Checkpoint every 10' } },
   { value: 'dry_grinding', label: 'Dry Grinding', params: { pressure: '12 Kpa', sample_size: '38 +- 2mm samples', revolutions: '30,000 rub revolutions', checkpoint: 'Check point every 5k' } },
   { value: 'wet_grinding', label: 'Wet Grinding', params: { pressure: '12 Kpa', sample_size: '38 +- 2mm samples', revolutions: '12K rub revolutions', checkpoint: 'Check point every 4k' } },
   { value: 'bally_flex_rt', label: 'Bally Flex Room Temperature', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } },
-  { value: 'bally_flex_minus20', label: 'Bally Flex -20°C', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } }
+  { value: 'bally_flex_minus20', label: 'Bally Flex -20°C', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } },
+  { value: 'custom', label: 'Custom Test', params: {} }
 ];
 
 export default function TestsSection({ fabricIndex, fabricName, tests, onChange, readOnly = false }) {
+  const [uploadingCustom, setUploadingCustom] = useState({});
+
+  const handleCustomImageUpload = async (testIndex, event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploadingCustom(prev => ({ ...prev, [testIndex]: true }));
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const updated = [...tests];
+      const currentImages = updated[testIndex].custom_images || [];
+      updated[testIndex] = { ...updated[testIndex], custom_images: [...currentImages, file_url] };
+      onChange(updated);
+    } finally {
+      setUploadingCustom(prev => ({ ...prev, [testIndex]: false }));
+    }
+  };
+
+  const removeCustomImage = (testIndex, imgIdx) => {
+    const updated = [...tests];
+    updated[testIndex] = {
+      ...updated[testIndex],
+      custom_images: updated[testIndex].custom_images.filter((_, i) => i !== imgIdx)
+    };
+    onChange(updated);
+  };
 
   useEffect(() => {
     console.log('TestsSection - tests state updated:', tests.map((t, i) => ({
@@ -205,7 +232,70 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
                   </div>
                 </div>
 
-                {test.test_type && (
+                {test.test_type === 'custom' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Custom Test Title</Label>
+                      <Input
+                        value={test.custom_title || ''}
+                        onChange={(e) => updateTest(testIndex, 'custom_title', e.target.value)}
+                        placeholder="Enter test title"
+                        className="border-slate-300"
+                        readOnly={readOnly}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Description / Notes</Label>
+                      <Textarea
+                        value={test.notes || ''}
+                        onChange={(e) => updateTest(testIndex, 'notes', e.target.value)}
+                        placeholder="Describe the test, observations, results..."
+                        className="border-slate-300 min-h-[120px]"
+                        readOnly={readOnly}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Images</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {(test.custom_images || []).map((url, imgIdx) => (
+                          <div key={imgIdx} className="relative group">
+                            <img
+                              src={url}
+                              alt={`Custom ${imgIdx + 1}`}
+                              className="w-24 h-24 object-cover rounded-lg border-2 border-slate-200"
+                            />
+                            {!readOnly && (
+                              <button
+                                onClick={() => removeCustomImage(testIndex, imgIdx)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {!readOnly && (
+                          <label className="w-24 h-24 border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleCustomImageUpload(testIndex, e)}
+                              className="hidden"
+                              disabled={uploadingCustom[testIndex]}
+                            />
+                            {uploadingCustom[testIndex] ? (
+                              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <Upload className="w-5 h-5 text-slate-400" />
+                            )}
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {test.test_type && test.test_type !== 'custom' && (
                   <>
                     <div className="bg-slate-50 rounded-lg p-4 space-y-3">
                       <h5 className="font-semibold text-sm text-slate-700 mb-2">Test Parameters (Editable)</h5>
@@ -300,6 +390,7 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
                     </div>
                   </>
                 )}
+
               </div>
             );
           })}
