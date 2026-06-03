@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, FileText, Loader2, FileDown, Copy, FolderArchive, Upload } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Loader2, FileDown, Copy, FolderArchive, Upload, Paperclip, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { format } from 'date-fns';
@@ -28,17 +28,14 @@ export default function CreateReport() {
     task_number: '',
     date_completed: new Date().toISOString().split('T')[0],
     application_engineer: '',
-    report_type: 'sample',
     requestor: '',
-    machine_model: '',
-    ink_version: '',
-    setup: '',
-    resolution: '',
     status: 'draft'
   });
   const [fabrics, setFabrics] = useState([]);
   const [tests, setTests] = useState([]);
   const [conclusion, setConclusion] = useState('');
+  const [attachments, setAttachments] = useState([]);
+  const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [loadingBackup, setLoadingBackup] = useState(false);
@@ -80,15 +77,11 @@ export default function CreateReport() {
         task_number: existingReport.task_number || '',
         date_completed: existingReport.date_completed,
         application_engineer: existingReport.application_engineer,
-        report_type: existingReport.report_type,
         requestor: existingReport.requestor,
-        machine_model: existingReport.machine_model,
-        ink_version: existingReport.ink_version,
-        setup: existingReport.setup,
-        resolution: existingReport.resolution,
         status: existingReport.status
       });
       setFabrics(existingReport.fabrics || []);
+      setAttachments(existingReport.attachments || []);
       setConclusion(existingReport.conclusion || '');
     }
   }, [existingReport]);
@@ -104,6 +97,12 @@ export default function CreateReport() {
         images_grid: test.images_grid || [],
         grid_columns: test.grid_columns || [],
         row_labels: test.row_labels || [],
+        custom_title: test.custom_title || '',
+        custom_images: test.custom_images || [],
+        test_number: test.test_number || '',
+        design_name: test.design_name || '',
+        is_internal: !!test.is_internal,
+        export_selected: test.export_selected !== false,
         notes: test.notes
       }));
       setTests(testsData);
@@ -140,6 +139,7 @@ export default function CreateReport() {
       const reportData = {
         ...details,
         fabrics,
+        attachments,
         conclusion,
         status,
         last_saved: new Date().toISOString()
@@ -181,6 +181,12 @@ export default function CreateReport() {
             images_grid: test.images_grid || [],
             grid_columns: test.grid_columns || [],
             row_labels: test.row_labels || [],
+            custom_title: test.custom_title || '',
+            custom_images: test.custom_images || [],
+            test_number: test.test_number || '',
+            design_name: test.design_name || '',
+            is_internal: !!test.is_internal,
+            export_selected: !test.is_internal && test.export_selected !== false,
             notes: test.notes,
             order: i
           };
@@ -239,6 +245,12 @@ export default function CreateReport() {
             images_grid: test.images_grid,
             grid_columns: test.grid_columns,
             row_labels: test.row_labels,
+            custom_title: test.custom_title,
+            custom_images: test.custom_images,
+            test_number: test.test_number,
+            design_name: test.design_name,
+            is_internal: test.is_internal,
+            export_selected: test.export_selected,
             notes: test.notes
           });
         }
@@ -434,6 +446,23 @@ export default function CreateReport() {
     }
   };
 
+  const handleAttachmentUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setUploadingAttachment(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setAttachments(prev => [...prev, file_url]);
+    } finally {
+      setUploadingAttachment(false);
+      event.target.value = '';
+    }
+  };
+
+  const removeAttachment = (index) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const downloadImagesZip = async () => {
     if (!reportId) return;
     setLoadingZip(true);
@@ -477,6 +506,23 @@ export default function CreateReport() {
             }
           }
         }
+
+        if (test.custom_images && test.custom_images.length > 0) {
+          for (let imgIdx = 0; imgIdx < test.custom_images.length; imgIdx++) {
+            const response = await fetch(test.custom_images[imgIdx]);
+            const blob = await response.blob();
+            testFolder.file(`custom_image_${imgIdx + 1}.jpg`, blob);
+          }
+        }
+      }
+
+      if (report.attachments && report.attachments.length > 0) {
+        const attachmentsFolder = zip.folder('Report_Attachments');
+        for (let i = 0; i < report.attachments.length; i++) {
+          const response = await fetch(report.attachments[i]);
+          const blob = await response.blob();
+          attachmentsFolder.file(`attachment_${i + 1}`, blob);
+        }
       }
 
       const content = await zip.generateAsync({ type: 'blob' });
@@ -506,18 +552,13 @@ export default function CreateReport() {
       
       // Report Info Sheet
       const reportInfo = [
-        ['Media DB - Sample Report'],
+        ['Media DB - Report'],
         [],
         ['Customer Name', report.customer_name || ''],
         ['Task Number', report.task_number || ''],
         ['Date Completed', format(new Date(report.date_completed), 'dd/MM/yyyy')],
         ['Application Engineer', report.application_engineer],
-        ['Report Type', report.report_type],
         ['Requestor', report.requestor || ''],
-        ['Machine Model', report.machine_model || ''],
-        ['Ink Version', report.ink_version || ''],
-        ['Setup', report.setup || ''],
-        ['Resolution', report.resolution || ''],
         []
       ];
       
@@ -527,6 +568,10 @@ export default function CreateReport() {
         reportInfo.push([`Fabric ${idx + 1}`, fabric.name || '']);
         reportInfo.push(['Material', fabric.material_description || '']);
         reportInfo.push(['Working Point', fabric.working_point || '']);
+        reportInfo.push(['Machine Model', fabric.machine_model || '']);
+        reportInfo.push(['Ink Version', fabric.ink_version || '']);
+        reportInfo.push(['Set Up', fabric.setup || '']);
+        reportInfo.push(['Resolution', fabric.resolution || '']);
         reportInfo.push(['Ink Consumption - Total', fabric.ink_consumption_total || '']);
         reportInfo.push(['Ink Consumption - Color', fabric.ink_consumption_color || '']);
         reportInfo.push(['Ink Consumption - White', fabric.ink_consumption_white || '']);
@@ -548,7 +593,7 @@ export default function CreateReport() {
       });
       
       reportInfo.push([]);
-      reportInfo.push(['Conclusion', report.conclusion || '']);
+      reportInfo.push(['Application Notes', report.conclusion || '']);
       
       const ws1 = XLSX.utils.aoa_to_sheet(reportInfo);
       XLSX.utils.book_append_sheet(wb, ws1, 'Report Summary');
@@ -587,7 +632,9 @@ export default function CreateReport() {
       dry_grinding: 'Dry Grinding',
       wet_grinding: 'Wet Grinding',
       bally_flex_rt: 'Bally Flex Room Temperature',
-      bally_flex_minus20: 'Bally Flex -20'
+      bally_flex_minus20: 'Bally Flex -20',
+      laundry_test: 'Laundry Test',
+      custom: 'Custom Test'
     };
     return labels[testType] || testType;
   }
@@ -607,7 +654,7 @@ export default function CreateReport() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-slate-900 mb-2">
-                {reportId ? 'Edit Report' : 'New Sample Report'}
+                {reportId ? 'Edit Report' : 'New Report'}
               </h1>
               {lastSaved && (
                 <p className="text-sm text-slate-500">
@@ -636,10 +683,10 @@ export default function CreateReport() {
               </label>
               {reportId && (
                 <>
-                  <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}`} target="_blank">
+                  <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}&selectedOnly=true`} target="_blank">
                     <Button variant="outline" className="gap-2">
                       <FileDown className="w-4 h-4" />
-                      Export PDF
+                      Export Selected PDF
                     </Button>
                   </Link>
                   <Button
@@ -715,7 +762,35 @@ export default function CreateReport() {
 
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
-              <CardTitle className="text-slate-800">Conclusion</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-slate-800">
+                <Paperclip className="w-5 h-5 text-slate-600" />
+                Report Attachments
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {!isViewMode && (
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-md cursor-pointer hover:bg-slate-50">
+                  <input type="file" onChange={handleAttachmentUpload} className="hidden" disabled={uploadingAttachment} />
+                  {uploadingAttachment ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  Add attachment to ZIP
+                </label>
+              )}
+              {attachments.length > 0 && (
+                <div className="mt-3 text-sm text-slate-600 flex items-center gap-3">
+                  <span>{attachments.length} attachment(s) will be included in ZIP downloads.</span>
+                  {!isViewMode && attachments.map((_, index) => (
+                    <Button key={index} variant="ghost" size="sm" onClick={() => removeAttachment(index)} className="text-red-600 hover:text-red-700">
+                      <X className="w-3 h-3" /> Remove {index + 1}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
+              <CardTitle className="text-slate-800">Application Notes</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-2">

@@ -11,6 +11,7 @@ import TestsSection from './TestsSection';
 import ImageViewerModal from './ImageViewerModal';
 
 export default function FabricsSection({ fabrics, onChange, tests, onTestsChange, readOnly = false }) {
+  const emptyFieldClass = (value) => !readOnly && !value ? 'border-red-300 bg-red-50/40' : 'border-slate-300';
   const [uploading, setUploading] = useState({});
   const [selectedFabric, setSelectedFabric] = useState(0);
   const [viewerImage, setViewerImage] = useState(null);
@@ -42,10 +43,13 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
 
     // Duplicate tests for this fabric
     const fabricTests = tests.filter(t => t.fabricIndex === index);
-    const duplicatedTests = fabricTests.map(test => ({
-      ...test,
-      fabricIndex: index + 1
-    }));
+    const duplicatedTests = fabricTests.map(test => {
+      const { id, ...testCopy } = test;
+      return {
+        ...testCopy,
+        fabricIndex: index + 1
+      };
+    });
     
     // Update fabric indices for tests after the duplicated fabric
     const updatedTests = tests.map(test => 
@@ -194,7 +198,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                           value={fabric.name || ''}
                           onChange={(e) => updateFabric(index, 'name', e.target.value)}
                           placeholder=""
-                          className="border-slate-300"
+                          className={emptyFieldClass(fabric.name)}
                           readOnly={readOnly}
                         />
                       </div>
@@ -205,7 +209,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                           value={fabric.material_description || ''}
                           onChange={(e) => updateFabric(index, 'material_description', e.target.value)}
                           placeholder=""
-                          className="border-slate-300 min-h-[80px]"
+                          className={`${emptyFieldClass(fabric.material_description)} min-h-[80px]`}
                           readOnly={readOnly}
                         />
                       </div>
@@ -216,9 +220,50 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                           value={fabric.working_point || ''}
                           onChange={(e) => updateFabric(index, 'working_point', e.target.value)}
                           placeholder=""
-                          className="border-slate-300"
+                          className={emptyFieldClass(fabric.working_point)}
                           readOnly={readOnly}
                         />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Machine Model</Label>
+                          <Input
+                            value={fabric.machine_model || ''}
+                            onChange={(e) => updateFabric(index, 'machine_model', e.target.value)}
+                            placeholder="e.g., Atlas Max"
+                            className={emptyFieldClass(fabric.machine_model)}
+                            readOnly={readOnly}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Ink Version</Label>
+                          <Input
+                            value={fabric.ink_version || ''}
+                            onChange={(e) => updateFabric(index, 'ink_version', e.target.value)}
+                            placeholder="e.g., Robusto U10"
+                            className={emptyFieldClass(fabric.ink_version)}
+                            readOnly={readOnly}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Set Up</Label>
+                          <Input
+                            value={fabric.setup || ''}
+                            onChange={(e) => updateFabric(index, 'setup', e.target.value)}
+                            className={emptyFieldClass(fabric.setup)}
+                            readOnly={readOnly}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-slate-700">Resolution</Label>
+                          <Input
+                            value={fabric.resolution || ''}
+                            onChange={(e) => updateFabric(index, 'resolution', e.target.value)}
+                            className={emptyFieldClass(fabric.resolution)}
+                            readOnly={readOnly}
+                          />
+                        </div>
                       </div>
 
                       <div className="bg-slate-50 border-2 border-slate-300 rounded-lg p-4 space-y-4">

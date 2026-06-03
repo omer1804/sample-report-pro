@@ -1,0 +1,166 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "customer_name": {
+      "type": "string",
+      "description": "Name of the customer"
+    },
+    "task_number": {
+      "type": "string",
+      "description": "Task number or reference ID"
+    },
+    "date_completed": {
+      "type": "string",
+      "format": "date",
+      "description": "Date the report was completed"
+    },
+    "application_engineer": {
+      "type": "string",
+      "description": "Name of the application engineer"
+    },
+    "requestor": {
+      "type": "string",
+      "description": "Person who requested the report"
+    },
+    "machine_model": {
+      "type": "string",
+      "description": "Legacy machine model value"
+    },
+    "ink_version": {
+      "type": "string",
+      "description": "Legacy ink version value"
+    },
+    "setup": {
+      "type": "string",
+      "description": "Legacy setup value"
+    },
+    "resolution": {
+      "type": "string",
+      "description": "Legacy resolution value"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "in_progress",
+        "completed"
+      ],
+      "default": "draft",
+      "description": "Status of the report"
+    },
+    "fabrics": {
+      "type": "array",
+      "description": "Array of fabric details",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "material_description": {
+            "type": "string"
+          },
+          "working_point": {
+            "type": "string",
+            "description": "Working point value"
+          },
+          "machine_model": {
+            "type": "string",
+            "description": "Machine model used for this fabric"
+          },
+          "ink_version": {
+            "type": "string",
+            "description": "Ink version used for this fabric"
+          },
+          "setup": {
+            "type": "string",
+            "description": "Setup details for this fabric"
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Resolution settings for this fabric"
+          },
+          "ink_consumption_cyan": {
+            "type": "string",
+            "description": "Cyan ink consumption"
+          },
+          "ink_consumption_magenta": {
+            "type": "string",
+            "description": "Magenta ink consumption"
+          },
+          "ink_consumption_yellow": {
+            "type": "string",
+            "description": "Yellow ink consumption"
+          },
+          "ink_consumption_black": {
+            "type": "string",
+            "description": "Black ink consumption"
+          },
+          "ink_consumption_fof_color": {
+            "type": "string",
+            "description": "Fof Color ink consumption"
+          },
+          "ink_consumption_white": {
+            "type": "string",
+            "description": "White ink consumption"
+          },
+          "ink_consumption_fof_white": {
+            "type": "string",
+            "description": "FoF White ink consumption"
+          },
+          "ink_consumption_neon": {
+            "type": "string",
+            "description": "Neon ink consumption"
+          },
+          "ink_consumption_u10": {
+            "type": "string",
+            "description": "U10 ink consumption"
+          },
+          "ink_consumption_fof_white_top_coat": {
+            "type": "string",
+            "description": "FoF White Top Coat ink consumption"
+          },
+          "ink_consumption_total": {
+            "type": "string",
+            "description": "Total ink consumption"
+          },
+          "curing_time_min": {
+            "type": "number",
+            "description": "Curing time in minutes"
+          },
+          "curing_temp_celsius": {
+            "type": "number",
+            "description": "Curing temperature in Celsius"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "description": "Report file attachments included in ZIP exports",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conclusion": {
+      "type": "string",
+      "description": "Application notes"
+    },
+    "last_saved": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last save"
+    }
+  },
+  "required": [
+    "date_completed",
+    "application_engineer"
+  ]
+}

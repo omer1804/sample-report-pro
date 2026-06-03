@@ -16,6 +16,7 @@ const TEST_TYPES = [
   { value: 'wet_grinding', label: 'Wet Grinding', params: { pressure: '12 Kpa', sample_size: '38 +- 2mm samples', revolutions: '12K rub revolutions', checkpoint: 'Check point every 4k' } },
   { value: 'bally_flex_rt', label: 'Bally Flex Room Temperature', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } },
   { value: 'bally_flex_minus20', label: 'Bally Flex -20°C', params: { sample_size: '70x45mm Samples', revolutions: '150K Bally Bending', checkpoint: 'Check point every 50k' } },
+  { value: 'laundry_test', label: 'Laundry Test', params: { sample_size: '100x100mm Samples', washing_cycles: '5 washing cycles', temperature: '40°C', detergent: 'Standard detergent' } },
   { value: 'custom', label: 'Custom Test', params: {} }
 ];
 
@@ -56,14 +57,20 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
   }, [tests]);
 
   const addTest = () => {
+    const fabricTestCount = tests.filter(t => t.fabricIndex === fabricIndex).length;
     const newTest = {
       fabricIndex: fabricIndex,
       test_type: '',
+      test_number: `${fabricIndex + 1}.${fabricTestCount + 1}`,
+      design_name: '',
+      is_internal: false,
+      export_selected: true,
       test_parameters: {},
       result: 'fail',
       images_grid: [],
       grid_columns: [],
       row_labels: [],
+      custom_images: [],
       notes: ''
     };
     onChange([...tests, newTest]);
@@ -108,6 +115,10 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
         updated[testIndex].test_parameters = testConfig.params;
         updated[testIndex].grid_columns = []; // Reset columns when changing test type
       }
+    }
+
+    if (field === 'is_internal' && value) {
+      updated[testIndex].export_selected = false;
     }
     
     onChange(updated);
@@ -185,6 +196,16 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
+                    <Label className="text-slate-700">Test Number</Label>
+                    <Input
+                      value={test.test_number || `${fabricIndex + 1}.${fabricTestIndex}`}
+                      onChange={(e) => updateTest(testIndex, 'test_number', e.target.value)}
+                      className="border-slate-300"
+                      readOnly={readOnly}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label className="text-slate-700">Test Type</Label>
                     <Select
                       value={test.test_type}
@@ -202,6 +223,30 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-slate-700">Export</Label>
+                    <div className="flex items-center gap-4 h-10">
+                      <label className="flex items-center gap-2 text-sm text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={!!test.is_internal}
+                          onChange={(e) => updateTest(testIndex, 'is_internal', e.target.checked)}
+                          disabled={readOnly}
+                        />
+                        Internal test
+                      </label>
+                      <label className={`flex items-center gap-2 text-sm ${test.is_internal ? 'text-slate-400' : 'text-slate-700'}`}>
+                        <input
+                          type="checkbox"
+                          checked={!test.is_internal && test.export_selected !== false}
+                          onChange={(e) => updateTest(testIndex, 'export_selected', e.target.checked)}
+                          disabled={readOnly || test.is_internal}
+                        />
+                        Include in export
+                      </label>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -348,7 +393,51 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
                             />
                           </div>
                         )}
+                        {test.test_parameters?.washing_cycles !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Washing Cycles</Label>
+                            <Input
+                              value={test.test_parameters.washing_cycles}
+                              onChange={(e) => updateTestParameter(testIndex, 'washing_cycles', e.target.value)}
+                              className="h-8 text-sm"
+                              readOnly={readOnly}
+                            />
+                          </div>
+                        )}
+                        {test.test_parameters?.temperature !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Temperature</Label>
+                            <Input
+                              value={test.test_parameters.temperature}
+                              onChange={(e) => updateTestParameter(testIndex, 'temperature', e.target.value)}
+                              className="h-8 text-sm"
+                              readOnly={readOnly}
+                            />
+                          </div>
+                        )}
+                        {test.test_parameters?.detergent !== undefined && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-slate-600">Detergent</Label>
+                            <Input
+                              value={test.test_parameters.detergent}
+                              onChange={(e) => updateTestParameter(testIndex, 'detergent', e.target.value)}
+                              className="h-8 text-sm"
+                              readOnly={readOnly}
+                            />
+                          </div>
+                        )}
                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700">Design Name</Label>
+                      <Input
+                        value={test.design_name || ''}
+                        onChange={(e) => updateTest(testIndex, 'design_name', e.target.value)}
+                        placeholder="Enter design name"
+                        className="border-slate-300"
+                        readOnly={readOnly}
+                      />
                     </div>
 
                     <div className="space-y-2">

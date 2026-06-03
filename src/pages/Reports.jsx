@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2 } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2, Folder } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import * as XLSX from 'xlsx';
 export default function Reports() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('-date_completed'); // newest first
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [exportingAll, setExportingAll] = useState(false);
 
   const { data: reports = [], isLoading } = useQuery({
@@ -55,6 +56,12 @@ export default function Reports() {
             images_grid: test.images_grid,
             grid_columns: test.grid_columns,
             row_labels: test.row_labels,
+            custom_title: test.custom_title,
+            custom_images: test.custom_images,
+            test_number: test.test_number,
+            design_name: test.design_name,
+            is_internal: test.is_internal,
+            export_selected: test.export_selected,
             notes: test.notes
           });
         }
@@ -110,6 +117,23 @@ export default function Reports() {
             }
           }
         }
+
+        if (test.custom_images && test.custom_images.length > 0) {
+          for (let imgIdx = 0; imgIdx < test.custom_images.length; imgIdx++) {
+            const response = await fetch(test.custom_images[imgIdx]);
+            const blob = await response.blob();
+            testFolder.file(`custom_image_${imgIdx + 1}.jpg`, blob);
+          }
+        }
+      }
+
+      if (report.attachments && report.attachments.length > 0) {
+        const attachmentsFolder = zip.folder('Report_Attachments');
+        for (let i = 0; i < report.attachments.length; i++) {
+          const response = await fetch(report.attachments[i]);
+          const blob = await response.blob();
+          attachmentsFolder.file(`attachment_${i + 1}`, blob);
+        }
       }
 
       const content = await zip.generateAsync({ type: 'blob' });
@@ -144,11 +168,21 @@ export default function Reports() {
     );
   });
 
+  const customerGroups = filteredReports.reduce((groups, report) => {
+    const customer = report.customer_name || 'Untitled Customer';
+    groups[customer] = groups[customer] || [];
+    groups[customer].push(report);
+    return groups;
+  }, {});
+
+  const visibleReports = selectedCustomer ? (customerGroups[selectedCustomer] || []) : filteredReports;
+
   const exportAllToExcel = async () => {
     setExportingAll(true);
     try {
+      const reportsToExport = selectedCustomer ? visibleReports : reports;
       const allReportsData = await Promise.all(
-        reports.map(async (report) => {
+        reportsToExport.map(async (report) => {
           const tests = await base44.entities.FabricTest.filter({ report_id: report.id });
           return { report, tests };
         })
@@ -164,18 +198,13 @@ export default function Reports() {
           'Task Number',
           'Date Completed',
           'Application Engineer',
-          'Report Type',
           'Requestor',
-          'Machine Model',
-          'Ink Version',
-          'Setup',
-          'Resolution',
           'Status',
           'Number of Fabrics',
           'Total Tests',
           'Tests Passed',
           'Tests Failed',
-          'Conclusion'
+          'Application Notes'
         ]
       ];
 
@@ -189,12 +218,7 @@ export default function Reports() {
           report.task_number || '',
           report.date_completed ? format(new Date(report.date_completed), 'yyyy-MM-dd') : '',
           report.application_engineer || '',
-          report.report_type || '',
           report.requestor || '',
-          report.machine_model || '',
-          report.ink_version || '',
-          report.setup || '',
-          report.resolution || '',
           report.status || '',
           report.fabrics?.length || 0,
           tests.length,
@@ -216,6 +240,10 @@ export default function Reports() {
           'Fabric Name',
           'Material Description',
           'Working Point',
+          'Machine Model',
+          'Ink Version',
+          'Set Up',
+          'Resolution',
           'Ink Consumption - Total',
           'Ink Consumption - Color',
           'Ink Consumption - White',
@@ -234,6 +262,10 @@ export default function Reports() {
             fabric.name || '',
             fabric.material_description || '',
             fabric.working_point || '',
+            fabric.machine_model || '',
+            fabric.ink_version || '',
+            fabric.setup || '',
+            fabric.resolution || '',
             fabric.ink_consumption_total || '',
             fabric.ink_consumption_color || '',
             fabric.ink_consumption_white || '',
@@ -283,7 +315,7 @@ export default function Reports() {
       const ws3 = XLSX.utils.aoa_to_sheet(testData);
       XLSX.utils.book_append_sheet(wb, ws3, 'Tests Database');
 
-      XLSX.writeFile(wb, `MediaDB_AllReports_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      XLSX.writeFile(wb, `MediaDB_${selectedCustomer || 'AllReports'}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
     } catch (error) {
       console.error('Export failed:', error);
       alert('Failed to export database');
@@ -299,8 +331,8 @@ export default function Reports() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-2">Sample Reports</h1>
-              <p className="text-slate-600">Textile printing durability test reports</p>
+              <h1 className="text-4xl font-bold text-slate-900 mb-2">{selectedCustomer || 'Customer Folders'}</h1>
+              <p className="text-slate-600">{selectedCustomer ? 'Choose a report for this customer' : 'Textile printing durability test reports grouped by customer'}</p>
             </div>
             <div className="flex gap-3">
               <Button
@@ -310,7 +342,7 @@ export default function Reports() {
                 disabled={exportingAll || !reports || reports.length === 0}
               >
                 {exportingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-                Export All to Excel
+                {selectedCustomer ? 'Export Customer Folder' : 'Export All to Excel'}
               </Button>
               <Link to={createPageUrl('CreateReport')}>
                 <Button className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-lg">
@@ -326,7 +358,7 @@ export default function Reports() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search by customer, engineer, requestor, machine..."
+                placeholder="Search by customer, engineer, or requestor..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -361,7 +393,7 @@ export default function Reports() {
             <CardContent className="flex flex-col items-center justify-center py-16">
               <FileText className="w-16 h-16 text-slate-300 mb-4" />
               <h3 className="text-xl font-semibold text-slate-700 mb-2">No reports yet</h3>
-              <p className="text-slate-500 mb-6">Create your first sample report to get started</p>
+              <p className="text-slate-500 mb-6">Create your first report to get started</p>
               <Link to={createPageUrl('CreateReport')}>
                 <Button className="bg-blue-600 hover:bg-blue-700 gap-2">
                   <Plus className="w-5 h-5" />
@@ -378,90 +410,71 @@ export default function Reports() {
               <p className="text-slate-500">Try adjusting your search</p>
             </CardContent>
           </Card>
-        ) : (
+        ) : !selectedCustomer ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredReports.map((report) => (
-              <Card key={report.id} className="hover:shadow-lg transition-shadow border-slate-200 flex flex-col">
-                <CardContent className="p-6 flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-4 h-8">
-                    <FileText className="w-8 h-8 text-blue-600 flex-shrink-0" />
-                    <Badge className={`${getStatusColor(report.status)} border`}>
-                      {report.status}
-                    </Badge>
+            {Object.entries(customerGroups).map(([customer, customerReports]) => (
+              <Card key={customer} className="hover:shadow-lg transition-shadow border-slate-200 cursor-pointer" onClick={() => setSelectedCustomer(customer)}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Folder className="w-10 h-10 text-amber-500" />
+                    <Badge variant="secondary">{customerReports.length} report{customerReports.length > 1 ? 's' : ''}</Badge>
                   </div>
-                  
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    {report.customer_name || 'Untitled Customer'}
-                  </h3>
-                  <p className="text-sm text-slate-500 mb-1">
-                    {format(new Date(report.date_completed), 'MMM dd, yyyy')}
-                  </p>
-                  {report.last_saved && (
-                    <p className="text-xs text-slate-400 mb-3">
-                      Last saved: {format(new Date(report.last_saved), 'MMM dd, yyyy HH:mm')}
-                    </p>
-                  )}
-                  
-                  <div className="space-y-1 text-sm text-slate-600 mb-4 flex-1">
-                    {report.application_engineer && (
-                      <p><span className="font-medium">Engineer:</span> {report.application_engineer}</p>
-                    )}
-                    {report.requestor && (
-                      <p><span className="font-medium">Requestor:</span> {report.requestor}</p>
-                    )}
-                    {report.fabrics && report.fabrics.length > 0 && (
-                      <p><span className="font-medium">Fabrics:</span> {report.fabrics.length}</p>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2 items-center mt-auto">
-                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}&view=true`} className="flex-1">
-                      <Button variant="outline" className="w-full h-9 gap-2">
-                        <Eye className="w-4 h-4" />
-                        View
-                      </Button>
-                    </Link>
-                    <Link to={createPageUrl('CreateReport') + `?id=${report.id}`}>
-                      <Button variant="outline" size="icon" className="h-9 w-9" title="Edit Report">
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                    <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">
-                      <Button variant="outline" size="icon" className="h-9 w-9" title="Export PDF">
-                        <FileDown className="w-4 h-4" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => downloadImagesZip(report)}
-                      className="h-9 w-9 text-purple-500 hover:text-purple-700 hover:bg-purple-50"
-                      title="Download images as ZIP"
-                    >
-                      <FolderArchive className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => duplicateReport(report)}
-                      className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                      title="Duplicate report"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteReport(report.id)}
-                      className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{customer}</h3>
+                  <p className="text-sm text-slate-500">Open folder to choose a report or export all reports for this customer.</p>
                 </CardContent>
               </Card>
             ))}
           </div>
+        ) : (
+          <>
+            <Button variant="outline" onClick={() => setSelectedCustomer(null)} className="mb-4">
+              Back to customer folders
+            </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {visibleReports.map((report) => (
+                <Card key={report.id} className="hover:shadow-lg transition-shadow border-slate-200 flex flex-col">
+                  <CardContent className="p-6 flex flex-col flex-1">
+                    <div className="flex items-center justify-between mb-4 h-8">
+                      <FileText className="w-8 h-8 text-blue-600 flex-shrink-0" />
+                      <Badge className={`${getStatusColor(report.status)} border`}>
+                        {report.status}
+                      </Badge>
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      {report.task_number || 'Untitled Report'}
+                    </h3>
+                    <p className="text-sm text-slate-500 mb-1">
+                      {format(new Date(report.date_completed), 'MMM dd, yyyy')}
+                    </p>
+                    {report.last_saved && (
+                      <p className="text-xs text-slate-400 mb-3">
+                        Last saved: {format(new Date(report.last_saved), 'MMM dd, yyyy HH:mm')}
+                      </p>
+                    )}
+                    <div className="space-y-1 text-sm text-slate-600 mb-4 flex-1">
+                      {report.application_engineer && <p><span className="font-medium">Engineer:</span> {report.application_engineer}</p>}
+                      {report.requestor && <p><span className="font-medium">Requestor:</span> {report.requestor}</p>}
+                      {report.fabrics && report.fabrics.length > 0 && <p><span className="font-medium">Fabrics:</span> {report.fabrics.length}</p>}
+                    </div>
+                    <div className="flex gap-2 items-center mt-auto">
+                      <Link to={createPageUrl('CreateReport') + `?id=${report.id}&view=true`} className="flex-1">
+                        <Button variant="outline" className="w-full h-9 gap-2"><Eye className="w-4 h-4" />View</Button>
+                      </Link>
+                      <Link to={createPageUrl('CreateReport') + `?id=${report.id}`}>
+                        <Button variant="outline" size="icon" className="h-9 w-9" title="Edit Report"><Pencil className="w-4 h-4" /></Button>
+                      </Link>
+                      <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">
+                        <Button variant="outline" size="icon" className="h-9 w-9" title="Export PDF"><FileDown className="w-4 h-4" /></Button>
+                      </Link>
+                      <Button variant="outline" size="icon" onClick={() => downloadImagesZip(report)} className="h-9 w-9 text-purple-500 hover:text-purple-700 hover:bg-purple-50" title="Download images as ZIP"><FolderArchive className="w-4 h-4" /></Button>
+                      <Button variant="outline" size="icon" onClick={() => duplicateReport(report)} className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50" title="Duplicate report"><Copy className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => deleteReport(report.id)} className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

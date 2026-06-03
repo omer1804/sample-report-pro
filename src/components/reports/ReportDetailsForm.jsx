@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
 export default function ReportDetailsForm({ details, onChange, readOnly = false }) {
+  const emptyFieldClass = (value) => !readOnly && !value ? 'border-red-300 bg-red-50/40' : 'border-slate-300';
+
   const handleChange = (field, value) => {
     if (readOnly) return;
     onChange({ ...details, [field]: value });
@@ -27,7 +29,7 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
               value={details.customer_name || ''}
               onChange={(e) => handleChange('customer_name', e.target.value)}
               placeholder="Enter customer name"
-              className="border-slate-300"
+              className={emptyFieldClass(details.customer_name)}
               readOnly={readOnly}
             />
           </div>
@@ -39,7 +41,7 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
               value={details.task_number || ''}
               onChange={(e) => handleChange('task_number', e.target.value)}
               placeholder="Enter task number"
-              className="border-slate-300"
+              className={emptyFieldClass(details.task_number)}
               readOnly={readOnly}
             />
           </div>
@@ -51,7 +53,7 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
               type="date"
               value={details.date_completed || ''}
               onChange={(e) => handleChange('date_completed', e.target.value)}
-              className="border-slate-300"
+              className={emptyFieldClass(details.date_completed)}
               readOnly={readOnly}
             />
           </div>
@@ -63,39 +65,9 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
               value={details.application_engineer || ''}
               onChange={(e) => handleChange('application_engineer', e.target.value)}
               placeholder="Engineer name"
-              className="border-slate-300"
+              className={emptyFieldClass(details.application_engineer)}
               readOnly={readOnly}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-700">Report Type</Label>
-            <div className="flex gap-4 pt-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="report_type"
-                  value="demo"
-                  checked={details.report_type === 'demo'}
-                  onChange={(e) => handleChange('report_type', e.target.value)}
-                  className="w-4 h-4 text-blue-600"
-                  disabled={readOnly}
-                />
-                <span className="text-sm text-slate-700">Demo</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="report_type"
-                  value="sample"
-                  checked={details.report_type === 'sample'}
-                  onChange={(e) => handleChange('report_type', e.target.value)}
-                  className="w-4 h-4 text-blue-600"
-                  disabled={readOnly}
-                />
-                <span className="text-sm text-slate-700">Sample</span>
-              </label>
-            </div>
           </div>
 
           <div className="space-y-2">
@@ -105,53 +77,7 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
               value={details.requestor || ''}
               onChange={(e) => handleChange('requestor', e.target.value)}
               placeholder="Requestor name"
-              className="border-slate-300"
-              readOnly={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="machine_model" className="text-slate-700">Machine Model</Label>
-            <Input
-              id="machine_model"
-              value={details.machine_model || ''}
-              onChange={(e) => handleChange('machine_model', e.target.value)}
-              placeholder="e.g., Atlas Max"
-              className="border-slate-300"
-              readOnly={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="ink_version" className="text-slate-700">Ink Version</Label>
-            <Input
-              id="ink_version"
-              value={details.ink_version || ''}
-              onChange={(e) => handleChange('ink_version', e.target.value)}
-              placeholder="e.g., Robusto U10"
-              className="border-slate-300"
-              readOnly={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="setup" className="text-slate-700">Set Up</Label>
-            <Input
-              id="setup"
-              value={details.setup || ''}
-              onChange={(e) => handleChange('setup', e.target.value)}
-              className="border-slate-300"
-              readOnly={readOnly}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="resolution" className="text-slate-700">Resolution</Label>
-            <Input
-              id="resolution"
-              value={details.resolution || ''}
-              onChange={(e) => handleChange('resolution', e.target.value)}
-              className="border-slate-300"
+              className={emptyFieldClass(details.requestor)}
               readOnly={readOnly}
             />
           </div>

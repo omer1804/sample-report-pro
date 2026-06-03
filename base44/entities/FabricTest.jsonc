@@ -1,0 +1,140 @@
+{
+  "name": "FabricTest",
+  "type": "object",
+  "properties": {
+    "report_id": {
+      "type": "string",
+      "description": "Reference to the parent Report"
+    },
+    "fabric_index": {
+      "type": "number",
+      "description": "Index of the fabric in the report"
+    },
+    "fabric_name": {
+      "type": "string",
+      "description": "Name of the fabric being tested"
+    },
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "sand_grinding",
+        "dry_grinding",
+        "wet_grinding",
+        "bally_flex_rt",
+        "bally_flex_minus20",
+        "laundry_test",
+        "custom"
+      ],
+      "description": "Type of test performed"
+    },
+    "custom_title": {
+      "type": "string",
+      "description": "Custom display title for custom tests"
+    },
+    "test_number": {
+      "type": "string",
+      "description": "Optional custom test numbering"
+    },
+    "design_name": {
+      "type": "string",
+      "description": "Design name used for the test image grid"
+    },
+    "is_internal": {
+      "type": "boolean",
+      "default": false,
+      "description": "Internal tests are excluded from export selection"
+    },
+    "export_selected": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this test is selected for export"
+    },
+    "test_parameters": {
+      "type": "object",
+      "description": "Test-specific parameters",
+      "properties": {
+        "pressure": {
+          "type": "string"
+        },
+        "sample_size": {
+          "type": "string"
+        },
+        "revolutions": {
+          "type": "string"
+        },
+        "checkpoint": {
+          "type": "string"
+        },
+        "washing_cycles": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "string"
+        },
+        "detergent": {
+          "type": "string"
+        }
+      }
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail"
+      ],
+      "description": "Test result"
+    },
+    "images_grid": {
+      "type": "array",
+      "description": "2D array of images for the test grid",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "image_url": {
+              "type": "string"
+            },
+            "is_selected": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "custom_images": {
+      "type": "array",
+      "description": "Images for custom tests",
+      "items": {
+        "type": "string"
+      }
+    },
+    "grid_columns": {
+      "type": "array",
+      "description": "Custom column headers for the grid",
+      "items": {
+        "type": "string"
+      }
+    },
+    "row_labels": {
+      "type": "array",
+      "description": "Labels for each row (sample area)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about the test"
+    },
+    "order": {
+      "type": "number",
+      "description": "Order of the test within its fabric"
+    }
+  },
+  "required": [
+    "report_id",
+    "fabric_name",
+    "test_type"
+  ]
+}

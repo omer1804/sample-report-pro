@@ -10,6 +10,7 @@ import { createPageUrl } from '@/utils';
 export default function ViewReportPDF() {
   const urlParams = new URLSearchParams(window.location.search);
   const reportId = urlParams.get('id');
+  const selectedOnly = urlParams.get('selectedOnly') === 'true';
 
   const { data: report } = useQuery({
     queryKey: ['report', reportId],
@@ -35,6 +36,8 @@ export default function ViewReportPDF() {
     return <div className="p-8 text-center">Loading...</div>;
   }
 
+  const exportTests = tests.filter(test => !test.is_internal && (!selectedOnly || test.export_selected !== false));
+
   return (
     <div className="min-h-screen bg-white">
       {/* Print Button - Hidden in print */}
@@ -55,19 +58,14 @@ export default function ViewReportPDF() {
       <div className="p-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 border-b pb-4">
-          <h1 className="text-2xl font-bold mb-2">Sample Durability Test Report</h1>
+          <h1 className="text-2xl font-bold mb-2">Durability Test Report</h1>
           <div className="grid grid-cols-2 gap-4 text-sm">
             {report.customer_name && <div><strong>Customer:</strong> {report.customer_name}</div>}
             {report.task_number && <div><strong>Task Number:</strong> {report.task_number}</div>}
             <div><strong>Date Completed:</strong> {format(new Date(report.date_completed), 'dd/MM/yy')}</div>
             {report.last_saved && <div><strong>Last Saved:</strong> {format(new Date(report.last_saved), 'dd/MM/yy HH:mm')}</div>}
             <div><strong>Application Engineer:</strong> {report.application_engineer}</div>
-            <div><strong>Type:</strong> {report.report_type === 'demo' ? '☐ Demo ☒ Sample' : '☒ Demo ☐ Sample'}</div>
             <div><strong>Requestor:</strong> {report.requestor || '-'}</div>
-            <div><strong>Machine Model:</strong> {report.machine_model || '-'}</div>
-            <div><strong>Ink Version:</strong> {report.ink_version || '-'}</div>
-            <div><strong>Set Up:</strong> {report.setup || '-'}</div>
-            <div><strong>Resolution:</strong> {report.resolution || '-'}</div>
           </div>
         </div>
 
@@ -81,6 +79,10 @@ export default function ViewReportPDF() {
                 <p className="text-sm">{fabric.material_description}</p>
                 <div className="text-sm mt-1 space-y-1">
                   {fabric.working_point && <p><strong>Working Point:</strong> {fabric.working_point}</p>}
+                  {(fabric.machine_model || report.machine_model) && <p><strong>Machine Model:</strong> {fabric.machine_model || report.machine_model}</p>}
+                  {(fabric.ink_version || report.ink_version) && <p><strong>Ink Version:</strong> {fabric.ink_version || report.ink_version}</p>}
+                  {(fabric.setup || report.setup) && <p><strong>Set Up:</strong> {fabric.setup || report.setup}</p>}
+                  {(fabric.resolution || report.resolution) && <p><strong>Resolution:</strong> {fabric.resolution || report.resolution}</p>}
                   {fabric.curing_time_min && <p><strong>Curing Time:</strong> {fabric.curing_time_min} min</p>}
                   {fabric.curing_temp_celsius && <p><strong>Curing Temp:</strong> {fabric.curing_temp_celsius}°C</p>}
                 </div>
@@ -176,7 +178,7 @@ export default function ViewReportPDF() {
           <h2 className="text-xl font-bold mb-4">Test Summary</h2>
           <div className="flex gap-4 flex-wrap">
             {report.fabrics?.map((fabric, fabricIdx) => {
-              const fabricTests = tests.filter(t => t.fabric_index === fabricIdx);
+              const fabricTests = exportTests.filter(t => t.fabric_index === fabricIdx);
               if (fabricTests.length === 0) return null;
               
               return (
@@ -213,7 +215,7 @@ export default function ViewReportPDF() {
 
         {/* Tests */}
         {report.fabrics?.map((fabric, fabricIdx) => {
-          const fabricTests = tests.filter(t => t.fabric_index === fabricIdx).sort((a, b) => {
+          const fabricTests = exportTests.filter(t => t.fabric_index === fabricIdx).sort((a, b) => {
             const aId = a.id || '';
             const bId = b.id || '';
             return aId.localeCompare(bId);
@@ -231,8 +233,14 @@ export default function ViewReportPDF() {
               <div key={`${fabricIdx}-${testIdx}`} className="mb-12 page-break">
                 <h2 className="text-lg font-bold mb-2">Fabric {fabricIdx + 1}: {fabric.name}</h2>
                 <h3 className="text-md font-semibold mb-4" style={{backgroundColor: '#ffff00', display: 'inline-block', padding: '2px 8px'}}>
-                  Test {fabricIdx + 1}.{testIdx + 1}: {getTestLabel(test.test_type)}
+                  Test {test.test_number || `${fabricIdx + 1}.${testIdx + 1}`}: {test.custom_title || getTestLabel(test.test_type)}
                 </h3>
+                {!test.is_internal && fabric.working_point && (
+                  <p className="text-sm mb-3"><strong>Working Point:</strong> {fabric.working_point}</p>
+                )}
+                {test.design_name && (
+                  <p className="text-sm mb-3"><strong>Design Name:</strong> {test.design_name}</p>
+                )}
 
               {/* Test Grid */}
               {test.images_grid && test.images_grid.length > 0 ? (
@@ -279,6 +287,12 @@ export default function ViewReportPDF() {
                     ))}
                   </tbody>
                 </table>
+              ) : test.custom_images && test.custom_images.length > 0 ? (
+                <div className="flex flex-wrap gap-3 mb-4">
+                  {test.custom_images.map((img, imgIdx) => (
+                    <img key={imgIdx} src={img} alt="" className="h-48 object-contain border" />
+                  ))}
+                </div>
               ) : (
                 <div className="mb-4 p-4 border border-slate-300 bg-slate-50 text-sm text-slate-600">
                   No test images uploaded yet
@@ -304,6 +318,15 @@ export default function ViewReportPDF() {
                     {test.test_parameters?.checkpoint && (
                       <tr><td className="border border-slate-400 px-3 py-1">{test.test_parameters.checkpoint}</td></tr>
                     )}
+                    {test.test_parameters?.washing_cycles && (
+                      <tr><td className="border border-slate-400 px-3 py-1">{test.test_parameters.washing_cycles}</td></tr>
+                    )}
+                    {test.test_parameters?.temperature && (
+                      <tr><td className="border border-slate-400 px-3 py-1">{test.test_parameters.temperature}</td></tr>
+                    )}
+                    {test.test_parameters?.detergent && (
+                      <tr><td className="border border-slate-400 px-3 py-1">{test.test_parameters.detergent}</td></tr>
+                    )}
                     <tr>
                       <td 
                         className="border border-slate-400 px-3 py-1 font-semibold text-center text-white"
@@ -317,8 +340,9 @@ export default function ViewReportPDF() {
               </div>
 
               {test.notes && (
-                <div className="mt-3">
-                  <p className="text-sm">• {test.notes}</p>
+                <div className="mt-3 border border-slate-300 p-3">
+                  <h4 className="font-semibold text-sm mb-1">Notes</h4>
+                  <p className="text-sm whitespace-pre-wrap">{test.notes}</p>
                 </div>
               )}
               </div>
@@ -329,7 +353,7 @@ export default function ViewReportPDF() {
         {/* Conclusion */}
         {report.conclusion && (
           <div className="mt-8">
-            <h2 className="text-xl font-bold mb-3">Conclusion</h2>
+            <h2 className="text-xl font-bold mb-3">Application Notes</h2>
             <div className="whitespace-pre-wrap text-sm">{report.conclusion}</div>
           </div>
         )}
@@ -359,7 +383,9 @@ function getTestLabel(testType) {
     dry_grinding: 'Dry Grinding',
     wet_grinding: 'Wet Grinding',
     bally_flex_rt: 'Bally Flex Room Temperature',
-    bally_flex_minus20: 'Bally Flex -20'
+    bally_flex_minus20: 'Bally Flex -20',
+    laundry_test: 'Laundry Test',
+    custom: 'Custom Test'
   };
   return labels[testType] || testType;
 }
@@ -376,6 +402,8 @@ function getDefaultColumns(testType) {
       return ['REF', '50K', '100K', '150K'];
     case 'bally_flex_minus20':
       return ['REF', '40K'];
+    case 'laundry_test':
+      return ['REF', 'Wash 1', 'Wash 3', 'Wash 5'];
     default:
       return ['REF'];
   }

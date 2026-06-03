@@ -7,6 +7,7 @@ import ImageViewerModal from './ImageViewerModal';
 
 export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange, readOnly = false }) {
   const [uploading, setUploading] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
   const [editingRow, setEditingRow] = useState(null);
   const [editingCol, setEditingCol] = useState(null);
   const [viewerImage, setViewerImage] = useState(null);
@@ -34,6 +35,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
         return ['REF', '50K', '100K', '150K'];
       case 'bally_flex_minus20':
         return ['REF', '40K'];
+      case 'laundry_test':
+        return ['REF', 'Wash 1', 'Wash 3', 'Wash 5'];
       default:
         return ['REF'];
     }
@@ -60,7 +63,10 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
             : cell
         )
       );
+      setLocalGrid(newGrid);
       onChange(newGrid);
+      setUploadSuccess(`${rowIndex}-${colIndex}`);
+      setTimeout(() => setUploadSuccess(''), 2500);
     } catch (error) {
       console.error('Upload failed:', error);
     } finally {
@@ -76,6 +82,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
           : cell
       )
     );
+    setLocalGrid(newGrid);
     onChange(newGrid);
   };
 
@@ -278,6 +285,11 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                           className="w-full h-full object-cover rounded cursor-pointer"
                           onClick={() => setViewerImage(cell.image_url)}
                         />
+                        {uploadSuccess === `${rowIndex}-${colIndex}` && (
+                          <span className="absolute top-1 right-1 bg-green-600 text-white rounded px-2 py-1 text-xs font-semibold">
+                            Uploaded
+                          </span>
+                        )}
                         {!readOnly && (
                           <>
                             <div className="absolute top-1 left-1 flex gap-1">
@@ -303,6 +315,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                                         : c
                                     )
                                   );
+                                  setLocalGrid(newGrid);
                                   onChange(newGrid);
                                 }}
                                 className="bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700"
@@ -335,6 +348,8 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                         />
                         {uploading === `${rowIndex}-${colIndex}` ? (
                           <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                        ) : uploadSuccess === `${rowIndex}-${colIndex}` ? (
+                          <span className="text-xs text-green-600 font-semibold">Uploaded</span>
                         ) : (
                           <Upload className="w-6 h-6 text-slate-400" />
                         )}
@@ -351,7 +366,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
         <p className="text-xs text-slate-700">
-          <strong>Tip:</strong> Click on an image to view it larger with zoom. Use "Select as fail point" to mark the critical failure point with a red border.
+          <strong>Tip:</strong> Uploaded images are added to the report immediately; click Save Draft to store them permanently. Use "Select as fail point" to mark the critical failure point with a red border.
         </p>
       </div>
 
