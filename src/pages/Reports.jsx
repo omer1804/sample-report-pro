@@ -75,6 +75,13 @@ export default function Reports() {
     }
   };
 
+  const renameReport = async (report) => {
+    const newName = prompt('Enter report name', report.report_name || report.task_number || '');
+    if (newName === null) return;
+    await base44.entities.Report.update(report.id, { report_name: newName.trim() });
+    window.location.reload();
+  };
+
   const downloadImagesZip = async (report) => {
     try {
       const zip = new JSZip();
@@ -161,6 +168,7 @@ export default function Reports() {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
+      report.report_name?.toLowerCase().includes(query) ||
       report.customer_name?.toLowerCase().includes(query) ||
       report.application_engineer?.toLowerCase().includes(query) ||
       report.requestor?.toLowerCase().includes(query) ||
@@ -440,9 +448,15 @@ export default function Reports() {
                         {report.status}
                       </Badge>
                     </div>
-                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                      {report.task_number || 'Untitled Report'}
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                      {report.report_name || report.task_number || 'Untitled Report'}
                     </h3>
+                    <button
+                      onClick={() => renameReport(report)}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline mb-2 text-left w-fit"
+                    >
+                      Rename report
+                    </button>
                     <p className="text-sm text-slate-500 mb-1">
                       {format(new Date(report.date_completed), 'MMM dd, yyyy')}
                     </p>

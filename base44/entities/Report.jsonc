@@ -2,6 +2,10 @@
   "name": "Report",
   "type": "object",
   "properties": {
+    "report_name": {
+      "type": "string",
+      "description": "Display name of the report"
+    },
     "customer_name": {
       "type": "string",
       "description": "Name of the customer"

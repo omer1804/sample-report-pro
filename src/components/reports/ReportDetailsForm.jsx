@@ -23,6 +23,18 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
+            <Label htmlFor="report_name" className="text-slate-700">Report Name</Label>
+            <Input
+              id="report_name"
+              value={details.report_name || ''}
+              onChange={(e) => handleChange('report_name', e.target.value)}
+              placeholder="Enter report name"
+              className="border-slate-300"
+              readOnly={readOnly}
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="customer_name" className="text-slate-700">Customer Name</Label>
             <Input
               id="customer_name"

@@ -24,6 +24,7 @@ export default function CreateReport() {
   const queryClient = useQueryClient();
 
   const [details, setDetails] = useState({
+    report_name: '',
     customer_name: '',
     task_number: '',
     date_completed: new Date().toISOString().split('T')[0],
@@ -73,6 +74,7 @@ export default function CreateReport() {
   useEffect(() => {
     if (existingReport) {
       setDetails({
+        report_name: existingReport.report_name || '',
         customer_name: existingReport.customer_name || '',
         task_number: existingReport.task_number || '',
         date_completed: existingReport.date_completed,
