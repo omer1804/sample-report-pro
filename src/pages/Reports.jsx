@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2, Folder } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2, Folder, BookOpen } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -343,6 +343,12 @@ export default function Reports() {
               <p className="text-slate-600">{selectedCustomer ? 'Choose a report for this customer' : 'Textile printing durability test reports grouped by customer'}</p>
             </div>
             <div className="flex gap-3">
+              <Link to="/Instructions">
+                <Button variant="outline" className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                  <BookOpen className="w-4 h-4" />
+                  Instructions
+                </Button>
+              </Link>
               <Button
                 onClick={exportAllToExcel}
                 variant="outline"
