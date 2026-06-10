@@ -10,6 +10,7 @@ import ReportDetailsForm from '../components/reports/ReportDetailsForm';
 import FabricsSection from '../components/reports/FabricsSection';
 import TestsSection from '../components/reports/TestsSection';
 import TestSummaryTable from '../components/reports/TestSummaryTable';
+import ImageCaptionUploader from '../components/reports/ImageCaptionUploader';
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +37,8 @@ export default function CreateReport() {
   const [tests, setTests] = useState([]);
   const [conclusion, setConclusion] = useState('');
   const [attachments, setAttachments] = useState([]);
+  const [generalImages, setGeneralImages] = useState([]);
+  const [applicationNoteImages, setApplicationNoteImages] = useState([]);
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -57,6 +60,14 @@ export default function CreateReport() {
     enabled: !!reportId,
     staleTime: 0,
   });
+
+  const { data: allReports = [] } = useQuery({
+    queryKey: ['all-reports-customers'],
+    queryFn: () => base44.entities.Report.list(),
+    initialData: [],
+  });
+
+  const customerOptions = [...new Set(allReports.map(report => report.customer_name).filter(Boolean))].sort();
 
   // Load tests for this report
   const { data: existingTests = [], refetch: refetchTests } = useQuery({
@@ -84,6 +95,8 @@ export default function CreateReport() {
       });
       setFabrics(existingReport.fabrics || []);
       setAttachments(existingReport.attachments || []);
+      setGeneralImages(existingReport.general_images || []);
+      setApplicationNoteImages(existingReport.application_note_images || []);
       setConclusion(existingReport.conclusion || '');
     }
   }, [existingReport]);
@@ -119,7 +132,7 @@ export default function CreateReport() {
       }
     }, 30000);
     return () => clearInterval(interval);
-  }, [details, fabrics, tests, conclusion]);
+  }, [details, fabrics, tests, conclusion, attachments, generalImages, applicationNoteImages]);
 
   const handleSave = async (status = 'draft', silent = false) => {
     if (!details.application_engineer || !details.date_completed) {
@@ -142,6 +155,8 @@ export default function CreateReport() {
         ...details,
         fabrics,
         attachments,
+        general_images: generalImages,
+        application_note_images: applicationNoteImages,
         conclusion,
         status,
         last_saved: new Date().toISOString()
@@ -527,6 +542,20 @@ export default function CreateReport() {
         }
       }
 
+      const reportImages = [
+        ...(report.general_images || []).map((image, index) => ({ ...image, folder: 'General_Report_Images', name: `general_image_${index + 1}.jpg` })),
+        ...(report.application_note_images || []).map((image, index) => ({ ...image, folder: 'Application_Notes_Images', name: `note_image_${index + 1}.jpg` }))
+      ];
+
+      for (const image of reportImages) {
+        if (image.image_url) {
+          const imageFolder = zip.folder(image.folder);
+          const response = await fetch(image.image_url);
+          const blob = await response.blob();
+          imageFolder.file(image.name, blob);
+        }
+      }
+
       const content = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
@@ -567,7 +596,7 @@ export default function CreateReport() {
       // Fabrics Info
       reportInfo.push(['Fabrics']);
       report.fabrics?.forEach((fabric, idx) => {
-        reportInfo.push([`Fabric ${idx + 1}`, fabric.name || '']);
+        reportInfo.push(['Fabric Number', fabric.name || '']);
         reportInfo.push(['Material', fabric.material_description || '']);
         reportInfo.push(['Working Point', fabric.working_point || '']);
         reportInfo.push(['Machine Model', fabric.machine_model || '']);
@@ -601,7 +630,7 @@ export default function CreateReport() {
       XLSX.utils.book_append_sheet(wb, ws1, 'Report Summary');
       
       // Detailed Tests Sheet
-      const testDetails = [['Fabric', 'Test Type', 'Result', 'Parameters', 'Notes']];
+      const testDetails = [['Fabric Number', 'Test Type', 'Result', 'Parameters', 'Notes']];
       fabricTests.forEach((test) => {
         const params = Object.entries(test.test_parameters || {})
           .map(([k, v]) => `${k}: ${v}`)
@@ -756,11 +785,25 @@ export default function CreateReport() {
 
         {/* Form Sections */}
         <div className="space-y-6 pb-24">
-          <ReportDetailsForm details={details} onChange={setDetails} readOnly={isViewMode} />
+          <ReportDetailsForm details={details} onChange={setDetails} readOnly={isViewMode} customerOptions={customerOptions} />
 
           <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} readOnly={isViewMode} />
 
           <TestSummaryTable fabrics={fabrics} tests={tests} onTestResultChange={setTests} />
+
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
+              <CardTitle className="text-slate-800">General Report Images</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <ImageCaptionUploader
+                title="General images that will appear in the PDF report"
+                images={generalImages}
+                onChange={setGeneralImages}
+                readOnly={isViewMode}
+              />
+            </CardContent>
+          </Card>
 
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
@@ -802,6 +845,14 @@ export default function CreateReport() {
                   onChange={(e) => setConclusion(e.target.value)}
                   placeholder="Enter conclusion and recommendations..."
                   className="border-slate-300 min-h-[120px]"
+                  readOnly={isViewMode}
+                />
+              </div>
+              <div className="mt-6">
+                <ImageCaptionUploader
+                  title="Application notes images"
+                  images={applicationNoteImages}
+                  onChange={setApplicationNoteImages}
                   readOnly={isViewMode}
                 />
               </div>

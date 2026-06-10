@@ -59,6 +59,7 @@ export default function ViewReportPDF() {
         {/* Header */}
         <div className="mb-8 border-b pb-4">
           <h1 className="text-2xl font-bold mb-2">Durability Test Report</h1>
+          {report.report_name && <div className="text-lg font-semibold mb-3">{report.report_name}</div>}
           <div className="grid grid-cols-2 gap-4 text-sm">
             {report.customer_name && <div><strong>Customer:</strong> {report.customer_name}</div>}
             {report.task_number && <div><strong>Task Number:</strong> {report.task_number}</div>}
@@ -75,7 +76,7 @@ export default function ViewReportPDF() {
           <div className="space-y-4">
             {report.fabrics?.map((fabric, idx) => (
               <div key={idx}>
-                <p className="font-semibold">{idx + 1}. {fabric.name}</p>
+                <p className="font-semibold">Fabric Number {fabric.name || String(idx + 1).padStart(3, '0')}</p>
                 <p className="text-sm">{fabric.material_description}</p>
                 <div className="text-sm mt-1 space-y-1">
                   {fabric.working_point && <p><strong>Working Point:</strong> {fabric.working_point}</p>}
@@ -164,7 +165,12 @@ export default function ViewReportPDF() {
                 {fabric.images && fabric.images.length > 0 && (
                   <div className="flex gap-2 mt-2">
                     {fabric.images.map((img, imgIdx) => (
-                      <img key={imgIdx} src={img} alt={`${fabric.name}`} className="h-48 object-contain border" />
+                      <div key={imgIdx} className="space-y-1">
+                        <img src={img} alt={`${fabric.name}`} className="h-48 object-contain border" />
+                        {fabric.image_captions?.[imgIdx] && (
+                          <p className="text-xs text-center max-w-48">{fabric.image_captions[imgIdx]}</p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -172,6 +178,20 @@ export default function ViewReportPDF() {
             ))}
           </div>
         </div>
+
+        {report.general_images && report.general_images.length > 0 && (
+          <div className="mb-8 page-break">
+            <h2 className="text-xl font-bold mb-4">General Report Images</h2>
+            <div className="grid grid-cols-2 gap-4">
+              {report.general_images.map((image, index) => (
+                <div key={index} className="border p-3">
+                  <img src={image.image_url} alt={image.caption || 'General report image'} className="w-full h-64 object-contain" />
+                  {image.caption && <p className="text-sm text-center mt-2 whitespace-pre-wrap">{image.caption}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Summary Tables */}
         <div className="mb-8">
@@ -186,7 +206,7 @@ export default function ViewReportPDF() {
                   <thead>
                     <tr>
                       <th className="border border-slate-400 px-4 py-2 bg-slate-100 text-sm" colSpan="2">
-                        {fabric.name || `Fabric ${fabricIdx + 1}`}
+                        Fabric Number {fabric.name || String(fabricIdx + 1).padStart(3, '0')}
                       </th>
                     </tr>
                     <tr>
@@ -231,7 +251,7 @@ export default function ViewReportPDF() {
 
             return (
               <div key={`${fabricIdx}-${testIdx}`} className="mb-12 page-break">
-                <h2 className="text-lg font-bold mb-2">Fabric {fabricIdx + 1}: {fabric.name}</h2>
+                <h2 className="text-lg font-bold mb-2">Fabric Number {fabric.name || String(fabricIdx + 1).padStart(3, '0')}</h2>
                 <h3 className="text-md font-semibold mb-4" style={{backgroundColor: '#ffff00', display: 'inline-block', padding: '2px 8px'}}>
                   Test {test.test_number || `${fabricIdx + 1}.${testIdx + 1}`}: {test.custom_title || getTestLabel(test.test_type)}
                 </h3>
@@ -351,10 +371,20 @@ export default function ViewReportPDF() {
         })}
 
         {/* Conclusion */}
-        {report.conclusion && (
+        {(report.conclusion || (report.application_note_images && report.application_note_images.length > 0)) && (
           <div className="mt-8">
             <h2 className="text-xl font-bold mb-3">Application Notes</h2>
-            <div className="whitespace-pre-wrap text-sm">{report.conclusion}</div>
+            {report.conclusion && <div className="whitespace-pre-wrap text-sm">{report.conclusion}</div>}
+            {report.application_note_images && report.application_note_images.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {report.application_note_images.map((image, index) => (
+                  <div key={index} className="border p-3">
+                    <img src={image.image_url} alt={image.caption || 'Application note image'} className="w-full h-64 object-contain" />
+                    {image.caption && <p className="text-sm text-center mt-2 whitespace-pre-wrap">{image.caption}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

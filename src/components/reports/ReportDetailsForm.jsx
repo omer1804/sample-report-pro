@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
-export default function ReportDetailsForm({ details, onChange, readOnly = false }) {
+export default function ReportDetailsForm({ details, onChange, readOnly = false, customerOptions = [] }) {
   const emptyFieldClass = (value) => !readOnly && !value ? 'border-red-300 bg-red-50/40' : 'border-slate-300';
 
   const handleChange = (field, value) => {
@@ -38,12 +38,23 @@ export default function ReportDetailsForm({ details, onChange, readOnly = false 
             <Label htmlFor="customer_name" className="text-slate-700">Customer Name</Label>
             <Input
               id="customer_name"
+              list="existing-customers"
               value={details.customer_name || ''}
               onChange={(e) => handleChange('customer_name', e.target.value)}
-              placeholder="Enter customer name"
+              placeholder="Choose existing customer folder or type a new customer"
               className={emptyFieldClass(details.customer_name)}
               readOnly={readOnly}
             />
+            <datalist id="existing-customers">
+              {customerOptions.map((customer) => (
+                <option key={customer} value={customer} />
+              ))}
+            </datalist>
+            {!readOnly && (
+              <p className="text-xs text-slate-500">
+                Select an existing customer to save this report inside that folder, or type a new customer name to create a new folder.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

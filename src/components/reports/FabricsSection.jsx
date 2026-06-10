@@ -5,10 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Upload, Image as ImageIcon, FlaskConical, Copy } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
 import TestsSection from './TestsSection';
 import ImageViewerModal from './ImageViewerModal';
+
+const machineModelOptions = ['Presto MAX PLUS', 'Atlas MATRIX'];
+const inkVersionOptions = ['robusto', 'eco rapid'];
 
 export default function FabricsSection({ fabrics, onChange, tests, onTestsChange, readOnly = false }) {
   const emptyFieldClass = (value) => !readOnly && !value ? 'border-red-300 bg-red-50/40' : 'border-slate-300';
@@ -16,12 +20,20 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
   const [selectedFabric, setSelectedFabric] = useState(0);
   const [viewerImage, setViewerImage] = useState(null);
 
+  const getSelectValue = (value, options) => {
+    if (!value) return '';
+    return options.includes(value) ? value : 'custom';
+  };
+
+  const getNextFabricNumber = () => String(fabrics.length + 1).padStart(3, '0');
+
   const addFabric = () => {
     const newIndex = fabrics.length;
     onChange([...fabrics, {
-      name: '',
+      name: getNextFabricNumber(),
       material_description: '',
-      images: []
+      images: [],
+      image_captions: []
     }]);
     setSelectedFabric(newIndex);
   };
@@ -123,6 +135,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const updated = [...fabrics];
       updated[fabricIndex].images = [...(updated[fabricIndex].images || []), file_url];
+      updated[fabricIndex].image_captions = [...(updated[fabricIndex].image_captions || []), ''];
       onChange(updated);
     } catch (error) {
       console.error('Upload failed:', error);
@@ -134,6 +147,15 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
   const removeImage = (fabricIndex, imageIndex) => {
     const updated = [...fabrics];
     updated[fabricIndex].images = updated[fabricIndex].images.filter((_, i) => i !== imageIndex);
+    updated[fabricIndex].image_captions = (updated[fabricIndex].image_captions || []).filter((_, i) => i !== imageIndex);
+    onChange(updated);
+  };
+
+  const updateImageCaption = (fabricIndex, imageIndex, caption) => {
+    const updated = [...fabrics];
+    const captions = [...(updated[fabricIndex].image_captions || [])];
+    captions[imageIndex] = caption;
+    updated[fabricIndex].image_captions = captions;
     onChange(updated);
   };
 
@@ -193,11 +215,11 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
 
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-slate-700">Fabric Name</Label>
+                        <Label className="text-slate-700">Fabric Number</Label>
                         <Input
                           value={fabric.name || ''}
                           onChange={(e) => updateFabric(index, 'name', e.target.value)}
-                          placeholder=""
+                          placeholder="001"
                           className={emptyFieldClass(fabric.name)}
                           readOnly={readOnly}
                         />
@@ -228,23 +250,53 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label className="text-slate-700">Machine Model</Label>
-                          <Input
-                            value={fabric.machine_model || ''}
-                            onChange={(e) => updateFabric(index, 'machine_model', e.target.value)}
-                            placeholder="e.g., Atlas Max"
-                            className={emptyFieldClass(fabric.machine_model)}
-                            readOnly={readOnly}
-                          />
+                          <Select
+                            value={getSelectValue(fabric.machine_model, machineModelOptions)}
+                            onValueChange={(value) => updateFabric(index, 'machine_model', value)}
+                            disabled={readOnly}
+                          >
+                            <SelectTrigger className={emptyFieldClass(fabric.machine_model)}>
+                              <SelectValue placeholder="Choose machine model" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Presto MAX PLUS">Presto MAX PLUS</SelectItem>
+                              <SelectItem value="Atlas MATRIX">Atlas MATRIX</SelectItem>
+                              <SelectItem value="custom">Custom</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {(!readOnly && getSelectValue(fabric.machine_model, machineModelOptions) === 'custom') && (
+                            <Input
+                              value={fabric.machine_model === 'custom' ? '' : (fabric.machine_model || '')}
+                              onChange={(e) => updateFabric(index, 'machine_model', e.target.value)}
+                              placeholder="Enter custom machine model"
+                              className="border-slate-300"
+                            />
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="text-slate-700">Ink Version</Label>
-                          <Input
-                            value={fabric.ink_version || ''}
-                            onChange={(e) => updateFabric(index, 'ink_version', e.target.value)}
-                            placeholder="e.g., Robusto U10"
-                            className={emptyFieldClass(fabric.ink_version)}
-                            readOnly={readOnly}
-                          />
+                          <Select
+                            value={getSelectValue(fabric.ink_version, inkVersionOptions)}
+                            onValueChange={(value) => updateFabric(index, 'ink_version', value)}
+                            disabled={readOnly}
+                          >
+                            <SelectTrigger className={emptyFieldClass(fabric.ink_version)}>
+                              <SelectValue placeholder="Choose ink version" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="robusto">robusto</SelectItem>
+                              <SelectItem value="eco rapid">eco rapid</SelectItem>
+                              <SelectItem value="custom">Custom</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {(!readOnly && getSelectValue(fabric.ink_version, inkVersionOptions) === 'custom') && (
+                            <Input
+                              value={fabric.ink_version === 'custom' ? '' : (fabric.ink_version || '')}
+                              onChange={(e) => updateFabric(index, 'ink_version', e.target.value)}
+                              placeholder="Enter custom ink version"
+                              className="border-slate-300"
+                            />
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label className="text-slate-700">Set Up</Label>
@@ -441,12 +493,19 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         <Label className="text-slate-700">Fabric Images</Label>
                         <div className="flex flex-wrap gap-3">
                           {fabric.images?.map((imageUrl, imgIndex) => (
-                            <div key={imgIndex} className="relative group">
+                            <div key={imgIndex} className="relative group space-y-2 w-40">
                               <img
                                 src={imageUrl}
                                 alt={`Fabric ${index + 1} - ${imgIndex + 1}`}
-                                className="w-24 h-24 object-cover rounded-lg border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-colors"
+                                className="w-40 h-28 object-cover rounded-lg border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-colors"
                                 onClick={() => setViewerImage(imageUrl)}
+                              />
+                              <Input
+                                value={fabric.image_captions?.[imgIndex] || ''}
+                                onChange={(e) => updateImageCaption(index, imgIndex, e.target.value)}
+                                placeholder="Image text for report"
+                                className="border-slate-300 text-xs h-8"
+                                readOnly={readOnly}
                               />
                               {!readOnly && (
                                 <button

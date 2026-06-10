@@ -60,7 +60,8 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Fabric number"
           },
           "material_description": {
             "type": "string"
@@ -142,6 +143,13 @@
             "items": {
               "type": "string"
             }
+          },
+          "image_captions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Captions for fabric images"
           }
         }
       }
@@ -151,6 +159,36 @@
       "description": "Report file attachments included in ZIP exports",
       "items": {
         "type": "string"
+      }
+    },
+    "general_images": {
+      "type": "array",
+      "description": "General report images shown in the PDF report",
+      "items": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "application_note_images": {
+      "type": "array",
+      "description": "Images attached to application notes and shown in the PDF report",
+      "items": {
+        "type": "object",
+        "properties": {
+          "image_url": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          }
+        }
       }
     },
     "conclusion": {
