@@ -319,7 +319,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                       </div>
 
                       <div className="bg-slate-50 border-2 border-slate-300 rounded-lg p-4 space-y-4">
-                        <Label className="text-slate-800 font-semibold text-base">Ink Consumption (ml)</Label>
+                      <Label className="text-slate-800 font-semibold text-base">Ink Consumption (ml/m²)</Label>
 
                         {/* White & Color Section */}
                         <div className="space-y-2">
@@ -456,7 +456,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                                   readOnly
                                   disabled
                                 />
-                                <span className="text-sm font-semibold">ML</span>
+                                <span className="text-sm font-semibold">ml/m²</span>
                               </div>
                             </div>
                           </div>
