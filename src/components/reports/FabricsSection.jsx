@@ -189,21 +189,21 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
         <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
           <CardTitle className="flex items-center gap-2 text-slate-800">
             <ImageIcon className="w-5 h-5 text-slate-600" />
-            Fabrics & Tests
+            Samples
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           {fabrics.length === 0 ? (
             <div className="text-center py-12 text-slate-500">
               <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>No fabrics added yet. Click the floating button to add a fabric.</p>
+              <p>No samples added yet. Click the floating button to add a sample.</p>
             </div>
           ) : (
             <Tabs value={selectedFabric.toString()} onValueChange={(v) => setSelectedFabric(parseInt(v))}>
               <TabsList className="mb-6">
                 {fabrics.map((fabric, index) => (
                   <TabsTrigger key={index} value={index.toString()}>
-                    {fabric.name || `Fabric ${index + 1}`}
+                    {fabric.name || `Sample ${index + 1}`}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -588,7 +588,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
           size="lg"
         >
           <Plus className="w-5 h-5" />
-          Add Fabric
+          Add Sample
         </Button>
       )}
 
