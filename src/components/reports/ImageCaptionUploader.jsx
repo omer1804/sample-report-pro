@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from '@/components/ui/use-toast';
 
 export default function ImageCaptionUploader({ title, images = [], onChange, readOnly = false }) {
   const [uploading, setUploading] = useState(false);
@@ -26,7 +27,26 @@ export default function ImageCaptionUploader({ title, images = [], onChange, rea
   };
 
   const removeImage = (index) => {
-    onChange(images.filter((_, i) => i !== index));
+    const removedImage = images[index];
+    const updated = images.filter((_, i) => i !== index);
+    onChange(updated);
+    toast({
+      title: 'Image removed',
+      description: 'Use Undo to restore it.',
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const restored = [...updated];
+            restored.splice(index, 0, removedImage);
+            onChange(restored);
+          }}
+        >
+          Undo
+        </Button>
+      )
+    });
   };
 
   return (

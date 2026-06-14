@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Upload, Image as ImageIcon, FlaskConical, Copy } from 'lucide-react';
 import { base44 } from "@/api/base44Client";
+import { toast } from '@/components/ui/use-toast';
 import TestsSection from './TestsSection';
 import ImageViewerModal from './ImageViewerModal';
 
@@ -145,10 +146,33 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
   };
 
   const removeImage = (fabricIndex, imageIndex) => {
+    const removedImage = fabrics[fabricIndex].images[imageIndex];
+    const removedCaption = fabrics[fabricIndex].image_captions?.[imageIndex] || '';
     const updated = [...fabrics];
     updated[fabricIndex].images = updated[fabricIndex].images.filter((_, i) => i !== imageIndex);
     updated[fabricIndex].image_captions = (updated[fabricIndex].image_captions || []).filter((_, i) => i !== imageIndex);
     onChange(updated);
+    toast({
+      title: 'Image removed',
+      description: 'Use Undo to restore it.',
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const restored = [...updated];
+            const restoredImages = [...(restored[fabricIndex].images || [])];
+            const restoredCaptions = [...(restored[fabricIndex].image_captions || [])];
+            restoredImages.splice(imageIndex, 0, removedImage);
+            restoredCaptions.splice(imageIndex, 0, removedCaption);
+            restored[fabricIndex] = { ...restored[fabricIndex], images: restoredImages, image_captions: restoredCaptions };
+            onChange(restored);
+          }}
+        >
+          Undo
+        </Button>
+      )
+    });
   };
 
   const updateImageCaption = (fabricIndex, imageIndex, caption) => {

@@ -199,6 +199,16 @@
       "type": "string",
       "format": "date-time",
       "description": "Timestamp of last save"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this report is hidden after deletion"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this report was deleted"
     }
   },
   "required": [

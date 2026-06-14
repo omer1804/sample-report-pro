@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { toast } from '@/components/ui/use-toast';
 import JSZip from 'jszip';
 import * as XLSX from 'xlsx';
 
@@ -19,15 +20,33 @@ export default function Reports() {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [exportingAll, setExportingAll] = useState(false);
 
-  const { data: reports = [], isLoading } = useQuery({
+  const { data: reports = [], isLoading, refetch } = useQuery({
     queryKey: ['reports', sortOrder],
     queryFn: () => base44.entities.Report.list(sortOrder),
   });
 
-  const deleteReport = async (id) => {
+  const activeReports = reports.filter(report => !report.is_deleted);
+
+  const deleteReport = async (report) => {
     if (confirm('Are you sure you want to delete this report?')) {
-      await base44.entities.Report.delete(id);
-      window.location.reload();
+      await base44.entities.Report.update(report.id, { is_deleted: true, deleted_at: new Date().toISOString() });
+      refetch();
+      toast({
+        title: 'Report deleted',
+        description: 'Use Undo to restore it.',
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              await base44.entities.Report.update(report.id, { is_deleted: false, deleted_at: '' });
+              refetch();
+            }}
+          >
+            Undo
+          </Button>
+        )
+      });
     }
   };
 
@@ -164,7 +183,7 @@ export default function Reports() {
     }
   };
 
-  const filteredReports = reports.filter(report => {
+  const filteredReports = activeReports.filter(report => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
@@ -188,7 +207,7 @@ export default function Reports() {
   const exportAllToExcel = async () => {
     setExportingAll(true);
     try {
-      const reportsToExport = selectedCustomer ? visibleReports : reports;
+      const reportsToExport = selectedCustomer ? visibleReports : activeReports;
       const allReportsData = await Promise.all(
         reportsToExport.map(async (report) => {
           const tests = await base44.entities.FabricTest.filter({ report_id: report.id });
@@ -353,7 +372,7 @@ export default function Reports() {
                 onClick={exportAllToExcel}
                 variant="outline"
                 className="gap-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                disabled={exportingAll || !reports || reports.length === 0}
+                disabled={exportingAll || activeReports.length === 0}
               >
                 {exportingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
                 {selectedCustomer ? 'Export Customer Folder' : 'Export All to Excel'}
@@ -402,7 +421,7 @@ export default function Reports() {
               </Card>
             ))}
           </div>
-        ) : reports.length === 0 ? (
+        ) : activeReports.length === 0 ? (
           <Card className="border-2 border-dashed border-slate-300">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <FileText className="w-16 h-16 text-slate-300 mb-4" />
@@ -488,7 +507,7 @@ export default function Reports() {
                       </Link>
                       <Button variant="outline" size="icon" onClick={() => downloadImagesZip(report)} className="h-9 w-9 text-purple-500 hover:text-purple-700 hover:bg-purple-50" title="Download images as ZIP"><FolderArchive className="w-4 h-4" /></Button>
                       <Button variant="outline" size="icon" onClick={() => duplicateReport(report)} className="h-9 w-9 text-blue-500 hover:text-blue-700 hover:bg-blue-50" title="Duplicate report"><Copy className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" onClick={() => deleteReport(report.id)} className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => deleteReport(report)} className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50"><Trash2 className="w-4 h-4" /></Button>
                     </div>
                   </CardContent>
                 </Card>

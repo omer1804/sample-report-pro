@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ImageViewerModal from './ImageViewerModal';
+import { toast } from '@/components/ui/use-toast';
 
 export default function TestImageGrid({ testType, imagesGrid, onChange, columns, onColumnsChange, rowLabels, onRowLabelsChange, readOnly = false }) {
   const [uploading, setUploading] = useState('');
@@ -308,6 +309,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  const removedCell = currentGrid[rowIndex][colIndex];
                                   const newGrid = currentGrid.map((row, rIdx) => 
                                     row.map((c, cIdx) => 
                                       rIdx === rowIndex && cIdx === colIndex 
@@ -317,6 +319,27 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                                   );
                                   setLocalGrid(newGrid);
                                   onChange(newGrid);
+                                  toast({
+                                    title: 'Image removed',
+                                    description: 'Use Undo to restore it.',
+                                    action: (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          const restoredGrid = newGrid.map((row, rIdx) =>
+                                            row.map((c, cIdx) =>
+                                              rIdx === rowIndex && cIdx === colIndex ? removedCell : c
+                                            )
+                                          );
+                                          setLocalGrid(restoredGrid);
+                                          onChange(restoredGrid);
+                                        }}
+                                      >
+                                        Undo
+                                      </Button>
+                                    )
+                                  });
                                 }}
                                 className="bg-red-600 text-white rounded-full p-1.5 hover:bg-red-700"
                                 title="Remove image"

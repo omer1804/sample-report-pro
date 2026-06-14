@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Trash2, FlaskConical, ArrowUp, ArrowDown, Upload } from 'lucide-react';
 import TestImageGrid from './TestImageGrid';
 import { base44 } from "@/api/base44Client";
+import { toast } from '@/components/ui/use-toast';
 
 const TEST_TYPES = [
   { value: 'sand_grinding', label: 'Sand Grinding', params: { pressure: '9Kpa', sample_size: '38 +- 2mm samples', revolutions: '50 rub revolutions', checkpoint: 'Checkpoint every 10' } },
@@ -39,12 +40,32 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
   };
 
   const removeCustomImage = (testIndex, imgIdx) => {
+    const removedImage = tests[testIndex].custom_images[imgIdx];
     const updated = [...tests];
     updated[testIndex] = {
       ...updated[testIndex],
       custom_images: updated[testIndex].custom_images.filter((_, i) => i !== imgIdx)
     };
     onChange(updated);
+    toast({
+      title: 'Image removed',
+      description: 'Use Undo to restore it.',
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const restored = [...updated];
+            const restoredImages = [...(restored[testIndex].custom_images || [])];
+            restoredImages.splice(imgIdx, 0, removedImage);
+            restored[testIndex] = { ...restored[testIndex], custom_images: restoredImages };
+            onChange(restored);
+          }}
+        >
+          Undo
+        </Button>
+      )
+    });
   };
 
   useEffect(() => {
@@ -77,7 +98,26 @@ export default function TestsSection({ fabricIndex, fabricName, tests, onChange,
   };
 
   const removeTest = (testIndex) => {
-    onChange(tests.filter((_, i) => i !== testIndex));
+    const removedTest = tests[testIndex];
+    const updated = tests.filter((_, i) => i !== testIndex);
+    onChange(updated);
+    toast({
+      title: 'Test deleted',
+      description: 'Use Undo to restore it.',
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            const restored = [...updated];
+            restored.splice(testIndex, 0, removedTest);
+            onChange(restored);
+          }}
+        >
+          Undo
+        </Button>
+      )
+    });
   };
 
   const moveTestUp = (testIndex) => {
