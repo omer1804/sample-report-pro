@@ -79,7 +79,16 @@ export default function ViewReportPDF() {
                 <p className="font-semibold">Fabric Number {fabric.name || String(idx + 1).padStart(3, '0')}</p>
                 <p className="text-sm">{fabric.material_description}</p>
                 <div className="text-sm mt-1 space-y-1">
-                  {fabric.working_point && <p><strong>Working Point:</strong> {fabric.working_point}</p>}
+                  {getWorkingPointRows(fabric).length > 0 && (
+                    <div>
+                      <strong>Working Point:</strong>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                        {getWorkingPointRows(fabric).map((point, pointIdx) => (
+                          <span key={pointIdx}>{point.label}: {point.value}%</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {(fabric.machine_model || report.machine_model) && <p><strong>Machine Model:</strong> {fabric.machine_model || report.machine_model}</p>}
                   {(fabric.ink_version || report.ink_version) && <p><strong>Ink Version:</strong> {fabric.ink_version || report.ink_version}</p>}
                   {(fabric.setup || report.setup) && <p><strong>Set Up:</strong> {fabric.setup || report.setup}</p>}
@@ -93,7 +102,7 @@ export default function ViewReportPDF() {
                   <table className="border-collapse border border-slate-400 text-xs">
                     <thead>
                       <tr className="bg-slate-100">
-                        <th className="border border-slate-400 px-2 py-1" colSpan="9">Ink Consumption (ml)</th>
+                        <th className="border border-slate-400 px-2 py-1" colSpan="12">Ink Consumption ({fabric.ink_consumption_unit || 'ml/m²'})</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -102,10 +111,13 @@ export default function ViewReportPDF() {
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Magenta</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Yellow</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Black</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon Pink</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon Yellow</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Red</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Green</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF Color</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">White</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF White</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">U10 White</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
                       </tr>
                       <tr>
@@ -113,7 +125,10 @@ export default function ViewReportPDF() {
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_magenta || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_yellow || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_black || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_neon || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_neon_pink || fabric.ink_consumption_neon || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_neon_yellow || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_red || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_green || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_color || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_white || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_white || '-'}</td>
@@ -124,6 +139,10 @@ export default function ViewReportPDF() {
                             parseFloat(fabric.ink_consumption_yellow || 0),
                             parseFloat(fabric.ink_consumption_black || 0),
                             parseFloat(fabric.ink_consumption_neon || 0),
+                            parseFloat(fabric.ink_consumption_neon_pink || 0),
+                            parseFloat(fabric.ink_consumption_neon_yellow || 0),
+                            parseFloat(fabric.ink_consumption_red || 0),
+                            parseFloat(fabric.ink_consumption_green || 0),
                             parseFloat(fabric.ink_consumption_fof_color || 0),
                             parseFloat(fabric.ink_consumption_white || 0),
                             parseFloat(fabric.ink_consumption_fof_white || 0)
@@ -132,13 +151,13 @@ export default function ViewReportPDF() {
                         })()}</td>
                       </tr>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="12"></td>
                       </tr>
                       <tr>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">U10</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF White Top Coat</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="6"></td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
                       </tr>
                       <tr>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_u10 || '-'}</td>
@@ -150,13 +169,13 @@ export default function ViewReportPDF() {
                           ].reduce((a, b) => a + b, 0);
                           return sum > 0 ? sum.toFixed(2) : '-';
                         })()}</td>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="6"></td>
-                      </tr>
-                      <tr>
                         <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
                       </tr>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1 font-bold bg-slate-100" colSpan="8">Grand Total (ml)</td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="12"></td>
+                      </tr>
+                      <tr>
+                        <td className="border border-slate-400 px-2 py-1 font-bold bg-slate-100" colSpan="11">Grand Total ({fabric.ink_consumption_unit || 'ml/m²'})</td>
                         <td className="border border-slate-400 px-2 py-1 text-center font-bold bg-slate-100">{fabric.ink_consumption_total || '-'}</td>
                       </tr>
                     </tbody>
@@ -168,7 +187,7 @@ export default function ViewReportPDF() {
                       <div key={imgIdx} className="space-y-1">
                         <img src={img} alt={`${fabric.name}`} className="h-48 object-contain border" />
                         {fabric.image_captions?.[imgIdx] && (
-                          <p className="text-xs text-center max-w-48">{fabric.image_captions[imgIdx]}</p>
+                        <p className="text-xs text-center max-w-48 font-medium">{fabric.image_captions[imgIdx]}</p>
                         )}
                       </div>
                     ))}
@@ -255,8 +274,10 @@ export default function ViewReportPDF() {
                 <h3 className="text-md font-semibold mb-4" style={{backgroundColor: '#ffff00', display: 'inline-block', padding: '2px 8px'}}>
                   Test {test.test_number || `${fabricIdx + 1}.${testIdx + 1}`}: {test.custom_title || getTestLabel(test.test_type)}
                 </h3>
-                {!test.is_internal && fabric.working_point && (
-                  <p className="text-sm mb-3"><strong>Working Point:</strong> {fabric.working_point}</p>
+                {!test.is_internal && getWorkingPointRows(fabric).length > 0 && (
+                  <div className="text-sm mb-3">
+                    <strong>Working Point:</strong> {getWorkingPointRows(fabric).map(point => `${point.label}: ${point.value}%`).join(' | ')}
+                  </div>
                 )}
                 {test.design_name && (
                   <p className="text-sm mb-3"><strong>Design Name:</strong> {test.design_name}</p>
@@ -274,9 +295,14 @@ export default function ViewReportPDF() {
                     </tr>
                   </thead>
                   <tbody>
-                    {test.images_grid.map((row, rowIdx) => (
+                    {test.images_grid.map((row, rowIdx) => {
+                      const rowPassed = row.some(cell => cell.row_passed);
+                      return (
                       <tr key={rowIdx}>
-                        <td className="border border-slate-400 p-1 text-xs font-semibold bg-slate-50">
+                        <td
+                          className="border p-1 text-xs font-semibold bg-slate-50"
+                          style={{ borderWidth: rowPassed ? '3px' : '1px', borderColor: rowPassed ? '#22c55e' : '#94a3b8' }}
+                        >
                           {rowLabels[rowIdx] || `Row ${rowIdx + 1}`}
                         </td>
                         {row.map((cell, colIdx) => (
@@ -284,8 +310,8 @@ export default function ViewReportPDF() {
                             key={colIdx} 
                             className="border p-1"
                             style={{
-                              borderWidth: cell.is_selected ? '3px' : '1px',
-                              borderColor: cell.is_selected ? '#ef4444' : '#94a3b8',
+                              borderWidth: cell.is_selected || rowPassed ? '3px' : '1px',
+                              borderColor: cell.is_selected ? '#ef4444' : rowPassed ? '#22c55e' : '#94a3b8',
                               width: '150px',
                               height: '150px'
                             }}
@@ -304,7 +330,8 @@ export default function ViewReportPDF() {
                           </td>
                         ))}
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               ) : test.custom_images && test.custom_images.length > 0 ? (
@@ -405,6 +432,18 @@ export default function ViewReportPDF() {
       `}</style>
     </div>
   );
+}
+
+function getWorkingPointRows(fabric) {
+  const rows = [
+    { label: 'Q', value: fabric.working_point_q },
+    { label: 'QU', value: fabric.working_point_qu },
+    { label: 'W', value: fabric.working_point_w },
+    { label: 'QW', value: fabric.working_point_qw },
+    ...((fabric.working_point_custom || []).filter(point => point.letter || point.value).map(point => ({ label: point.letter || 'Custom', value: point.value })))
+  ].filter(point => point.value);
+  if (rows.length === 0 && fabric.working_point) return [{ label: 'Value', value: fabric.working_point }];
+  return rows;
 }
 
 function getTestLabel(testType) {

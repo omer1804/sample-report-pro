@@ -70,7 +70,7 @@ export default function ImageCaptionUploader({ title, images = [], onChange, rea
               <Input
                 value={image.caption || ''}
                 onChange={(e) => updateCaption(index, e.target.value)}
-                placeholder="Image text / caption for the report"
+                placeholder="Image title for export"
                 readOnly={readOnly}
                 className="border-slate-300"
               />

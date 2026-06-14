@@ -87,10 +87,19 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     onChange(newGrid);
   };
 
+  const toggleRowPass = (rowIndex) => {
+    const isPassed = currentGrid[rowIndex]?.some(cell => cell.row_passed);
+    const newGrid = currentGrid.map((row, rIdx) =>
+      rIdx === rowIndex ? row.map(cell => ({ ...cell, row_passed: !isPassed, is_selected: !isPassed ? false : cell.is_selected })) : row
+    );
+    setLocalGrid(newGrid);
+    onChange(newGrid);
+  };
+
   const addColumn = () => {
     const columnName = `Col ${activeColumns.length + 1}`;
     const newColumns = [...activeColumns, columnName];
-    const newGrid = localGrid.map(row => [...row, { image_url: '', is_selected: false }]);
+    const newGrid = localGrid.map(row => [...row, { image_url: '', is_selected: false, row_passed: row.some(cell => cell.row_passed) }]);
     
     // Update local state immediately
     setLocalGrid(newGrid);
@@ -109,7 +118,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     // Create new row with cells for each column
     const newRow = [];
     for (let i = 0; i < activeColumns.length; i++) {
-      newRow.push({ image_url: '', is_selected: false });
+      newRow.push({ image_url: '', is_selected: false, row_passed: false });
     }
     
     // Add to grid
@@ -161,14 +170,13 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
     const newColumns = [...activeColumns];
     newColumns[colIndex] = newName;
     onColumnsChange(newColumns);
-    setEditingCol(null);
   };
 
   const updateRowLabel = (rowIndex, newLabel) => {
     const newLabels = [...currentLabels];
     newLabels[rowIndex] = newLabel;
+    setLocalLabels(newLabels);
     onRowLabelsChange(newLabels);
-    setEditingRow(null);
   };
 
   return (
@@ -201,7 +209,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                       value={col}
                       onChange={(e) => updateColumnName(idx, e.target.value)}
                       onBlur={() => setEditingCol(null)}
-                      onKeyPress={(e) => e.key === 'Enter' && setEditingCol(null)}
+                      onKeyDown={(e) => e.key === 'Enter' && setEditingCol(null)}
                       className="h-7 text-sm text-center"
                       autoFocus
                     />
@@ -246,7 +254,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                       value={currentLabels[rowIndex] || ''}
                       onChange={(e) => updateRowLabel(rowIndex, e.target.value)}
                       onBlur={() => setEditingRow(null)}
-                      onKeyPress={(e) => e.key === 'Enter' && setEditingRow(null)}
+                      onKeyDown={(e) => e.key === 'Enter' && setEditingRow(null)}
                       className="h-7 text-sm"
                       autoFocus
                     />
@@ -260,22 +268,34 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                     </div>
                   )}
                   {editingRow !== rowIndex && !readOnly && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeRow(rowIndex);
-                      }}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                      title="Remove row"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
+                    <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRowPass(rowIndex);
+                        }}
+                        className={`${row.some(cell => cell.row_passed) ? 'bg-green-600' : 'bg-slate-700'} text-white rounded px-1.5 py-0.5 text-[10px]`}
+                        title={row.some(cell => cell.row_passed) ? 'Unmark row pass' : 'Mark full row as pass'}
+                      >
+                        {row.some(cell => cell.row_passed) ? 'Pass ✓' : 'Pass Row'}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeRow(rowIndex);
+                        }}
+                        className="bg-red-500 text-white rounded-full p-0.5"
+                        title="Remove row"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
                   )}
                 </td>
                 {row.map((cell, colIndex) => (
                   <td 
                     key={colIndex} 
-                    className={`border ${cell.is_selected ? 'border-red-500 border-4' : 'border-slate-300'} p-1 relative`}
+                    className={`border ${cell.is_selected ? 'border-red-500 border-4' : cell.row_passed ? 'border-green-500 border-4 bg-green-50' : 'border-slate-300'} p-1 relative`}
                     style={{ width: `${100 / activeColumns.length}%`, height: '140px' }}
                   >
                     {cell.image_url ? (
@@ -313,7 +333,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
                                   const newGrid = currentGrid.map((row, rIdx) => 
                                     row.map((c, cIdx) => 
                                       rIdx === rowIndex && cIdx === colIndex 
-                                        ? { ...c, image_url: '', is_selected: false }
+                                        ? { ...c, image_url: '', is_selected: false, row_passed: false }
                                         : c
                                     )
                                   );
@@ -389,7 +409,7 @@ export default function TestImageGrid({ testType, imagesGrid, onChange, columns,
       
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
         <p className="text-xs text-slate-700">
-          <strong>Tip:</strong> Uploaded images are added to the report immediately; click Save Draft to store them permanently. Use "Select as fail point" to mark the critical failure point with a red border.
+          <strong>Tip:</strong> Uploaded images are added to the report immediately; click Save Draft to store them permanently. Mark a fail point in red or mark a full row as pass in green.
         </p>
       </div>
 

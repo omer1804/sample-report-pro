@@ -55,7 +55,7 @@
     },
     "fabrics": {
       "type": "array",
-      "description": "Array of fabric details",
+      "description": "Array of sample details",
       "items": {
         "type": "object",
         "properties": {
@@ -68,23 +68,63 @@
           },
           "working_point": {
             "type": "string",
-            "description": "Working point value"
+            "description": "Legacy working point value"
+          },
+          "working_point_q": {
+            "type": "string",
+            "description": "Q working point percentage"
+          },
+          "working_point_qu": {
+            "type": "string",
+            "description": "QU working point percentage"
+          },
+          "working_point_w": {
+            "type": "string",
+            "description": "W working point percentage"
+          },
+          "working_point_qw": {
+            "type": "string",
+            "description": "QW working point percentage"
+          },
+          "working_point_custom": {
+            "type": "array",
+            "description": "Custom working point letter and percentage values",
+            "items": {
+              "type": "object",
+              "properties": {
+                "letter": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "machine_model": {
             "type": "string",
-            "description": "Machine model used for this fabric"
+            "description": "Machine model used for this sample"
           },
           "ink_version": {
             "type": "string",
-            "description": "Ink version used for this fabric"
+            "description": "Ink version used for this sample"
           },
           "setup": {
             "type": "string",
-            "description": "Setup details for this fabric"
+            "description": "Setup details for this sample"
           },
           "resolution": {
             "type": "string",
-            "description": "Resolution settings for this fabric"
+            "description": "Resolution settings for this sample"
+          },
+          "ink_consumption_unit": {
+            "type": "string",
+            "enum": [
+              "ml",
+              "ml/m\u00b2"
+            ],
+            "default": "ml/m\u00b2",
+            "description": "Ink consumption unit"
           },
           "ink_consumption_cyan": {
             "type": "string",
@@ -102,6 +142,26 @@
             "type": "string",
             "description": "Black ink consumption"
           },
+          "ink_consumption_neon": {
+            "type": "string",
+            "description": "Legacy neon ink consumption"
+          },
+          "ink_consumption_neon_pink": {
+            "type": "string",
+            "description": "Neon pink ink consumption"
+          },
+          "ink_consumption_neon_yellow": {
+            "type": "string",
+            "description": "Neon yellow ink consumption"
+          },
+          "ink_consumption_red": {
+            "type": "string",
+            "description": "Red ink consumption"
+          },
+          "ink_consumption_green": {
+            "type": "string",
+            "description": "Green ink consumption"
+          },
           "ink_consumption_fof_color": {
             "type": "string",
             "description": "Fof Color ink consumption"
@@ -112,11 +172,7 @@
           },
           "ink_consumption_fof_white": {
             "type": "string",
-            "description": "FoF White ink consumption"
-          },
-          "ink_consumption_neon": {
-            "type": "string",
-            "description": "Neon ink consumption"
+            "description": "U10 White ink consumption"
           },
           "ink_consumption_u10": {
             "type": "string",
@@ -149,7 +205,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Captions for fabric images"
+            "description": "Titles for sample images"
           }
         }
       }

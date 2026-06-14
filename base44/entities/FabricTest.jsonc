@@ -8,11 +8,11 @@
     },
     "fabric_index": {
       "type": "number",
-      "description": "Index of the fabric in the report"
+      "description": "Index of the sample in the report"
     },
     "fabric_name": {
       "type": "string",
-      "description": "Name of the fabric being tested"
+      "description": "Name of the sample being tested"
     },
     "test_type": {
       "type": "string",
@@ -97,6 +97,10 @@
             },
             "is_selected": {
               "type": "boolean"
+            },
+            "row_passed": {
+              "type": "boolean",
+              "description": "Whether the full row is marked as passed"
             }
           }
         }
@@ -129,7 +133,7 @@
     },
     "order": {
       "type": "number",
-      "description": "Order of the test within its fabric"
+      "description": "Order of the test within its sample"
     }
   },
   "required": [

@@ -382,7 +382,7 @@ export default function CreateReport() {
         testsToCreate = data.tests.map(test => ({
           ...test,
           images_grid: test.images_grid?.map(row =>
-            row.map(cell => ({ ...cell, image_url: '' }))
+            row.map(cell => ({ ...cell, image_url: '', row_passed: !!cell.row_passed }))
           ) || []
         }));
       } else {
@@ -414,6 +414,7 @@ export default function CreateReport() {
           images_grid: test.images_grid?.map(row =>
             row.map(cell => ({
               ...cell,
+              row_passed: !!cell.row_passed,
               image_url: cell.image_url ? (urlMapping[cell.image_url] || cell.image_url) : ''
             }))
           ) || []
@@ -598,15 +599,24 @@ export default function CreateReport() {
       report.fabrics?.forEach((fabric, idx) => {
         reportInfo.push(['Fabric Number', fabric.name || '']);
         reportInfo.push(['Material', fabric.material_description || '']);
-        reportInfo.push(['Working Point', fabric.working_point || '']);
+        reportInfo.push(['Working Point', formatWorkingPoints(fabric)]);
         reportInfo.push(['Machine Model', fabric.machine_model || '']);
         reportInfo.push(['Ink Version', fabric.ink_version || '']);
         reportInfo.push(['Set Up', fabric.setup || '']);
         reportInfo.push(['Resolution', fabric.resolution || '']);
-        reportInfo.push(['Ink Consumption - Total', fabric.ink_consumption_total || '']);
-        reportInfo.push(['Ink Consumption - Color', fabric.ink_consumption_color || '']);
+        reportInfo.push(['Ink Consumption Unit', fabric.ink_consumption_unit || 'ml/m²']);
+        reportInfo.push(['Ink Consumption - Cyan', fabric.ink_consumption_cyan || '']);
+        reportInfo.push(['Ink Consumption - Magenta', fabric.ink_consumption_magenta || '']);
+        reportInfo.push(['Ink Consumption - Yellow', fabric.ink_consumption_yellow || '']);
+        reportInfo.push(['Ink Consumption - Black', fabric.ink_consumption_black || '']);
+        reportInfo.push(['Ink Consumption - Neon Pink', fabric.ink_consumption_neon_pink || fabric.ink_consumption_neon || '']);
+        reportInfo.push(['Ink Consumption - Neon Yellow', fabric.ink_consumption_neon_yellow || '']);
+        reportInfo.push(['Ink Consumption - Red', fabric.ink_consumption_red || '']);
+        reportInfo.push(['Ink Consumption - Green', fabric.ink_consumption_green || '']);
+        reportInfo.push(['Ink Consumption - FoF Color', fabric.ink_consumption_fof_color || '']);
         reportInfo.push(['Ink Consumption - White', fabric.ink_consumption_white || '']);
-        reportInfo.push(['Ink Consumption - Functional', fabric.ink_consumption_functional || '']);
+        reportInfo.push(['Ink Consumption - U10 White', fabric.ink_consumption_fof_white || '']);
+        reportInfo.push(['Ink Consumption - Total', fabric.ink_consumption_total || '']);
         reportInfo.push(['Curing Time (min)', fabric.curing_time_min || '']);
         reportInfo.push(['Curing Temp (°C)', fabric.curing_temp_celsius || '']);
         reportInfo.push([]);
@@ -656,6 +666,17 @@ export default function CreateReport() {
       setLoadingExcel(false);
     }
   };
+
+  function formatWorkingPoints(fabric) {
+    const points = [
+      ['Q', fabric.working_point_q],
+      ['QU', fabric.working_point_qu],
+      ['W', fabric.working_point_w],
+      ['QW', fabric.working_point_qw],
+      ...((fabric.working_point_custom || []).map(point => [point.letter || 'Custom', point.value]))
+    ].filter(([, value]) => value);
+    return points.length > 0 ? points.map(([label, value]) => `${label}: ${value}%`).join(' | ') : (fabric.working_point || '');
+  }
 
   function getTestLabel(testType) {
     const labels = {
@@ -850,7 +871,7 @@ export default function CreateReport() {
               </div>
               <div className="mt-6">
                 <ImageCaptionUploader
-                  title="Application notes images"
+                  title="Application images with title for export"
                   images={applicationNoteImages}
                   onChange={setApplicationNoteImages}
                   readOnly={isViewMode}
