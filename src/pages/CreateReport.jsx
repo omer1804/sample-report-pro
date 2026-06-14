@@ -669,7 +669,7 @@ export default function CreateReport() {
 
   function formatWorkingPoints(fabric) {
     const points = [
-      ['Q', fabric.working_point_q],
+      ['U', fabric.working_point_q],
       ['QU', fabric.working_point_qu],
       ['W', fabric.working_point_w],
       ['QW', fabric.working_point_qw],

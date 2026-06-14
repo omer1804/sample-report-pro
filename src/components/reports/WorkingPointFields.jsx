@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const fixedPoints = [
-  ['working_point_q', 'Q'],
+  ['working_point_q', 'U'],
   ['working_point_qu', 'QU'],
   ['working_point_w', 'W'],
   ['working_point_qw', 'QW']

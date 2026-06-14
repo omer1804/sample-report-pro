@@ -436,7 +436,7 @@ export default function ViewReportPDF() {
 
 function getWorkingPointRows(fabric) {
   const rows = [
-    { label: 'Q', value: fabric.working_point_q },
+    { label: 'U', value: fabric.working_point_q },
     { label: 'QU', value: fabric.working_point_qu },
     { label: 'W', value: fabric.working_point_w },
     { label: 'QW', value: fabric.working_point_qw },
