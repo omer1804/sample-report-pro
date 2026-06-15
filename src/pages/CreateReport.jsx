@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ScrollToTop from '../components/ScrollToTop';
 import JSZip from 'jszip';
 import * as XLSX from 'xlsx';
+import { logActivity } from '@/lib/activityLogger';
 
 export default function CreateReport() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -47,6 +48,7 @@ export default function CreateReport() {
   const [loadingZip, setLoadingZip] = useState(false);
   const [loadingDuplicate, setLoadingDuplicate] = useState(false);
   const [loadingExcel, setLoadingExcel] = useState(false);
+  const openedLoggedRef = useRef(false);
 
   // Load existing report
   const { data: existingReport, refetch: refetchReport } = useQuery({
@@ -98,8 +100,12 @@ export default function CreateReport() {
       setGeneralImages(existingReport.general_images || []);
       setApplicationNoteImages(existingReport.application_note_images || []);
       setConclusion(existingReport.conclusion || '');
+      if (!openedLoggedRef.current) {
+        openedLoggedRef.current = true;
+        logActivity('opened', existingReport, isViewMode ? 'Report opened in view mode' : 'Report opened for editing');
+      }
     }
-  }, [existingReport]);
+  }, [existingReport, isViewMode]);
 
   useEffect(() => {
     if (existingTests && existingTests.length > 0) {
@@ -221,6 +227,9 @@ export default function CreateReport() {
       }
 
       setLastSaved(new Date());
+      if (!silent) {
+        await logActivity('saved', { ...reportData, id: savedReportId }, status === 'completed' ? 'Report completed' : 'Report saved');
+      }
       
       if (!silent) {
         alert(`Report ${status === 'completed' ? 'completed' : 'saved'} successfully!`);
@@ -272,6 +281,7 @@ export default function CreateReport() {
           });
         }
 
+        await logActivity('duplicate', duplicatedReport, `Duplicated from ${report.report_name || report.task_number || report.id}`);
         window.location.href = createPageUrl('CreateReport') + `?id=${duplicatedReport.id}`;
         } catch (error) {
         alert('Failed to duplicate report');
@@ -343,6 +353,7 @@ export default function CreateReport() {
       a.download = `${existingReport.customer_name || 'Report'}_Backup.zip`;
       a.click();
       URL.revokeObjectURL(url);
+      await logActivity('export', existingReport, 'Exported report backup');
     } catch (error) {
       console.error('Backup failed:', error);
       alert('Failed to export backup');
@@ -454,6 +465,7 @@ export default function CreateReport() {
         });
       }
       
+      await logActivity('import', { ...reportData, id: targetReportId }, choice ? 'Imported backup without images' : 'Imported backup with images');
       alert(choice ? 'Backup restored successfully (without images)!\n\nYou can now upload images separately.' : 'Backup restored successfully with all images!');
       window.location.href = createPageUrl('CreateReport') + `?id=${targetReportId}`;
     } catch (error) {
@@ -564,6 +576,7 @@ export default function CreateReport() {
       a.download = `${report.customer_name || 'Report'}_Images.zip`;
       a.click();
       URL.revokeObjectURL(url);
+      await logActivity('export', report, 'Downloaded images ZIP');
     } catch (error) {
       console.error('Failed to create zip:', error);
       alert('Failed to download images');
@@ -659,6 +672,7 @@ export default function CreateReport() {
       
       // Export
       XLSX.writeFile(wb, `${report.customer_name || 'Report'}_MediaDB.xlsx`);
+      await logActivity('export', report, 'Exported report Excel');
     } catch (error) {
       console.error('Excel export failed:', error);
       alert('Failed to export to Excel');
@@ -735,7 +749,7 @@ export default function CreateReport() {
               </label>
               {reportId && (
                 <>
-                  <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}&selectedOnly=true`} target="_blank">
+                  <Link to={createPageUrl('ViewReportPDF') + `?id=${reportId}&selectedOnly=true`} target="_blank" onClick={() => logActivity('export', existingReport || { id: reportId }, 'Opened selected PDF export')}>
                     <Button variant="outline" className="gap-2">
                       <FileDown className="w-4 h-4" />
                       Export Selected PDF

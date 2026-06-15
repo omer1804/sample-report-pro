@@ -1,0 +1,52 @@
+{
+  "name": "FabricAnalyticsNote",
+  "type": "object",
+  "properties": {
+    "row_key": {
+      "type": "string",
+      "description": "Unique report and fabric row key"
+    },
+    "report_id": {
+      "type": "string"
+    },
+    "fabric_index": {
+      "type": "number"
+    },
+    "fabric_name": {
+      "type": "string"
+    },
+    "sku_number": {
+      "type": "string"
+    },
+    "design_with_ink_consumption": {
+      "type": "string"
+    },
+    "fabric_composite": {
+      "type": "string"
+    },
+    "setup": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "wash": {
+      "type": "string"
+    },
+    "jiss": {
+      "type": "string"
+    },
+    "ball_flex": {
+      "type": "string"
+    },
+    "printability": {
+      "type": "string"
+    },
+    "approval_bkm": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "row_key"
+  ]
+}

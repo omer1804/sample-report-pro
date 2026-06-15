@@ -1,0 +1,35 @@
+{
+  "name": "ActivityLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "Action performed in the app"
+    },
+    "report_id": {
+      "type": "string",
+      "description": "Related report ID"
+    },
+    "report_name": {
+      "type": "string",
+      "description": "Related report name"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Related customer name"
+    },
+    "details": {
+      "type": "string",
+      "description": "Readable details about the action"
+    },
+    "performed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action happened"
+    }
+  },
+  "required": [
+    "action",
+    "performed_at"
+  ]
+}

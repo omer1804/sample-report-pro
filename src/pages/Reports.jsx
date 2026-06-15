@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2, Folder, BookOpen } from 'lucide-react';
+import { Plus, FileText, Eye, Trash2, FileDown, Search, Copy, FolderArchive, Pencil, Database, Loader2, Folder, BookOpen, Shield } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { createPageUrl } from '@/utils';
 import { toast } from '@/components/ui/use-toast';
 import JSZip from 'jszip';
 import * as XLSX from 'xlsx';
+import { logActivity } from '@/lib/activityLogger';
 
 export default function Reports() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +31,7 @@ export default function Reports() {
   const deleteReport = async (report) => {
     if (confirm('Are you sure you want to delete this report?')) {
       await base44.entities.Report.update(report.id, { is_deleted: true, deleted_at: new Date().toISOString() });
+      await logActivity('deleted', report, 'Report deleted');
       refetch();
       toast({
         title: 'Report deleted',
@@ -84,6 +86,8 @@ export default function Reports() {
             notes: test.notes
           });
         }
+
+        await logActivity('duplicate', duplicatedReport, `Duplicated from ${report.report_name || report.task_number || report.id}`);
 
         // Navigate to the duplicated report
         window.location.href = createPageUrl('CreateReport') + `?id=${duplicatedReport.id}`;
@@ -169,6 +173,7 @@ export default function Reports() {
       a.download = `${report.customer_name || 'Report'}_Images.zip`;
       a.click();
       URL.revokeObjectURL(url);
+      await logActivity('export', report, 'Downloaded images ZIP');
     } catch (error) {
       console.error('Failed to create zip:', error);
       alert('Failed to download images');
@@ -343,6 +348,7 @@ export default function Reports() {
       XLSX.utils.book_append_sheet(wb, ws3, 'Tests Database');
 
       XLSX.writeFile(wb, `MediaDB_${selectedCustomer || 'AllReports'}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      await logActivity('export', {}, selectedCustomer ? `Exported customer folder: ${selectedCustomer}` : 'Exported all reports to Excel');
     } catch (error) {
       console.error('Export failed:', error);
       alert('Failed to export database');
@@ -366,6 +372,12 @@ export default function Reports() {
                 <Button variant="outline" className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                   <BookOpen className="w-4 h-4" />
                   Instructions
+                </Button>
+              </Link>
+              <Link to="/AdminBackend">
+                <Button variant="outline" className="gap-2 text-slate-700 hover:text-slate-900 hover:bg-slate-50">
+                  <Shield className="w-4 h-4" />
+                  Admin Backend
                 </Button>
               </Link>
               <Button
@@ -502,7 +514,7 @@ export default function Reports() {
                       <Link to={createPageUrl('CreateReport') + `?id=${report.id}`}>
                         <Button variant="outline" size="icon" className="h-9 w-9" title="Edit Report"><Pencil className="w-4 h-4" /></Button>
                       </Link>
-                      <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank">
+                      <Link to={createPageUrl('ViewReportPDF') + `?id=${report.id}`} target="_blank" onClick={() => logActivity('export', report, 'Opened PDF export')}>
                         <Button variant="outline" size="icon" className="h-9 w-9" title="Export PDF"><FileDown className="w-4 h-4" /></Button>
                       </Link>
                       <Button variant="outline" size="icon" onClick={() => downloadImagesZip(report)} className="h-9 w-9 text-purple-500 hover:text-purple-700 hover:bg-purple-50" title="Download images as ZIP"><FolderArchive className="w-4 h-4" /></Button>

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { logActivity } from '@/lib/activityLogger';
 
 export default function ViewReportPDF() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -28,7 +29,8 @@ export default function ViewReportPDF() {
     },
   });
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    await logActivity('export', report, 'Printed or saved PDF');
     window.print();
   };
 
