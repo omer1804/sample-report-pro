@@ -30,6 +30,11 @@ export default function AdminBackend() {
   const [authorized, setAuthorized] = useState(sessionStorage.getItem('adminBackendAuthorized') === 'true');
   const [edits, setEdits] = useState({});
   const [savingKey, setSavingKey] = useState('');
+  const [tableSearch, setTableSearch] = useState('');
+  const [filterField, setFilterField] = useState('all');
+  const [filterValue, setFilterValue] = useState('');
+  const [sortField, setSortField] = useState('fabric_name');
+  const [sortDirection, setSortDirection] = useState('asc');
 
   const { data: reports = [] } = useQuery({ queryKey: ['admin-reports'], queryFn: () => base44.entities.Report.list('-updated_date') });
   const { data: tests = [] } = useQuery({ queryKey: ['admin-tests'], queryFn: () => base44.entities.FabricTest.list('-updated_date') });
@@ -63,6 +68,27 @@ export default function AdminBackend() {
 
   const recentLogs = logs.filter(log => new Date(log.performed_at) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
 
+  const visibleRows = useMemo(() => {
+    const search = tableSearch.toLowerCase().trim();
+    const filter = filterValue.toLowerCase().trim();
+    return rows
+      .filter(row => !search || fields.some(([field]) => String(row[field] || '').toLowerCase().includes(search)))
+      .filter(row => filterField === 'all' || !filter || String(row[filterField] || '').toLowerCase().includes(filter))
+      .sort((a, b) => {
+        const aValue = String(a[sortField] || '').toLowerCase();
+        const bValue = String(b[sortField] || '').toLowerCase();
+        return sortDirection === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      });
+  }, [rows, tableSearch, filterField, filterValue, sortField, sortDirection]);
+
+  const clearTableControls = () => {
+    setTableSearch('');
+    setFilterField('all');
+    setFilterValue('');
+    setSortField('fabric_name');
+    setSortDirection('asc');
+  };
+
   const login = () => {
     if (password === ADMIN_PASSWORD) {
       sessionStorage.setItem('adminBackendAuthorized', 'true');
@@ -92,7 +118,7 @@ export default function AdminBackend() {
   };
 
   const exportAnalytics = () => {
-    const data = rows.map(row => Object.fromEntries(fields.map(([field, label]) => [label, (edits[row.row_key]?.[field] ?? row[field]) || ''])));
+    const data = visibleRows.map(row => Object.fromEntries(fields.map(([field, label]) => [label, (edits[row.row_key]?.[field] ?? row[field]) || ''])));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), 'Fabric Analytics');
     XLSX.writeFile(wb, 'Fabric_Test_Analytics.xlsx');
@@ -109,7 +135,7 @@ export default function AdminBackend() {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6"><Card className="w-full max-w-sm"><CardHeader><CardTitle className="flex items-center gap-2"><Lock className="w-5 h-5" /> Admin Backend</CardTitle></CardHeader><CardContent className="space-y-4"><div className="space-y-2"><Label>Password</Label><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && login()} /></div><Button onClick={login} className="w-full">Enter</Button><Link to="/Reports"><Button variant="ghost" className="w-full">Back</Button></Link></CardContent></Card></div>;
   }
 
-  return <div className="min-h-screen bg-slate-50 p-6"><div className="max-w-7xl mx-auto space-y-6"><div className="flex items-center justify-between"><div><Link to="/Reports"><Button variant="ghost" className="gap-2 mb-2"><ArrowLeft className="w-4 h-4" /> Back to Reports</Button></Link><h1 className="text-3xl font-bold text-slate-900">Admin Backend</h1><p className="text-slate-600">Activity log and fabric/test analytics.</p></div><Button variant="outline" onClick={() => { sessionStorage.removeItem('adminBackendAuthorized'); setAuthorized(false); }}>Lock</Button></div><Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle>30 Day App Log</CardTitle><Button variant="outline" onClick={exportLogs} className="gap-2"><Download className="w-4 h-4" /> Export Log</Button></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-slate-100"><th className="p-2 text-left">Time</th><th className="p-2 text-left">Action</th><th className="p-2 text-left">Report</th><th className="p-2 text-left">Customer</th><th className="p-2 text-left">Details</th></tr></thead><tbody>{recentLogs.map(log => <tr key={log.id} className="border-b"><td className="p-2 whitespace-nowrap">{new Date(log.performed_at).toLocaleString()}</td><td className="p-2"><Badge>{log.action}</Badge></td><td className="p-2">{log.report_name}</td><td className="p-2">{log.customer_name}</td><td className="p-2">{log.details}</td></tr>)}</tbody></table>{recentLogs.length === 0 && <p className="text-center text-slate-500 py-6">No logged activity yet.</p>}</div></CardContent></Card><Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle>Fabric & Test Analytics</CardTitle><Button onClick={exportAnalytics} className="gap-2"><Download className="w-4 h-4" /> Export Table</Button></CardHeader><CardContent><div className="overflow-x-auto"><table className="text-xs border-collapse min-w-full"><thead><tr className="bg-slate-100">{fields.map(([, label]) => <th key={label} className="border p-2 text-left min-w-40">{label}</th>)}<th className="border p-2">Save</th></tr></thead><tbody>{rows.map(row => <tr key={row.row_key}>{fields.map(([field]) => <td key={field} className="border p-1"><Input className="h-8 text-xs" value={edits[row.row_key]?.[field] ?? row[field] ?? ''} onChange={(e) => updateCell(row.row_key, field, e.target.value)} /></td>)}<td className="border p-1"><Button size="sm" onClick={() => saveRow(row)} disabled={savingKey === row.row_key} className="gap-1"><Save className="w-3 h-3" /> Save</Button></td></tr>)}</tbody></table>{rows.length === 0 && <p className="text-center text-slate-500 py-6">No fabric data yet.</p>}</div></CardContent></Card></div></div>;
+  return <div className="min-h-screen bg-slate-50 p-6"><div className="max-w-7xl mx-auto space-y-6"><div className="flex items-center justify-between"><div><Link to="/Reports"><Button variant="ghost" className="gap-2 mb-2"><ArrowLeft className="w-4 h-4" /> Back to Reports</Button></Link><h1 className="text-3xl font-bold text-slate-900">Admin Backend</h1><p className="text-slate-600">Activity log and fabric/test analytics.</p></div><Button variant="outline" onClick={() => { sessionStorage.removeItem('adminBackendAuthorized'); setAuthorized(false); }}>Lock</Button></div><Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle>30 Day App Log</CardTitle><Button variant="outline" onClick={exportLogs} className="gap-2"><Download className="w-4 h-4" /> Export Log</Button></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-slate-100"><th className="p-2 text-left">Time</th><th className="p-2 text-left">Action</th><th className="p-2 text-left">Report</th><th className="p-2 text-left">Customer</th><th className="p-2 text-left">Details</th></tr></thead><tbody>{recentLogs.map(log => <tr key={log.id} className="border-b"><td className="p-2 whitespace-nowrap">{new Date(log.performed_at).toLocaleString()}</td><td className="p-2"><Badge>{log.action}</Badge></td><td className="p-2">{log.report_name}</td><td className="p-2">{log.customer_name}</td><td className="p-2">{log.details}</td></tr>)}</tbody></table>{recentLogs.length === 0 && <p className="text-center text-slate-500 py-6">No logged activity yet.</p>}</div></CardContent></Card><Card><CardHeader className="flex flex-row items-center justify-between"><CardTitle>Fabric & Test Analytics</CardTitle><Button onClick={exportAnalytics} className="gap-2"><Download className="w-4 h-4" /> Export Table</Button></CardHeader><CardContent><div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4"><Input placeholder="Search table..." value={tableSearch} onChange={(e) => setTableSearch(e.target.value)} /><select className="h-9 rounded-md border border-input bg-white px-3 text-sm" value={filterField} onChange={(e) => setFilterField(e.target.value)}><option value="all">Filter column</option>{fields.map(([field, label]) => <option key={field} value={field}>{label}</option>)}</select><Input placeholder="Filter value..." value={filterValue} onChange={(e) => setFilterValue(e.target.value)} disabled={filterField === 'all'} /><select className="h-9 rounded-md border border-input bg-white px-3 text-sm" value={sortField} onChange={(e) => setSortField(e.target.value)}>{fields.map(([field, label]) => <option key={field} value={field}>{label}</option>)}</select><div className="flex gap-2"><Button variant="outline" onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')} className="flex-1">Sort: {sortDirection === 'asc' ? 'A-Z' : 'Z-A'}</Button><Button variant="ghost" onClick={clearTableControls}>Clear</Button></div></div><div className="overflow-x-auto"><table className="text-xs border-collapse min-w-full"><thead><tr className="bg-slate-100">{fields.map(([, label]) => <th key={label} className="border p-2 text-left min-w-40">{label}</th>)}<th className="border p-2">Save</th></tr></thead><tbody>{visibleRows.map(row => <tr key={row.row_key}>{fields.map(([field]) => <td key={field} className="border p-1"><Input className="h-8 text-xs" value={edits[row.row_key]?.[field] ?? row[field] ?? ''} onChange={(e) => updateCell(row.row_key, field, e.target.value)} /></td>)}<td className="border p-1"><Button size="sm" onClick={() => saveRow(row)} disabled={savingKey === row.row_key} className="gap-1"><Save className="w-3 h-3" /> Save</Button></td></tr>)}</tbody></table>{visibleRows.length === 0 && <p className="text-center text-slate-500 py-6">No matching fabric data.</p>}</div></CardContent></Card></div></div>;
 }
 
 function formatWorkingPoints(fabric) {
