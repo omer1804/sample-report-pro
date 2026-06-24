@@ -10,6 +10,7 @@ import ReportDetailsForm from '../components/reports/ReportDetailsForm';
 import FabricsSection from '../components/reports/FabricsSection';
 import TestsSection from '../components/reports/TestsSection';
 import TestSummaryTable from '../components/reports/TestSummaryTable';
+import CuringTestReportSection from '../components/reports/CuringTestReportSection';
 import ImageCaptionUploader from '../components/reports/ImageCaptionUploader';
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ export default function CreateReport() {
     date_completed: new Date().toISOString().split('T')[0],
     application_engineer: '',
     requestor: '',
+    report_type: 'standard',
     status: 'draft'
   });
   const [fabrics, setFabrics] = useState([]);
@@ -40,6 +42,7 @@ export default function CreateReport() {
   const [attachments, setAttachments] = useState([]);
   const [generalImages, setGeneralImages] = useState([]);
   const [applicationNoteImages, setApplicationNoteImages] = useState([]);
+  const [curingReport, setCuringReport] = useState({ columns: ['130', '120', '110', '100'], rows: [], notes: '' });
   const [uploadingAttachment, setUploadingAttachment] = useState(false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -93,12 +96,14 @@ export default function CreateReport() {
         date_completed: existingReport.date_completed,
         application_engineer: existingReport.application_engineer,
         requestor: existingReport.requestor,
+        report_type: existingReport.report_type || 'standard',
         status: existingReport.status
       });
       setFabrics(existingReport.fabrics || []);
       setAttachments(existingReport.attachments || []);
       setGeneralImages(existingReport.general_images || []);
       setApplicationNoteImages(existingReport.application_note_images || []);
+      setCuringReport(existingReport.curing_report || { columns: ['130', '120', '110', '100'], rows: [], notes: '' });
       setConclusion(existingReport.conclusion || '');
       if (!openedLoggedRef.current) {
         openedLoggedRef.current = true;
@@ -138,7 +143,7 @@ export default function CreateReport() {
       }
     }, 30000);
     return () => clearInterval(interval);
-  }, [details, fabrics, tests, conclusion, attachments, generalImages, applicationNoteImages]);
+  }, [details, fabrics, tests, conclusion, attachments, generalImages, applicationNoteImages, curingReport]);
 
   const handleSave = async (status = 'draft', silent = false) => {
     if (!details.application_engineer || !details.date_completed) {
@@ -163,6 +168,7 @@ export default function CreateReport() {
         attachments,
         general_images: generalImages,
         application_note_images: applicationNoteImages,
+        curing_report: curingReport,
         conclusion,
         status,
         last_saved: new Date().toISOString()
@@ -611,6 +617,7 @@ export default function CreateReport() {
       reportInfo.push(['Fabrics']);
       report.fabrics?.forEach((fabric, idx) => {
         reportInfo.push(['Fabric Number', fabric.name || '']);
+        reportInfo.push(['Fabric Details', fabric.fabric_details || '']);
         reportInfo.push(['Material', fabric.material_description || '']);
         reportInfo.push(['Working Point', formatWorkingPoints(fabric)]);
         reportInfo.push(['Machine Model', fabric.machine_model || '']);
@@ -822,9 +829,27 @@ export default function CreateReport() {
         <div className="space-y-6 pb-24">
           <ReportDetailsForm details={details} onChange={setDetails} readOnly={isViewMode} customerOptions={customerOptions} />
 
-          <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} readOnly={isViewMode} />
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
+              <CardTitle className="text-slate-800">Report Workflow</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex flex-wrap gap-3">
+                <Button type="button" variant={(details.report_type || 'standard') === 'standard' ? 'default' : 'outline'} onClick={() => setDetails(prev => ({ ...prev, report_type: 'standard' }))} disabled={isViewMode}>Add Sample Workflow</Button>
+                <Button type="button" variant={details.report_type === 'curing' ? 'default' : 'outline'} onClick={() => setDetails(prev => ({ ...prev, report_type: 'curing' }))} disabled={isViewMode}>Add Curing Test Report</Button>
+              </div>
+            </CardContent>
+          </Card>
 
-          <TestSummaryTable fabrics={fabrics} tests={tests} onTestResultChange={setTests} />
+          {(details.report_type || 'standard') === 'curing' ? (
+            <CuringTestReportSection report={curingReport} onChange={setCuringReport} readOnly={isViewMode} />
+          ) : (
+            <>
+              <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} readOnly={isViewMode} />
+
+              <TestSummaryTable fabrics={fabrics} tests={tests} onTestResultChange={setTests} />
+            </>
+          )}
 
           <Card className="border-slate-200 shadow-sm">
             <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">

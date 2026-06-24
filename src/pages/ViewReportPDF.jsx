@@ -72,13 +72,17 @@ export default function ViewReportPDF() {
           </div>
         </div>
 
+        {(report.report_type || 'standard') === 'curing' && <CuringReportPdfTable report={report} />}
+
         {/* Materials */}
+        {(report.report_type || 'standard') !== 'curing' && (
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4">Material:</h2>
           <div className="space-y-4">
             {report.fabrics?.map((fabric, idx) => (
               <div key={idx}>
                 <p className="font-semibold">Fabric Number {fabric.name || String(idx + 1).padStart(3, '0')}</p>
+                {fabric.fabric_details && <p className="text-sm"><strong>Fabric Details:</strong> {fabric.fabric_details}</p>}
                 <p className="text-sm">{fabric.material_description}</p>
                 <div className="text-sm mt-1 space-y-1">
                   {getWorkingPointRows(fabric).length > 0 && (
@@ -199,6 +203,7 @@ export default function ViewReportPDF() {
             ))}
           </div>
         </div>
+        )}
 
         {report.general_images && report.general_images.length > 0 && (
           <div className="mb-8 page-break">
@@ -432,6 +437,45 @@ export default function ViewReportPDF() {
           }
         }
       `}</style>
+    </div>
+  );
+}
+
+function CuringReportPdfTable({ report }) {
+  const data = report.curing_report || { columns: [], rows: [], notes: '' };
+  return (
+    <div className="mb-8">
+      <h2 className="text-xl font-bold mb-4">Curing Test Report</h2>
+      <table className="w-full border-collapse text-xs">
+        <thead>
+          <tr className="bg-sky-900 text-white">
+            <th className="border border-slate-600 p-2">#</th>
+            <th className="border border-slate-600 p-2">Fabric Name</th>
+            <th className="border border-slate-600 p-2">Material</th>
+            {(data.columns || []).map((column, index) => <th key={index} className="border border-slate-600 p-2">{column}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {(data.rows || []).map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              <td className="border border-slate-400 p-2 text-center">{rowIndex + 1}</td>
+              <td className="border border-slate-400 p-2">{row.fabric_name}</td>
+              <td className="border border-slate-400 p-2">{row.material}</td>
+              {(data.columns || []).map((_, cellIndex) => {
+                const cell = row.cells?.[cellIndex] || {};
+                return (
+                  <td key={cellIndex} className="border border-slate-400 p-2 align-top text-center">
+                    {cell.result && <div className={cell.result === 'pass' ? 'font-bold text-green-600' : 'font-bold text-red-600'}>{cell.result === 'pass' ? 'Pass' : 'Fail'}</div>}
+                    {cell.text && <div className="whitespace-pre-wrap my-1">{cell.text}</div>}
+                    {cell.image_url && <img src={cell.image_url} alt="" className="mx-auto h-32 object-contain mt-2" />}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {data.notes && <div className="mt-5"><h3 className="font-bold mb-2">Application Notes</h3><div className="whitespace-pre-wrap text-sm">{data.notes}</div></div>}
     </div>
   );
 }

@@ -248,19 +248,30 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                     </div>
 
                     <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label className="text-slate-700">Fabric Number</Label>
-                        <Input
-                          value={fabric.name || ''}
-                          onChange={(e) => updateFabric(index, 'name', e.target.value)}
-                          placeholder="001"
-                          className={emptyFieldClass(fabric.name)}
-                          readOnly={readOnly}
-                        />
-                      </div>
+                     <div className="space-y-2">
+                       <Label className="text-slate-700">Fabric Number</Label>
+                       <Input
+                         value={fabric.name || ''}
+                         onChange={(e) => updateFabric(index, 'name', e.target.value)}
+                         placeholder="001"
+                         className={emptyFieldClass(fabric.name)}
+                         readOnly={readOnly}
+                       />
+                     </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-slate-700">Material Composition</Label>
+                     <div className="space-y-2">
+                       <Label className="text-slate-700">Fabric Details</Label>
+                       <Textarea
+                         value={fabric.fabric_details || ''}
+                         onChange={(e) => updateFabric(index, 'fabric_details', e.target.value)}
+                         placeholder="Enter fabric details"
+                         className="border-slate-300 min-h-[70px]"
+                         readOnly={readOnly}
+                       />
+                     </div>
+
+                     <div className="space-y-2">
+                       <Label className="text-slate-700">Material Composition</Label>
                         <Textarea
                           value={fabric.material_description || ''}
                           onChange={(e) => updateFabric(index, 'material_description', e.target.value)}

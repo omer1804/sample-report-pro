@@ -6,6 +6,15 @@
       "type": "string",
       "description": "Display name of the report"
     },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "curing"
+      ],
+      "default": "standard",
+      "description": "Type of report workflow"
+    },
     "customer_name": {
       "type": "string",
       "description": "Name of the customer"
@@ -62,6 +71,10 @@
           "name": {
             "type": "string",
             "description": "Fabric number"
+          },
+          "fabric_details": {
+            "type": "string",
+            "description": "Additional fabric details"
           },
           "material_description": {
             "type": "string"
@@ -207,6 +220,57 @@
             },
             "description": "Titles for sample images"
           }
+        }
+      }
+    },
+    "curing_report": {
+      "type": "object",
+      "description": "Curing test report table data",
+      "properties": {
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "fabric_name": {
+                "type": "string"
+              },
+              "material": {
+                "type": "string"
+              },
+              "cells": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "image_url": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "",
+                        "pass",
+                        "fail"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "string"
         }
       }
     },
