@@ -34,6 +34,10 @@ export default function CreateReport() {
     application_engineer: '',
     requestor: '',
     report_type: 'standard',
+    sample_workflow_enabled: true,
+    curing_workflow_enabled: false,
+    include_sample_workflow_in_export: true,
+    include_curing_test_in_export: true,
     status: 'draft'
   });
   const [fabrics, setFabrics] = useState([]);
@@ -97,6 +101,10 @@ export default function CreateReport() {
         application_engineer: existingReport.application_engineer,
         requestor: existingReport.requestor,
         report_type: existingReport.report_type || 'standard',
+        sample_workflow_enabled: existingReport.sample_workflow_enabled !== undefined ? existingReport.sample_workflow_enabled : existingReport.report_type !== 'curing',
+        curing_workflow_enabled: existingReport.curing_workflow_enabled !== undefined ? existingReport.curing_workflow_enabled : existingReport.report_type === 'curing',
+        include_sample_workflow_in_export: existingReport.include_sample_workflow_in_export !== false,
+        include_curing_test_in_export: existingReport.include_curing_test_in_export !== false,
         status: existingReport.status
       });
       setFabrics(existingReport.fabrics || []);
@@ -575,6 +583,21 @@ export default function CreateReport() {
         }
       }
 
+      if (report.curing_report?.rows?.length > 0) {
+        const curingFolder = zip.folder('Curing_Test_Report');
+        for (let rowIdx = 0; rowIdx < report.curing_report.rows.length; rowIdx++) {
+          const row = report.curing_report.rows[rowIdx];
+          for (let cellIdx = 0; cellIdx < (row.cells || []).length; cellIdx++) {
+            const cell = row.cells[cellIdx];
+            if (cell.image_url) {
+              const response = await fetch(cell.image_url);
+              const blob = await response.blob();
+              curingFolder.file(`fabric_${rowIdx + 1}_column_${cellIdx + 1}.jpg`, blob);
+            }
+          }
+        }
+      }
+
       const content = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
@@ -833,22 +856,34 @@ export default function CreateReport() {
             <CardHeader className="bg-gradient-to-r from-slate-50 to-white border-b">
               <CardTitle className="text-slate-800">Report Workflow</CardTitle>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 space-y-4">
               <div className="flex flex-wrap gap-3">
-                <Button type="button" variant={(details.report_type || 'standard') === 'standard' ? 'default' : 'outline'} onClick={() => setDetails(prev => ({ ...prev, report_type: 'standard' }))} disabled={isViewMode}>Add Sample Workflow</Button>
-                <Button type="button" variant={details.report_type === 'curing' ? 'default' : 'outline'} onClick={() => setDetails(prev => ({ ...prev, report_type: 'curing' }))} disabled={isViewMode}>Add Curing Test Report</Button>
+                <Button type="button" variant={details.sample_workflow_enabled !== false ? 'default' : 'outline'} onClick={() => setDetails(prev => ({ ...prev, sample_workflow_enabled: prev.sample_workflow_enabled === false }))} disabled={isViewMode}>Sample Workflow</Button>
+                <Button type="button" variant={details.curing_workflow_enabled ? 'default' : 'outline'} onClick={() => setDetails(prev => ({ ...prev, curing_workflow_enabled: !prev.curing_workflow_enabled }))} disabled={isViewMode}>Curing Test</Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
+                <label className="flex items-center gap-2 rounded-md border border-slate-200 p-3">
+                  <input type="checkbox" checked={details.include_sample_workflow_in_export !== false} onChange={(e) => setDetails(prev => ({ ...prev, include_sample_workflow_in_export: e.target.checked }))} disabled={isViewMode} />
+                  Include sample workflow in PDF export
+                </label>
+                <label className="flex items-center gap-2 rounded-md border border-slate-200 p-3">
+                  <input type="checkbox" checked={details.include_curing_test_in_export !== false} onChange={(e) => setDetails(prev => ({ ...prev, include_curing_test_in_export: e.target.checked }))} disabled={isViewMode} />
+                  Include curing test in PDF export
+                </label>
               </div>
             </CardContent>
           </Card>
 
-          {(details.report_type || 'standard') === 'curing' ? (
-            <CuringTestReportSection report={curingReport} onChange={setCuringReport} readOnly={isViewMode} />
-          ) : (
+          {details.sample_workflow_enabled !== false && (
             <>
               <FabricsSection fabrics={fabrics} onChange={setFabrics} tests={tests} onTestsChange={setTests} readOnly={isViewMode} />
 
               <TestSummaryTable fabrics={fabrics} tests={tests} onTestResultChange={setTests} />
             </>
+          )}
+
+          {details.curing_workflow_enabled && (
+            <CuringTestReportSection report={curingReport} onChange={setCuringReport} readOnly={isViewMode} />
           )}
 
           <Card className="border-slate-200 shadow-sm">

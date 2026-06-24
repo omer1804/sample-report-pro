@@ -39,6 +39,8 @@ export default function ViewReportPDF() {
   }
 
   const exportTests = tests.filter(test => !test.is_internal && (!selectedOnly || test.export_selected !== false));
+  const showSampleWorkflow = report.include_sample_workflow_in_export !== false && (report.sample_workflow_enabled !== undefined ? report.sample_workflow_enabled !== false : report.report_type !== 'curing');
+  const showCuringTest = report.include_curing_test_in_export !== false && (report.curing_workflow_enabled || report.report_type === 'curing');
 
   return (
     <div className="min-h-screen bg-white">
@@ -72,10 +74,10 @@ export default function ViewReportPDF() {
           </div>
         </div>
 
-        {(report.report_type || 'standard') === 'curing' && <CuringReportPdfTable report={report} />}
+        {showCuringTest && <CuringReportPdfTable report={report} />}
 
         {/* Materials */}
-        {(report.report_type || 'standard') !== 'curing' && (
+        {showSampleWorkflow && (
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4">Material:</h2>
           <div className="space-y-4">
@@ -220,6 +222,7 @@ export default function ViewReportPDF() {
         )}
 
         {/* Summary Tables */}
+        {showSampleWorkflow && (
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4">Test Summary</h2>
           <div className="flex gap-4 flex-wrap">
@@ -258,9 +261,10 @@ export default function ViewReportPDF() {
             })}
           </div>
         </div>
+        )}
 
         {/* Tests */}
-        {report.fabrics?.map((fabric, fabricIdx) => {
+        {showSampleWorkflow && report.fabrics?.map((fabric, fabricIdx) => {
           const fabricTests = exportTests.filter(t => t.fabric_index === fabricIdx).sort((a, b) => {
             const aId = a.id || '';
             const bId = b.id || '';

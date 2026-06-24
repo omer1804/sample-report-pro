@@ -15,6 +15,26 @@
       "default": "standard",
       "description": "Type of report workflow"
     },
+    "sample_workflow_enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the sample workflow is shown in the report editor"
+    },
+    "curing_workflow_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the curing test workflow is shown in the report editor"
+    },
+    "include_sample_workflow_in_export": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether sample tests are included in PDF export"
+    },
+    "include_curing_test_in_export": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether curing tests are included in PDF export"
+    },
     "customer_name": {
       "type": "string",
       "description": "Name of the customer"
