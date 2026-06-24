@@ -79,7 +79,8 @@ export default function ViewReportPDF() {
         {/* Materials */}
         {showSampleWorkflow && (
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Material:</h2>
+          <h2 className="text-xl font-bold mb-4">Sample Test Report</h2>
+          <h3 className="text-lg font-bold mb-4">Material:</h3>
           <div className="space-y-4">
             {report.fabrics?.map((fabric, idx) => (
               <div key={idx}>
