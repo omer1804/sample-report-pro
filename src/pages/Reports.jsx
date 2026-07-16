@@ -23,7 +23,7 @@ export default function Reports() {
 
   const { data: reports = [], isLoading, refetch } = useQuery({
     queryKey: ['reports', sortOrder],
-    queryFn: () => base44.entities.Report.list(sortOrder),
+    queryFn: () => base44.entities.Report.list(sortOrder, 1000),
   });
 
   const activeReports = reports.filter(report => !report.is_deleted);
