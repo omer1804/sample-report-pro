@@ -166,43 +166,52 @@
               "CMYKRG"
             ],
             "default": "CMYK",
-            "description": "Whether total color uses CMYK or CMYK plus red and green"
+            "description": "Whether the total color value is CMYK or CMYKRG"
+          },
+          "ink_consumption_color_total": {
+            "type": "string",
+            "description": "Single total color ink consumption for CMYK or CMYKRG"
           },
           "ink_consumption_cyan": {
             "type": "string",
-            "description": "Cyan ink consumption"
+            "description": "Legacy cyan ink consumption"
           },
           "ink_consumption_magenta": {
             "type": "string",
-            "description": "Magenta ink consumption"
+            "description": "Legacy magenta ink consumption"
           },
           "ink_consumption_yellow": {
             "type": "string",
-            "description": "Yellow ink consumption"
+            "description": "Legacy yellow ink consumption"
           },
           "ink_consumption_black": {
             "type": "string",
-            "description": "Black ink consumption"
+            "description": "Legacy black ink consumption"
+          },
+          "ink_neon_enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether neon ink is used for this sample"
           },
           "ink_consumption_neon": {
             "type": "string",
-            "description": "Legacy neon ink consumption"
+            "description": "Single total neon ink consumption"
           },
           "ink_consumption_neon_pink": {
             "type": "string",
-            "description": "Neon pink ink consumption"
+            "description": "Legacy neon pink ink consumption"
           },
           "ink_consumption_neon_yellow": {
             "type": "string",
-            "description": "Neon yellow ink consumption"
+            "description": "Legacy neon yellow ink consumption"
           },
           "ink_consumption_red": {
             "type": "string",
-            "description": "Red ink consumption"
+            "description": "Legacy red ink consumption"
           },
           "ink_consumption_green": {
             "type": "string",
-            "description": "Green ink consumption"
+            "description": "Legacy green ink consumption"
           },
           "ink_binder_enabled": {
             "type": "boolean",

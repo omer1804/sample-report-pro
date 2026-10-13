@@ -3,31 +3,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const colorBaseFields = [
-  ['ink_consumption_cyan', 'Cyan'],
-  ['ink_consumption_magenta', 'Magenta'],
-  ['ink_consumption_yellow', 'Yellow'],
-  ['ink_consumption_black', 'Black']
-];
-
-const colorExtraFields = [
-  ['ink_consumption_red', 'Red'],
-  ['ink_consumption_green', 'Green']
-];
-
-const neonFields = [
-  ['ink_consumption_neon_pink', 'NP'],
-  ['ink_consumption_neon_yellow', 'NY']
-];
-
 const topCoatFields = [
   ['ink_consumption_u10', 'U10'],
   ['ink_consumption_fof_white_top_coat', 'FoF White Top Coat']
 ];
 
-function Field({ fabric, field, label, onChange, readOnly, disabled = false }) {
+function Field({ fabric, field, label, onChange, readOnly, disabled = false, minWidth = '70px' }) {
   return (
-    <div className="space-y-1" style={{ minWidth: '70px' }}>
+    <div className="space-y-1" style={{ minWidth }}>
       <Label className="text-xs text-slate-600">{label}</Label>
       <Input value={fabric[field] || ''} onChange={(e) => onChange(field, e.target.value)} className="border-slate-300 bg-white h-9" readOnly={readOnly || disabled} disabled={disabled} />
     </div>
@@ -36,7 +19,8 @@ function Field({ fabric, field, label, onChange, readOnly, disabled = false }) {
 
 export default function InkConsumptionFields({ fabric, index, updateFabric, updateFabricWithTotal, calculateWhiteColorTotal, calculateTopCoatTotal, calculateGrandTotal, readOnly }) {
   const unit = fabric.ink_consumption_unit || 'ml/m²';
-  const colorMode = fabric.ink_color_mode || ((fabric.ink_consumption_red || fabric.ink_consumption_green) ? 'CMYKRG' : 'CMYK');
+  const colorMode = fabric.ink_color_mode || 'CMYK';
+  const neonEnabled = fabric.ink_neon_enabled === true || (!!fabric.ink_consumption_neon && fabric.ink_neon_enabled !== false);
   const binderEnabled = fabric.ink_binder_enabled === true || (!!fabric.ink_consumption_fof_color && fabric.ink_binder_enabled !== false);
   const dtgRelated = fabric.top_coat_dtg_related !== false;
   const updateInk = (field, value) => updateFabricWithTotal(index, field, value);
@@ -54,45 +38,41 @@ export default function InkConsumptionFields({ fabric, index, updateFabric, upda
         </Select>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Label className="text-sm font-semibold text-slate-700">Total Color</Label>
-          <div className="flex items-center gap-4 text-sm text-slate-700">
-            <label className="flex items-center gap-2">
-              <input type="radio" checked={colorMode === 'CMYK'} onChange={() => updateInk('ink_color_mode', 'CMYK')} disabled={readOnly} />
-              CMYK
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" checked={colorMode === 'CMYKRG'} onChange={() => updateInk('ink_color_mode', 'CMYKRG')} disabled={readOnly} />
-              CMYKRG
-            </label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Label className="text-sm font-semibold text-slate-700">Total Color Consumption</Label>
+            <div className="flex items-center gap-4 text-sm text-slate-700">
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={colorMode === 'CMYK'} onChange={() => updateInk('ink_color_mode', 'CMYK')} disabled={readOnly} />
+                CMYK
+              </label>
+              <label className="flex items-center gap-2">
+                <input type="radio" checked={colorMode === 'CMYKRG'} onChange={() => updateInk('ink_color_mode', 'CMYKRG')} disabled={readOnly} />
+                CMYKRG
+              </label>
+            </div>
           </div>
+          <Field fabric={fabric} field="ink_consumption_color_total" label={`${colorMode} Total`} onChange={updateInk} readOnly={readOnly} minWidth="160px" />
         </div>
-        <div className="flex flex-wrap gap-2 items-end">
-          {colorBaseFields.map(([field, label]) => <Field key={field} fabric={fabric} field={field} label={label} onChange={updateInk} readOnly={readOnly} />)}
-          {colorMode === 'CMYKRG' && colorExtraFields.map(([field, label]) => <Field key={field} fabric={fabric} field={field} label={label} onChange={updateInk} readOnly={readOnly} />)}
-          <div className="space-y-1" style={{ minWidth: '90px' }}>
-            <Label className="text-xs text-slate-600 font-semibold">Total Color</Label>
-            <Input value={calculateWhiteColorTotal(fabric)} className="border-slate-300 bg-slate-200 h-9 font-semibold cursor-not-allowed" readOnly disabled />
-          </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <input type="checkbox" checked={neonEnabled} onChange={(e) => updateInk('ink_neon_enabled', e.target.checked)} disabled={readOnly} />
+            Neon
+          </label>
+          <Field fabric={fabric} field="ink_consumption_neon" label="Neon Total" onChange={updateInk} readOnly={readOnly} disabled={!neonEnabled} minWidth="160px" />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label className="text-sm font-semibold text-slate-700">Neon (NP & NY)</Label>
-          <div className="flex flex-wrap gap-2 items-end">
-            {neonFields.map(([field, label]) => <Field key={field} fabric={fabric} field={field} label={label} onChange={updateInk} readOnly={readOnly} />)}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <input type="checkbox" checked={binderEnabled} onChange={(e) => updateInk('ink_binder_enabled', e.target.checked)} disabled={readOnly} />
             Binder
           </label>
           <div className="flex flex-wrap gap-2 items-end">
-            <div className="space-y-1" style={{ minWidth: '140px' }}>
+            <div className="space-y-1" style={{ minWidth: '160px' }}>
               <Label className="text-xs text-slate-600">Binder Type</Label>
               <Select value={fabric.ink_binder_type || ''} onValueChange={(value) => updateInk('ink_binder_type', value)} disabled={readOnly || !binderEnabled}>
                 <SelectTrigger className="bg-white border-slate-300 h-9"><SelectValue placeholder="Select" /></SelectTrigger>
@@ -103,7 +83,7 @@ export default function InkConsumptionFields({ fabric, index, updateFabric, upda
                 </SelectContent>
               </Select>
             </div>
-            <Field fabric={fabric} field="ink_consumption_fof_color" label="Binder" onChange={updateInk} readOnly={readOnly} disabled={!binderEnabled} />
+            <Field fabric={fabric} field="ink_consumption_fof_color" label="Binder Total" onChange={updateInk} readOnly={readOnly} disabled={!binderEnabled} minWidth="120px" />
           </div>
         </div>
 

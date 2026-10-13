@@ -37,6 +37,8 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
       images: [],
       image_captions: [],
       ink_color_mode: 'CMYK',
+      ink_consumption_color_total: '',
+      ink_neon_enabled: false,
       ink_binder_enabled: false,
       top_coat_dtg_related: true
     }]);
@@ -84,20 +86,20 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
 
   const toNumber = (value) => parseFloat(value || 0) || 0;
 
-  const getColorMode = (fabric) => fabric.ink_color_mode || ((fabric.ink_consumption_red || fabric.ink_consumption_green) ? 'CMYKRG' : 'CMYK');
-
   const calculateWhiteColorTotal = (fabric) => {
-    const values = [
+    const directTotal = toNumber(fabric.ink_consumption_color_total);
+    if (directTotal > 0) return directTotal.toFixed(2);
+
+    const legacyValues = [
       toNumber(fabric.ink_consumption_cyan),
       toNumber(fabric.ink_consumption_magenta),
       toNumber(fabric.ink_consumption_yellow),
-      toNumber(fabric.ink_consumption_black)
+      toNumber(fabric.ink_consumption_black),
+      toNumber(fabric.ink_consumption_red),
+      toNumber(fabric.ink_consumption_green)
     ];
-    if (getColorMode(fabric) === 'CMYKRG') {
-      values.push(toNumber(fabric.ink_consumption_red), toNumber(fabric.ink_consumption_green));
-    }
-    const sum = values.reduce((acc, val) => acc + val, 0);
-    return sum > 0 ? sum.toFixed(2) : '';
+    const legacySum = legacyValues.reduce((acc, val) => acc + val, 0);
+    return legacySum > 0 ? legacySum.toFixed(2) : '';
   };
 
   const calculateTopCoatTotal = (fabric) => {
@@ -114,9 +116,7 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
     const binderEnabled = fabric.ink_binder_enabled === true || (!!fabric.ink_consumption_fof_color && fabric.ink_binder_enabled !== false);
     const values = [
       toNumber(calculateWhiteColorTotal(fabric)),
-      toNumber(fabric.ink_consumption_neon),
-      toNumber(fabric.ink_consumption_neon_pink),
-      toNumber(fabric.ink_consumption_neon_yellow),
+      (fabric.ink_neon_enabled === true || (!!fabric.ink_consumption_neon && fabric.ink_neon_enabled !== false)) ? toNumber(fabric.ink_consumption_neon) : 0,
       binderEnabled ? toNumber(fabric.ink_consumption_fof_color) : 0,
       toNumber(fabric.ink_consumption_white),
       toNumber(fabric.ink_consumption_fof_white),

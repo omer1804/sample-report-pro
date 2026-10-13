@@ -111,47 +111,40 @@ export default function ViewReportPDF() {
                   <table className="border-collapse border border-slate-400 text-xs">
                     <thead>
                       <tr className="bg-slate-100">
-                        <th className="border border-slate-400 px-2 py-1" colSpan="12">Ink Consumption ({fabric.ink_consumption_unit || 'ml/m²'})</th>
+                        <th className="border border-slate-400 px-2 py-1" colSpan="8">Ink Consumption ({fabric.ink_consumption_unit || 'ml/m²'})</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Cyan</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Magenta</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Yellow</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Black</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon Pink</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon Yellow</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Red</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Green</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Color Type</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total Color</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon Total</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Binder Type</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Binder</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">White</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Duratech</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
                       </tr>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_cyan || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_magenta || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_yellow || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_black || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_neon_pink || fabric.ink_consumption_neon || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_neon_yellow || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_red || '-'}</td>
-                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_green || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_color_mode || 'CMYK'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_color_total || '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{(fabric.ink_neon_enabled || fabric.ink_consumption_neon) ? (fabric.ink_consumption_neon || '-') : '-'}</td>
+                        <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_binder_type || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_color || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_white || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_fof_white || '-'}</td>
                         <td className="border border-slate-400 px-2 py-1 text-center font-bold">{(() => {
-                          const sum = [
+                          const legacyColor = [
                             parseFloat(fabric.ink_consumption_cyan || 0),
                             parseFloat(fabric.ink_consumption_magenta || 0),
                             parseFloat(fabric.ink_consumption_yellow || 0),
                             parseFloat(fabric.ink_consumption_black || 0),
-                            parseFloat(fabric.ink_consumption_neon || 0),
-                            parseFloat(fabric.ink_consumption_neon_pink || 0),
-                            parseFloat(fabric.ink_consumption_neon_yellow || 0),
                             parseFloat(fabric.ink_consumption_red || 0),
-                            parseFloat(fabric.ink_consumption_green || 0),
+                            parseFloat(fabric.ink_consumption_green || 0)
+                          ].reduce((a, b) => a + b, 0);
+                          const sum = [
+                            parseFloat(fabric.ink_consumption_color_total || legacyColor || 0),
+                            (fabric.ink_neon_enabled || fabric.ink_consumption_neon) ? parseFloat(fabric.ink_consumption_neon || 0) : 0,
                             parseFloat(fabric.ink_consumption_fof_color || 0),
                             parseFloat(fabric.ink_consumption_white || 0),
                             parseFloat(fabric.ink_consumption_fof_white || 0)
@@ -160,13 +153,13 @@ export default function ViewReportPDF() {
                         })()}</td>
                       </tr>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="12"></td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="8"></td>
                       </tr>
                       <tr>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">U10</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF White Top Coat</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="5"></td>
                       </tr>
                       <tr>
                         <td className="border border-slate-400 px-2 py-1 text-center">{fabric.ink_consumption_u10 || '-'}</td>
@@ -178,13 +171,13 @@ export default function ViewReportPDF() {
                           ].reduce((a, b) => a + b, 0);
                           return sum > 0 ? sum.toFixed(2) : '-';
                         })()}</td>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="9"></td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="5"></td>
                       </tr>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1" colSpan="12"></td>
+                        <td className="border border-slate-400 px-2 py-1" colSpan="8"></td>
                       </tr>
                       <tr>
-                        <td className="border border-slate-400 px-2 py-1 font-bold bg-slate-100" colSpan="11">Grand Total ({fabric.ink_consumption_unit || 'ml/m²'})</td>
+                        <td className="border border-slate-400 px-2 py-1 font-bold bg-slate-100" colSpan="7">Grand Total ({fabric.ink_consumption_unit || 'ml/m²'})</td>
                         <td className="border border-slate-400 px-2 py-1 text-center font-bold bg-slate-100">{fabric.ink_consumption_total || '-'}</td>
                       </tr>
                     </tbody>
