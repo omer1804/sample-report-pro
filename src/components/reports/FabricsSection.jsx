@@ -14,8 +14,7 @@ import ImageViewerModal from './ImageViewerModal';
 import WorkingPointFields from './WorkingPointFields';
 import InkConsumptionFields from './InkConsumptionFields';
 
-const machineModelOptions = ['Presto MAX PLUS', 'Atlas MATRIX'];
-const inkVersionOptions = ['robusto', 'eco rapid'];
+const machineModelOptions = ['Presto Max Plus', 'Largo'];
 
 export default function FabricsSection({ fabrics, onChange, tests, onTestsChange, readOnly = false }) {
   const emptyFieldClass = (value) => !readOnly && !value ? 'border-red-300 bg-red-50/40' : 'border-slate-300';
@@ -36,7 +35,10 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
       name: getNextFabricNumber(),
       material_description: '',
       images: [],
-      image_captions: []
+      image_captions: [],
+      ink_color_mode: 'CMYK',
+      ink_binder_enabled: false,
+      top_coat_dtg_related: true
     }]);
     setSelectedFabric(newIndex);
   };
@@ -80,50 +82,45 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
     onChange(updated);
   };
 
+  const toNumber = (value) => parseFloat(value || 0) || 0;
+
+  const getColorMode = (fabric) => fabric.ink_color_mode || ((fabric.ink_consumption_red || fabric.ink_consumption_green) ? 'CMYKRG' : 'CMYK');
+
   const calculateWhiteColorTotal = (fabric) => {
     const values = [
-      parseFloat(fabric.ink_consumption_cyan || 0),
-      parseFloat(fabric.ink_consumption_magenta || 0),
-      parseFloat(fabric.ink_consumption_yellow || 0),
-      parseFloat(fabric.ink_consumption_black || 0),
-      parseFloat(fabric.ink_consumption_neon || 0),
-      parseFloat(fabric.ink_consumption_neon_pink || 0),
-      parseFloat(fabric.ink_consumption_neon_yellow || 0),
-      parseFloat(fabric.ink_consumption_red || 0),
-      parseFloat(fabric.ink_consumption_green || 0),
-      parseFloat(fabric.ink_consumption_fof_color || 0),
-      parseFloat(fabric.ink_consumption_white || 0),
-      parseFloat(fabric.ink_consumption_fof_white || 0)
+      toNumber(fabric.ink_consumption_cyan),
+      toNumber(fabric.ink_consumption_magenta),
+      toNumber(fabric.ink_consumption_yellow),
+      toNumber(fabric.ink_consumption_black)
     ];
+    if (getColorMode(fabric) === 'CMYKRG') {
+      values.push(toNumber(fabric.ink_consumption_red), toNumber(fabric.ink_consumption_green));
+    }
     const sum = values.reduce((acc, val) => acc + val, 0);
     return sum > 0 ? sum.toFixed(2) : '';
   };
 
   const calculateTopCoatTotal = (fabric) => {
+    if (fabric.top_coat_dtg_related === false) return '';
     const values = [
-      parseFloat(fabric.ink_consumption_u10 || 0),
-      parseFloat(fabric.ink_consumption_fof_white_top_coat || 0)
+      toNumber(fabric.ink_consumption_u10),
+      toNumber(fabric.ink_consumption_fof_white_top_coat)
     ];
     const sum = values.reduce((acc, val) => acc + val, 0);
     return sum > 0 ? sum.toFixed(2) : '';
   };
 
   const calculateGrandTotal = (fabric) => {
+    const binderEnabled = fabric.ink_binder_enabled === true || (!!fabric.ink_consumption_fof_color && fabric.ink_binder_enabled !== false);
     const values = [
-      parseFloat(fabric.ink_consumption_cyan || 0),
-      parseFloat(fabric.ink_consumption_magenta || 0),
-      parseFloat(fabric.ink_consumption_yellow || 0),
-      parseFloat(fabric.ink_consumption_black || 0),
-      parseFloat(fabric.ink_consumption_neon || 0),
-      parseFloat(fabric.ink_consumption_neon_pink || 0),
-      parseFloat(fabric.ink_consumption_neon_yellow || 0),
-      parseFloat(fabric.ink_consumption_red || 0),
-      parseFloat(fabric.ink_consumption_green || 0),
-      parseFloat(fabric.ink_consumption_fof_color || 0),
-      parseFloat(fabric.ink_consumption_white || 0),
-      parseFloat(fabric.ink_consumption_fof_white || 0),
-      parseFloat(fabric.ink_consumption_u10 || 0),
-      parseFloat(fabric.ink_consumption_fof_white_top_coat || 0)
+      toNumber(calculateWhiteColorTotal(fabric)),
+      toNumber(fabric.ink_consumption_neon),
+      toNumber(fabric.ink_consumption_neon_pink),
+      toNumber(fabric.ink_consumption_neon_yellow),
+      binderEnabled ? toNumber(fabric.ink_consumption_fof_color) : 0,
+      toNumber(fabric.ink_consumption_white),
+      toNumber(fabric.ink_consumption_fof_white),
+      toNumber(calculateTopCoatTotal(fabric))
     ];
     const sum = values.reduce((acc, val) => acc + val, 0);
     return sum > 0 ? sum.toFixed(2) : '';
@@ -301,8 +298,8 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                               <SelectValue placeholder="Choose machine model" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Presto MAX PLUS">Presto MAX PLUS</SelectItem>
-                              <SelectItem value="Atlas MATRIX">Atlas MATRIX</SelectItem>
+                              <SelectItem value="Presto Max Plus">Presto Max Plus</SelectItem>
+                              <SelectItem value="Largo">Largo</SelectItem>
                               <SelectItem value="custom">Custom</SelectItem>
                             </SelectContent>
                           </Select>
@@ -317,28 +314,13 @@ export default function FabricsSection({ fabrics, onChange, tests, onTestsChange
                         </div>
                         <div className="space-y-2">
                           <Label className="text-slate-700">Ink Version</Label>
-                          <Select
-                            value={getSelectValue(fabric.ink_version, inkVersionOptions)}
-                            onValueChange={(value) => updateFabric(index, 'ink_version', value)}
-                            disabled={readOnly}
-                          >
-                            <SelectTrigger className={emptyFieldClass(fabric.ink_version)}>
-                              <SelectValue placeholder="Choose ink version" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="robusto">robusto</SelectItem>
-                              <SelectItem value="eco rapid">eco rapid</SelectItem>
-                              <SelectItem value="custom">Custom</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {(!readOnly && getSelectValue(fabric.ink_version, inkVersionOptions) === 'custom') && (
-                            <Input
-                              value={fabric.ink_version === 'custom' ? '' : (fabric.ink_version || '')}
-                              onChange={(e) => updateFabric(index, 'ink_version', e.target.value)}
-                              placeholder="Enter custom ink version"
-                              className="border-slate-300"
-                            />
-                          )}
+                          <Input
+                            value={fabric.ink_version || ''}
+                            onChange={(e) => updateFabric(index, 'ink_version', e.target.value)}
+                            placeholder="Enter ink version"
+                            className={emptyFieldClass(fabric.ink_version)}
+                            readOnly={readOnly}
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label className="text-slate-700">Set Up</Label>

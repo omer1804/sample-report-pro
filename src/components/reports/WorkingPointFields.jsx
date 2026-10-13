@@ -5,10 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const fixedPoints = [
-  ['working_point_q', 'U'],
-  ['working_point_qu', 'QU'],
-  ['working_point_w', 'W'],
-  ['working_point_qw', 'QW']
+  ['working_point_q', 'FT'],
+  ['working_point_qu', 'FB'],
+  ['working_point_w', 'WR'],
+  ['working_point_qw', 'WL']
 ];
 
 export default function WorkingPointFields({ fabric, index, updateFabric, readOnly, emptyFieldClass }) {

@@ -124,9 +124,9 @@ export default function ViewReportPDF() {
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Neon Yellow</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Red</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Green</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">FoF Color</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Binder</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">White</td>
-                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">U10 White</td>
+                        <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Duratech</td>
                         <td className="border border-slate-400 px-2 py-1 font-semibold bg-slate-50">Total</td>
                       </tr>
                       <tr>
@@ -487,10 +487,10 @@ function CuringReportPdfTable({ report }) {
 
 function getWorkingPointRows(fabric) {
   const rows = [
-    { label: 'U', value: fabric.working_point_q },
-    { label: 'QU', value: fabric.working_point_qu },
-    { label: 'W', value: fabric.working_point_w },
-    { label: 'QW', value: fabric.working_point_qw },
+    { label: 'FT', value: fabric.working_point_q },
+    { label: 'FB', value: fabric.working_point_qu },
+    { label: 'WR', value: fabric.working_point_w },
+    { label: 'WL', value: fabric.working_point_qw },
     ...((fabric.working_point_custom || []).filter(point => point.letter || point.value).map(point => ({ label: point.letter || 'Custom', value: point.value })))
   ].filter(point => point.value);
   if (rows.length === 0 && fabric.working_point) return [{ label: 'Value', value: fabric.working_point }];

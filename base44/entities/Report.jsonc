@@ -105,19 +105,19 @@
           },
           "working_point_q": {
             "type": "string",
-            "description": "Q working point percentage"
+            "description": "FT working point percentage"
           },
           "working_point_qu": {
             "type": "string",
-            "description": "QU working point percentage"
+            "description": "FB working point percentage"
           },
           "working_point_w": {
             "type": "string",
-            "description": "W working point percentage"
+            "description": "WR working point percentage"
           },
           "working_point_qw": {
             "type": "string",
-            "description": "QW working point percentage"
+            "description": "WL working point percentage"
           },
           "working_point_custom": {
             "type": "array",
@@ -159,6 +159,15 @@
             "default": "ml/m\u00b2",
             "description": "Ink consumption unit"
           },
+          "ink_color_mode": {
+            "type": "string",
+            "enum": [
+              "CMYK",
+              "CMYKRG"
+            ],
+            "default": "CMYK",
+            "description": "Whether total color uses CMYK or CMYK plus red and green"
+          },
           "ink_consumption_cyan": {
             "type": "string",
             "description": "Cyan ink consumption"
@@ -195,9 +204,23 @@
             "type": "string",
             "description": "Green ink consumption"
           },
+          "ink_binder_enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether binder is used for this sample"
+          },
+          "ink_binder_type": {
+            "type": "string",
+            "enum": [
+              "Ofix2 (FOF)",
+              "Inline FOF",
+              "Duosoft"
+            ],
+            "description": "Selected binder type"
+          },
           "ink_consumption_fof_color": {
             "type": "string",
-            "description": "Fof Color ink consumption"
+            "description": "Binder ink consumption"
           },
           "ink_consumption_white": {
             "type": "string",
@@ -205,11 +228,16 @@
           },
           "ink_consumption_fof_white": {
             "type": "string",
-            "description": "U10 White ink consumption"
+            "description": "Duratech ink consumption"
+          },
+          "top_coat_dtg_related": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the Top Coat U10 section is DTG related and included"
           },
           "ink_consumption_u10": {
             "type": "string",
-            "description": "U10 ink consumption"
+            "description": "U10 top coat ink consumption"
           },
           "ink_consumption_fof_white_top_coat": {
             "type": "string",
