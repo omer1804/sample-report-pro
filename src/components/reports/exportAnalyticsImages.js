@@ -35,7 +35,7 @@ export default async function exportAnalyticsImages(workbook, rows, imageColumn,
     const sheet = await zip.file('xl/worksheets/sheet1.xml').async('string');
     zip.file('xl/worksheets/sheet1.xml', sheet.replace('</worksheet>', '<drawing xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rIdDesign"/></worksheet>'));
     const types = await zip.file('[Content_Types].xml').async('string');
-    zip.file('[Content_Types].xml', types.replace('</Types>', '<Default Extension="png" ContentType="image/png"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>'));
+    zip.file('[Content_Types].xml', types.replace('</Types>', '<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>'));
   }
   const url = URL.createObjectURL(await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   const link = document.createElement('a');
