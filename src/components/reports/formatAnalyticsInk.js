@@ -1,4 +1,6 @@
 export default function formatAnalyticsInk(fabric) {
+  const hasData = Object.entries(fabric).some(([key, value]) => key.startsWith('ink_consumption_') && key !== 'ink_consumption_unit' && value !== '' && value !== null && value !== undefined);
+  if (!hasData) return '';
   const number = value => parseFloat(value) || 0;
   const unit = fabric.ink_consumption_unit || 'ml/m²';
   const mode = fabric.ink_color_mode || (fabric.ink_consumption_red || fabric.ink_consumption_green ? 'CMYKRG' : 'CMYK');
